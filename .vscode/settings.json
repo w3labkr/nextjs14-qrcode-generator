@@ -1,8 +1,8 @@
 {
     // Configure [glob patterns](https://aka.ms/vscode-glob-patterns) of file associations to languages (for example `"*.extension": "html"`). Patterns will match on the absolute path of a file if they contain a path separator and will match on the name of the file otherwise. These have precedence over the default associations of the languages installed.
     "files.associations": {
+        "*.md": "markdown",
         "*.mdx": "markdown",
-        "*.css": "tailwindcss",
         "*.mjs": "javascript",
     },
 
@@ -31,15 +31,6 @@
 
     // Configure settings to be overridden for the css language.
     "[css]": {
-        "editor.tabSize": 2,
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-
-    // Unknown at-rule.
-    "scss.lint.unknownAtRules": "ignore",
-
-    // Configure settings to be overridden for the scss language.
-    "[scss]": {
         "editor.tabSize": 2,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
@@ -95,16 +86,6 @@
         "editor.formatOnSave": true
     },
 
-    // Configure settings to be overridden for the php language.
-    "[php]": {
-        "editor.tabSize": 4
-    },
-
-    // Configure settings to be overridden for the python language.
-    "[python]": {
-        "editor.tabSize": 4
-    },
-
     // Configure settings to be overridden for the prisma language.
     "[prisma]": {
         "editor.tabSize": 2,
@@ -114,16 +95,6 @@
 
     // Configure settings to be overridden for the sql language.
     "[sql]": {
-        "editor.tabSize": 2
-    },
-
-    // Configure settings to be overridden for the shellscript language.
-    "[shellscript]": {
-        "editor.tabSize": 2
-    },
-
-    // Configure settings to be overridden for the yaml language.
-    "[yaml]": {
         "editor.tabSize": 2
     },
 }

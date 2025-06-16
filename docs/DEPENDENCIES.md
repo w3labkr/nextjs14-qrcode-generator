@@ -10,6 +10,7 @@
   - [Supabase](#supabase)
   - [prisma](#prisma)
   - [Zustand](#zustand)
+  - [Axios](#axios)
   - [React Query](#react-query)
   - [Nodemailer](#nodemailer)
   - [Browserslist](#browserslist)
@@ -17,6 +18,7 @@
   - [Day.js](#dayjs)
   - [qs](#qs)
   - [cookies-next](#cookies-next)
+  - [QRCode](#qrcode)
   - [ESLint](#eslint)
   - [Prettier](#prettier)
   - [Troubleshooting](#troubleshooting)
@@ -181,6 +183,12 @@ Bear necessities for state management in React
 npm install zustand
 ```
 
+## Axios
+
+```shell
+npm install axios
+```
+
 ## React Query
 
 Powerful asynchronous state management, server-state utilities and data fetching for the web. TS/JS, React Query, Solid Query, Svelte Query and Vue Query.
@@ -247,6 +255,12 @@ Getting, setting and removing cookies on both client and server with next.js
 
 ```shell
 npm i cookies-next@4
+```
+
+## QRCode
+
+```shell
+npm install qrcode.react
 ```
 
 ## ESLint
