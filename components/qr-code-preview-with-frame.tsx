@@ -58,7 +58,11 @@ export function QrCodePreviewWithFrame({
   };
 
   const getBorderStyle = () => {
-    if (frameOptions.type === "scan-me" || frameOptions.type === "simple") {
+    if (
+      frameOptions.type === "scan-me" ||
+      frameOptions.type === "simple" ||
+      frameOptions.type === "rounded"
+    ) {
       return `2px solid ${frameOptions.borderColor || "#000000"}`;
     }
 
