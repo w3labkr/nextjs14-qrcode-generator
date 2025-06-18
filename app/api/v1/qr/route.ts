@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateQrCode, QrCodeOptions } from "@/app/actions/qr-code";
 
+export const runtime = "edge";
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
@@ -46,16 +48,21 @@ export async function GET(request: NextRequest) {
     } else {
       // PNG, JPEG 등 기타 형식은 base64 디코딩
       const base64Data = qrCodeDataUrl.split(",")[1];
-      const buffer = Buffer.from(base64Data, "base64");
+      const binaryString = atob(base64Data);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
 
       const headers = new Headers();
       headers.set("Content-Type", `image/${options.type}`);
       headers.set(
         "Content-Disposition",
-        `inline; filename="qrcode.${options.type}"`,
+        `inline; filename="qrcode.${options.type}"`
       );
 
-      return new NextResponse(buffer, { status: 200, headers });
+      return new NextResponse(bytes.buffer, { status: 200, headers });
     }
   } catch (error) {
     console.error(error);
