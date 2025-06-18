@@ -32,17 +32,31 @@ export async function GET(request: NextRequest) {
 
   try {
     const qrCodeDataUrl = await generateQrCode(options);
-    const base64Data = qrCodeDataUrl.split(",")[1];
-    const buffer = Buffer.from(base64Data, "base64");
 
-    const headers = new Headers();
-    headers.set("Content-Type", `image/${options.type}`);
-    headers.set(
-      "Content-Disposition",
-      `inline; filename="qrcode.${options.type}"`,
-    );
+    // SVG의 경우 URL 인코딩된 형태로 반환되므로 다르게 처리
+    if (options.type === "svg") {
+      // SVG data URL에서 실제 SVG 콘텐츠 추출
+      const svgContent = decodeURIComponent(qrCodeDataUrl.split(",")[1]);
 
-    return new NextResponse(buffer, { status: 200, headers });
+      const headers = new Headers();
+      headers.set("Content-Type", "image/svg+xml");
+      headers.set("Content-Disposition", `inline; filename="qrcode.svg"`);
+
+      return new NextResponse(svgContent, { status: 200, headers });
+    } else {
+      // PNG, JPEG 등 기타 형식은 base64 디코딩
+      const base64Data = qrCodeDataUrl.split(",")[1];
+      const buffer = Buffer.from(base64Data, "base64");
+
+      const headers = new Headers();
+      headers.set("Content-Type", `image/${options.type}`);
+      headers.set(
+        "Content-Disposition",
+        `inline; filename="qrcode.${options.type}"`,
+      );
+
+      return new NextResponse(buffer, { status: 200, headers });
+    }
   } catch (error) {
     console.error(error);
     return new NextResponse("Failed to generate QR code", { status: 500 });
