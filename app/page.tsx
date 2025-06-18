@@ -3,14 +3,50 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { generateQrCode } from "@/app/actions/qr-code";
 import Image from "next/image";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function HomePage() {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(
+    "https://github.com/w3labkr/nextjs14-supabase-qrcode",
+  );
   const [qrCode, setQrCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Customization State
+  const [foregroundColor, setForegroundColor] = useState("#000000");
+  const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+  const [logo, setLogo] = useState<string | null>(null);
+  const [format, setFormat] = useState<"png" | "svg" | "jpeg">("png");
+  const [width, setWidth] = useState(400);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogo(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +54,17 @@ export default function HomePage() {
 
     setIsLoading(true);
     try {
-      const qrCodeDataUrl = await generateQrCode(text);
+      const options = {
+        type: format,
+        width: width,
+        color: {
+          dark: foregroundColor,
+          light: backgroundColor,
+        },
+        logo: logo || undefined,
+      };
+      // @ts-ignore
+      const qrCodeDataUrl = await generateQrCode(text, options);
       setQrCode(qrCodeDataUrl as string);
     } catch (error) {
       console.error(error);
@@ -28,33 +74,114 @@ export default function HomePage() {
     }
   };
 
+  const getDownloadFilename = () => {
+    return `qrcode.${format}`;
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="z-10 w-full max-w-md items-center justify-between font-mono text-sm lg:flex flex-col gap-8">
-        <h1 className="text-4xl font-bold text-center">QR 코드 생성기</h1>
-        <p className="text-center text-muted-foreground">
-          URL 또는 텍스트를 입력하여 QR 코드를 생성하세요.
-        </p>
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>QR 코드 생성</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleGenerate} className="flex flex-col gap-4">
-              <Input
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="URL 또는 텍스트 입력"
-                required
-              />
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "생성 중..." : "QR 코드 생성"}
-              </Button>
-            </form>
-            {qrCode && (
-              <div className="mt-8 flex flex-col items-center justify-center gap-4">
-                <h2 className="text-2xl font-semibold">생성된 QR 코드</h2>
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-24">
+      <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
+        <div className="flex flex-col gap-4 flex-1">
+          <h1 className="text-4xl font-bold">오픈소스 QR 코드 생성기</h1>
+          <p className="text-muted-foreground">
+            URL, 텍스트, 이메일 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요.
+            다양한 옵션으로 자유롭게 커스터마이징할 수 있습니다.
+          </p>
+          <Tabs defaultValue="url" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="url">URL</TabsTrigger>
+              <TabsTrigger value="text">텍스트</TabsTrigger>
+            </TabsList>
+            <TabsContent value="url">
+              <Card>
+                <CardHeader>
+                  <CardTitle>웹사이트 URL</CardTitle>
+                  <CardDescription>
+                    연결할 웹사이트 주소를 입력하세요.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form>
+                    <Input
+                      type="url"
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      placeholder="https://example.com"
+                      required
+                    />
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="text">
+              <Card>
+                <CardHeader>
+                  <CardTitle>일반 텍스트</CardTitle>
+                  <CardDescription>
+                    공유하고 싶은 텍스트를 자유롭게 입력하세요.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form>
+                    <Input
+                      type="text"
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      placeholder="여기에 텍스트를 입력하세요"
+                      required
+                    />
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>디자인</CardTitle>
+              <CardDescription>
+                QR 코드의 색상과 로고를 설정하세요.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="foreground-color">전경색</Label>
+                <Input
+                  id="foreground-color"
+                  type="color"
+                  value={foregroundColor}
+                  onChange={(e) => setForegroundColor(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="background-color">배경색</Label>
+                <Input
+                  id="background-color"
+                  type="color"
+                  value={backgroundColor}
+                  onChange={(e) => setBackgroundColor(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <Label htmlFor="logo-upload">로고 (선택 사항)</Label>
+                <Input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/png, image/jpeg, image/svg+xml"
+                  onChange={handleLogoUpload}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex-1 mt-8 lg:mt-0">
+          <Card className="w-full sticky top-8">
+            <CardHeader>
+              <CardTitle>QR 코드 미리보기</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center gap-4 min-h-[300px]">
+              {qrCode ? (
                 <Image
                   src={qrCode}
                   alt="Generated QR Code"
@@ -62,15 +189,48 @@ export default function HomePage() {
                   height={256}
                   className="rounded-lg"
                 />
-                <Button asChild>
-                  <a href={qrCode} download="qrcode.png">
-                    PNG로 다운로드
+              ) : (
+                <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <p className="text-muted-foreground">
+                    생성 버튼을 눌러주세요
+                  </p>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+              <Button
+                onClick={handleGenerate}
+                disabled={isLoading || !text}
+                className="w-full"
+              >
+                {isLoading ? "생성 중..." : "QR 코드 생성"}
+              </Button>
+              <div className="flex gap-2 w-full">
+                <Select
+                  value={format}
+                  onValueChange={(value) =>
+                    setFormat(value as "png" | "svg" | "jpeg")
+                  }
+                  disabled={!qrCode}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="포맷 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="png">PNG</SelectItem>
+                    <SelectItem value="svg">SVG</SelectItem>
+                    <SelectItem value="jpeg">JPG</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button asChild disabled={!qrCode} className="w-full">
+                  <a href={qrCode} download={getDownloadFilename()}>
+                    다운로드
                   </a>
                 </Button>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </main>
   );
