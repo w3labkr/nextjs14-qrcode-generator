@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,6 +32,7 @@ interface WifiFormProps {
 export function WifiForm({ onWifiDataChange }: WifiFormProps) {
   const [ssid, setSsid] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [encryption, setEncryption] = useState("WPA");
   const [isHidden, setIsHidden] = useState(false);
   const [wifiString, setWifiString] = useState("");
@@ -78,7 +80,7 @@ export function WifiForm({ onWifiDataChange }: WifiFormProps) {
           네트워크 정보를 입력하여 Wi-Fi 접속 QR 코드를 생성하세요.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <CardContent className="grid grid-cols-1 gap-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor="ssid">네트워크 이름 (SSID)</Label>
           <Input
@@ -91,13 +93,28 @@ export function WifiForm({ onWifiDataChange }: WifiFormProps) {
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="password">비밀번호</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="WiFi 비밀번호를 입력하세요"
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="WiFi 비밀번호를 입력하세요"
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+              aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="encryption">암호화 방식</Label>
