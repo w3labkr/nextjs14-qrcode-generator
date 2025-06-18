@@ -1,6 +1,6 @@
 "use server";
 
-import QRCodeStyling, {
+import type {
   Options as QRCodeStylingOptions,
   DotType,
   CornerSquareType,
@@ -8,16 +8,18 @@ import QRCodeStyling, {
 import { JSDOM } from "jsdom";
 
 // qr-code-styling-node requires a DOM environment.
-if (typeof global.window === "undefined") {
-  // @ts-ignore
-  const dom = new JSDOM("", { url: "http://localhost" });
+// Polyfill must run before the library is imported.
+if (typeof window === "undefined") {
+  const dom = new JSDOM();
   // @ts-ignore
   global.window = dom.window;
   // @ts-ignore
   global.document = dom.window.document;
   // @ts-ignore
-  global.self = dom.window; // self 전역 객체 추가
+  global.self = dom.window;
 }
+
+const QRCodeStyling = require("qr-code-styling-node");
 
 // Re-exporting types for frontend usage
 export type { DotType, CornerSquareType };
