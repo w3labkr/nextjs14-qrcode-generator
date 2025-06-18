@@ -34,4 +34,3 @@ export function TextForm({ value, onChange }: TextFormProps) {
     </Card>
   );
 }
-("");
