@@ -30,8 +30,8 @@
 ### 1. 저장소 복제
 
 ```bash
-git clone https://github.com/w3labkr/nextjs14-qrcode.git
-cd nextjs14-qrcode
+git clone https://github.com/w3labkr/nextjs14-qrcode-generator.git
+cd nextjs14-qrcode-generator
 ```
 
 ### 2. 종속성 설치
