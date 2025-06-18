@@ -1,1 +1,1 @@
-# nextjs14-supabase-qrcode
+# nextjs14-qrcode
