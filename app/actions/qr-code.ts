@@ -125,9 +125,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
           ...qrOptions,
           type: "svg",
         });
-        return `data:image/svg+xml;base64,${Buffer.from(svgString).toString(
-          "base64",
-        )}`;
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
       } else {
         // 기본 PNG 또는 기타 형식
         const imageMimeType = `image/${finalType}` as
@@ -164,9 +162,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
           ...qrOptions,
           type: "svg",
         });
-        return `data:image/svg+xml;base64,${Buffer.from(svgString).toString(
-          "base64",
-        )}`;
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
       } else {
         const imageMimeType = `image/${finalType}` as
           | "image/png"
@@ -222,7 +218,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
     } else if (typeof rawData === "string") {
       // SVG 문자열 처리
       if (finalType === "svg") {
-        buffer = Buffer.from(rawData, "utf-8");
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(rawData)}`;
       } else {
         // base64 문자열일 가능성
         try {
@@ -300,6 +296,12 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
         console.error("rawData value:", rawData);
         throw new Error("QR 코드 데이터를 처리할 수 없습니다.");
       }
+    }
+
+    // SVG인 경우 이미 위에서 반환되었으므로 여기서는 다른 형식만 처리
+    if (finalType === "svg") {
+      // 문자열로 된 SVG 데이터를 처리 (fallback)
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(buffer.toString("utf-8"))}`;
     }
 
     return `data:image/${finalType};base64,${buffer.toString("base64")}`;
