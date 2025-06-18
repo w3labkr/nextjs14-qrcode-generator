@@ -41,4 +41,3 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
     </Card>
   );
 }
-("");
