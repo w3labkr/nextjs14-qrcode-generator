@@ -3,7 +3,6 @@ import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
-import { CookieConsent } from "@/components/cookie-consent";
 
 export const metadata: Metadata = {
   title: "오픈소스 QR 코드 생성기",
@@ -25,7 +24,6 @@ export default function RootLayout({
         {children}
         <Toaster richColors closeButton />
         <TailwindIndicator />
-        <CookieConsent />
       </body>
     </html>
   );
