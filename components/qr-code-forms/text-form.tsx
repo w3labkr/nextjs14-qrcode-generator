@@ -1,7 +1,13 @@
-'''"use client";
+"use client";
 
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface TextFormProps {
   value: string;
@@ -27,4 +33,5 @@ export function TextForm({ value, onChange }: TextFormProps) {
       </CardContent>
     </Card>
   );
-}''
+}
+("");

@@ -1,8 +1,14 @@
-'''"use client";
+"use client";
 
 import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface UrlFormProps {
   value: string;
@@ -21,9 +27,7 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>웹사이트 URL</CardTitle>
-        <CardDescription>
-          연결할 웹사이트 주소를 입력하세요.
-        </CardDescription>
+        <CardDescription>연결할 웹사이트 주소를 입력하세요.</CardDescription>
       </CardHeader>
       <CardContent>
         <Input
@@ -36,4 +40,5 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
       </CardContent>
     </Card>
   );
-}''
+}
+("");
