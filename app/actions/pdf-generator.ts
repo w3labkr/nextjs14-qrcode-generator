@@ -1,10 +1,10 @@
 "use server";
 
-import { JsPDF } from "jspdf";
+import { jsPDF } from "jspdf";
 
 export async function generatePdfQrCode(dataUrl: string): Promise<string> {
   try {
-    const doc = new JsPDF({
+    const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
