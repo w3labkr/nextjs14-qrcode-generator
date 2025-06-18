@@ -1,10 +1,22 @@
-'''"use client";
+"use client";
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface WifiFormProps {
   onWifiDataChange: (data: string) => void;
@@ -89,4 +101,5 @@ export function WifiForm({ onWifiDataChange }: WifiFormProps) {
       </CardContent>
     </Card>
   );
-}''
+}
+("");

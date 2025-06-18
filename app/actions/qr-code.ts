@@ -1,86 +1,102 @@
 "use server";
 
-import QRCode from "qrcode";
-import { createCanvas, loadImage } from "canvas";
+import QRCodeStyling, {
+  Options as QRCodeStylingOptions,
+  DotType,
+  CornerSquareType,
+} from "qr-code-styling-node";
+import { JSDOM } from "jsdom";
 
-interface QrCodeOptions {
-  type?: "image/png" | "image/jpeg" | "svg";
-  quality?: number;
+// qr-code-styling-node requires a DOM environment.
+if (typeof global.window === "undefined") {
+  // @ts-ignore
+  const dom = new JSDOM("", { url: "http://localhost" });
+  // @ts-ignore
+  global.window = dom.window;
+  // @ts-ignore
+  global.document = dom.window.document;
+}
+
+// Re-exporting types for frontend usage
+export type { DotType, CornerSquareType };
+
+export interface QrCodeOptions {
+  text: string;
+  type?: "png" | "jpeg" | "svg" | "webp";
   width?: number;
   margin?: number;
+  // Basic styling
   color?: {
     dark?: string;
     light?: string;
   };
   logo?: string;
+  // Advanced styling
+  dotsOptions?: {
+    type?: DotType;
+    color?: string;
+  };
+  cornersSquareOptions?: {
+    type?: CornerSquareType;
+    color?: string;
+  };
 }
 
-export async function generateQrCode(
-  text: string,
-  options: QrCodeOptions = {},
-) {
+export async function generateQrCode(options: QrCodeOptions) {
   try {
-    const { type = "image/png", logo, quality, ...otherOptions } = options;
+    const {
+      text,
+      type = "png",
+      width = 400,
+      margin = 10,
+      color,
+      logo,
+      dotsOptions,
+      cornersSquareOptions,
+    } = options;
 
-    if (type === "svg") {
-      const svgString = await QRCode.toString(text, {
-        type: "svg",
-        ...otherOptions,
-      });
-      // SVG 로고 삽입은 이 버전에서 직접 지원하지 않으므로 로고 없이 반환합니다.
-      // SVG를 데이터 URL로 변환하여 일관된 반환 형식을 유지합니다.
-      const b64 = Buffer.from(svgString).toString("base64");
-      return `data:image/svg+xml;base64,${b64}`;
+    const qrCodeStylingOptions: QRCodeStylingOptions = {
+      width,
+      height: width,
+      margin,
+      data: text,
+      dotsOptions: {
+        color: dotsOptions?.color || color?.dark || "#000000",
+        type: dotsOptions?.type || "square",
+      },
+      backgroundOptions: {
+        color: color?.light || "#ffffff",
+      },
+      cornersSquareOptions: {
+        color: cornersSquareOptions?.color,
+        type: cornersSquareOptions?.type,
+      },
+      qrOptions: {
+        errorCorrectionLevel: "H",
+      },
+      imageOptions: {
+        hideBackgroundDots: true,
+        imageSize: 0.4,
+        margin: 4,
+      },
+      nodeCanvas: require("canvas"),
+      jsdom: JSDOM,
+    };
+
+    if (logo) {
+      qrCodeStylingOptions.image = logo;
     }
 
-    // 로고 합성을 위해 항상 내부적으로 PNG를 생성합니다.
-    const qrCodeDataURL = await QRCode.toDataURL(text, {
-      type: "image/png",
-      errorCorrectionLevel: "H", // 로고 삽입을 위해 오류 복원 수준을 'H'로 설정
-      ...otherOptions,
-    });
+    const qrCode = new QRCodeStyling(qrCodeStylingOptions);
 
-    if (!logo) {
-      // 로고가 없는 경우, 요청된 형식으로 변환합니다.
-      if (type === "image/jpeg") {
-        const canvas = createCanvas(
-          otherOptions.width || 400,
-          otherOptions.width || 400,
-        );
-        const ctx = canvas.getContext("2d");
-        const qrImage = await loadImage(qrCodeDataURL);
-        ctx.drawImage(qrImage, 0, 0);
-        return canvas.toDataURL("image/jpeg", quality);
-      }
-      return qrCodeDataURL; // 기본 PNG 데이터 URL 반환
+    const buffer = await qrCode.getRawData(type);
+
+    if (!buffer) {
+      throw new Error("Failed to generate QR code buffer.");
     }
 
-    // 로고가 있는 경우, 캔버스에 합성합니다.
-    const canvas = createCanvas(
-      otherOptions.width || 400,
-      otherOptions.width || 400,
-    );
-    const ctx = canvas.getContext("2d");
-
-    const qrImage = await loadImage(qrCodeDataURL);
-    ctx.drawImage(qrImage, 0, 0);
-
-    const logoImage = await loadImage(logo);
-    const logoSize = (otherOptions.width || 400) * 0.2; // 로고 크기는 QR 코드의 20%
-    const logoX = (canvas.width - logoSize) / 2;
-    const logoY = (canvas.height - logoSize) / 2;
-
-    // 로고 뒷배경 추가 (흰색)
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(logoX - 5, logoY - 5, logoSize + 10, logoSize + 10);
-
-    ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
-
-    if (type === "image/jpeg") {
-      return canvas.toDataURL("image/jpeg", quality);
-    }
-
-    return canvas.toDataURL("image/png");
+    const mimeType = type === "svg" ? "svg+xml" : type;
+    return `data:image/${mimeType};base64,${buffer.toString("base64")}`;
   } catch (err) {
     console.error(err);
     throw new Error("QR 코드 생성에 실패했습니다.");
