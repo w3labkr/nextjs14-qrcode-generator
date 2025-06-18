@@ -6,6 +6,7 @@ import type {
   CornerSquareType,
 } from "qr-code-styling-node";
 import { JSDOM } from "jsdom";
+import QRCode from "qrcode";
 
 // qr-code-styling-node requires a DOM environment.
 // Polyfill must run before the library is imported.
@@ -70,6 +71,51 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       frameOptions,
     } = options;
 
+    // 한글 텍스트 처리를 위한 UTF-8 인코딩 확인
+    const encodedText = text;
+
+    // 한글이 포함된 경우 qrcode 라이브러리 사용 (더 안정적인 UTF-8 처리)
+    const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
+
+    if (
+      hasKorean &&
+      type !== "pdf" &&
+      !logo &&
+      !dotsOptions &&
+      !cornersSquareOptions
+    ) {
+      // 한글이 포함되고 기본 스타일인 경우 qrcode 라이브러리 사용
+
+      if (type === "svg") {
+        const svgOptions = {
+          errorCorrectionLevel: "H" as const,
+          margin: Math.floor(margin / 10),
+          color: {
+            dark: color?.dark || "#000000",
+            light: color?.light || "#ffffff",
+          },
+          width: width,
+        };
+        const svgString = await QRCode.toString(encodedText, {
+          ...svgOptions,
+          type: "svg",
+        });
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+      } else {
+        const dataUrlOptions = {
+          errorCorrectionLevel: "H" as const,
+          margin: Math.floor(margin / 10),
+          color: {
+            dark: color?.dark || "#000000",
+            light: color?.light || "#ffffff",
+          },
+          width: width,
+        };
+        const dataUrl = await QRCode.toDataURL(encodedText, dataUrlOptions);
+        return dataUrl;
+      }
+    }
+
     // PDF는 별도의 처리가 필요하므로 여기서는 먼저 QR 코드를 생성한 후 PDF 생성 함수를 호출하도록 함
     if (type === "pdf") {
       // PDF를 생성하려면 먼저 이미지 형태의 QR 코드가 필요합니다.
@@ -89,7 +135,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       width,
       height: width,
       margin,
-      data: text,
+      data: encodedText,
       dotsOptions: {
         color: dotsOptions?.color || color?.dark || "#000000",
         type: dotsOptions?.type || "square",
@@ -103,6 +149,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       },
       qrOptions: {
         errorCorrectionLevel: "H",
+        mode: "Byte",
       },
       imageOptions: {
         hideBackgroundDots: true,
