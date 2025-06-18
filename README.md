@@ -79,3 +79,27 @@ GET 요청을 통해 QR 코드를 생성할 수 있는 간단한 API를 제공�
 ```text
 https://<your-domain>/api/v1/qr?text=https://github.com/w3labkr/nextjs14-qrcode&type=svg&color[dark]=%23000000
 ```
+
+---
+
+### 📥 PNG 파일 다운로드 방법
+
+- **브라우저에서 직접 다운로드**
+  - 아래와 같이 브라우저 주소창에 입력하면 바로 PNG 파일이 다운로드됩니다.
+  - 예시:  
+    `https://<your-domain>/api/v1/qr?text=안녕하세요&type=png`
+
+- **curl로 다운로드**
+  - 터미널에서 아래 명령어로 PNG 파일을 저장할 수 있습니다.
+  - 예시:
+    ```bash
+    curl -o qrcode.png "https://<your-domain>/api/v1/qr?text=Hello&type=png"
+    ```
+
+- **HTML `<a download>` 태그로 다운로드 버튼 만들기**
+  - HTML에서 아래와 같이 다운로드 버튼을 만들 수 있습니다.
+    ```html
+    <a href="https://<your-domain>/api/v1/qr?text=테스트&type=png" download="qrcode.png">PNG 다운로드</a>
+    ```
+
+---
