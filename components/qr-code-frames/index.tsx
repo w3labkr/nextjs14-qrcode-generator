@@ -46,7 +46,19 @@ export function QrCodeFramesSelector({
 
   const handleFrameTypeChange = (type: FrameType) => {
     setFrameType(type);
-    onChange({ ...value, type });
+
+    // 사용자 정의에서 다른 스타일로 변경될 때 색상 초기화
+    if (value.type === "custom" && type !== "custom") {
+      onChange({
+        ...value,
+        type,
+        textColor: DEFAULT_FRAME_OPTIONS.textColor,
+        backgroundColor: DEFAULT_FRAME_OPTIONS.backgroundColor,
+        borderColor: DEFAULT_FRAME_OPTIONS.borderColor,
+      });
+    } else {
+      onChange({ ...value, type });
+    }
   };
 
   const handleTextChange = (text: string) => {
