@@ -32,6 +32,7 @@ import {
 } from "@/components/qr-code-frames/frame-selector";
 import usePdfGenerator from "@/hooks/use-pdf-generator";
 import { GITHUB_REPO_URL } from "@/lib/constants";
+import { GithubBadge } from "@/components/github-badge";
 
 export default function HomePage() {
   const [qrData, setQrData] = useState(GITHUB_REPO_URL);
@@ -170,6 +171,7 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-24">
+      <GithubBadge />
       <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
         <div className="flex flex-col gap-4 flex-1">
           <h1 className="text-4xl font-bold">오픈소스 QR 코드 생성기</h1>
@@ -310,6 +312,9 @@ export default function HomePage() {
           </Card>
         </div>
       </div>
+      <footer className="w-full mt-12 flex justify-center text-xs text-muted-foreground">
+        © 2025 W3LabKr. All rights reserved.
+      </footer>
     </main>
   );
 }
