@@ -62,7 +62,7 @@ npm run dev
 
 GET 요청을 통해 QR 코드를 생성할 수 있는 간단한 API를 제공합니다.
 
-**엔드포인트**: `/api/qr`
+**엔드포인트**: `/api/v1/qr`
 
 **쿼리 파라미터**:
 
@@ -77,5 +77,5 @@ GET 요청을 통해 QR 코드를 생성할 수 있는 간단한 API를 제공�
 **예시**:
 
 ```text
-https://<your-domain>/api/qr?text=https://github.com/w3labkr/nextjs14-qrcode&type=svg&color[dark]=%23000000
+https://<your-domain>/api/v1/qr?text=https://github.com/w3labkr/nextjs14-qrcode&type=svg&color[dark]=%23000000
 ```
