@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 interface UrlFormProps {
   value: string;
@@ -19,7 +20,7 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
   useEffect(() => {
     // URL 탭이 선택되었을 때 기본값 설정
     if (!value) {
-      onChange("https://github.com/w3labkr/nextjs14-qrcode");
+      onChange(GITHUB_REPO_URL);
     }
   }, [value, onChange]);
 

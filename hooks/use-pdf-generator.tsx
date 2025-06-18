@@ -4,6 +4,7 @@ import { useState } from "react";
 import { jsPDF } from "jspdf";
 
 import { FrameOptions as QrFrameOptions } from "@/components/qr-code-frames";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 interface PdfGeneratorProps {
   qrCodeUrl: string;
@@ -102,7 +103,7 @@ export default function usePdfGenerator() {
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
       doc.text(
-        "오픈소스 QR 코드 생성기 - https://github.com/w3labkr/nextjs14-qrcode",
+        `오픈소스 QR 코드 생성기 - ${GITHUB_REPO_URL}`,
         pageWidth / 2,
         pageHeight - 10,
         { align: "center" },
