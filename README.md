@@ -1,8 +1,6 @@
 # 오픈소스 QR 코드 생성기
 
-[![Build Status](https://img.shields.io/travis/com/w3labkr/nextjs14-qrcode.svg)](https://travis-ci.com/w3labkr/nextjs14-qrcode)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 > 회원가입이나 로그인 없이 누구나 즉시 사용할 수 있는 강력하고 아름다운 정적 QR 코드 생성기
 
@@ -75,10 +73,6 @@ npm start
 
 자세한 내용은 [CONTRIBUTING.md](./CONTRIBUTING.md) 파일을 참고해주세요.
 
-## 📝 라이선스
-
-이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](./LICENSE) 파일을 참고해주세요.
-
 ## 🔌 API 사용법
 
 GET 요청을 통해 QR 코드를 생성할 수 있는 간단한 API를 제공합니다.
@@ -149,3 +143,7 @@ WIFI:S:<SSID>;T:<암호화유형>;P:<비밀번호>;H:<숨김여부>;;
 스마트폰으로 이 QR 코드를 스캔하면 네트워크 설정 없이 바로 Wi-Fi에 연결할 수 있습니다.
 
 ---
+
+## 📝 라이선스
+
+이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](./LICENSE) 파일을 참고해주세요.
