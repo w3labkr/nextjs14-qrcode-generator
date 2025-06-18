@@ -22,11 +22,15 @@ import { Label } from "@/components/ui/label";
 import { generateQrCode } from "@/app/actions/qr-code";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UrlForm } from "@/components/qr-code-forms/url-form";
+import { TextForm } from "@/components/qr-code-forms/text-form";
+import { WifiForm } from "@/components/qr-code-forms/wifi-form";
 
 export default function HomePage() {
-  const [text, setText] = useState(
+  const [qrData, setQrData] = useState(
     "https://github.com/w3labkr/nextjs14-supabase-qrcode",
   );
+  const [activeTab, setActiveTab] = useState("url");
   const [qrCode, setQrCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,9 +52,9 @@ export default function HomePage() {
     }
   };
 
-  const handleGenerate = async (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (!text) return;
+    if (!qrData) return;
 
     setIsLoading(true);
     try {
@@ -64,7 +68,7 @@ export default function HomePage() {
         logo: logo || undefined,
       };
       // @ts-ignore
-      const qrCodeDataUrl = await generateQrCode(text, options);
+      const qrCodeDataUrl = await generateQrCode(qrData, options);
       setQrCode(qrCodeDataUrl as string);
     } catch (error) {
       console.error(error);
@@ -78,61 +82,43 @@ export default function HomePage() {
     return `qrcode.${format}`;
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // 탭 변경 시 입력 데이터 초기화
+    if (value === "url") {
+      setQrData("https://github.com/w3labkr/nextjs14-supabase-qrcode");
+    } else {
+      setQrData("");
+    }
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-24">
       <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
         <div className="flex flex-col gap-4 flex-1">
           <h1 className="text-4xl font-bold">오픈소스 QR 코드 생성기</h1>
           <p className="text-muted-foreground">
-            URL, 텍스트, 이메일 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요.
+            URL, 텍스트, Wi-Fi 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요.
             다양한 옵션으로 자유롭게 커스터마이징할 수 있습니다.
           </p>
-          <Tabs defaultValue="url" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs
+            defaultValue="url"
+            className="w-full"
+            onValueChange={handleTabChange}
+          >
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="url">URL</TabsTrigger>
               <TabsTrigger value="text">텍스트</TabsTrigger>
+              <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
             </TabsList>
             <TabsContent value="url">
-              <Card>
-                <CardHeader>
-                  <CardTitle>웹사이트 URL</CardTitle>
-                  <CardDescription>
-                    연결할 웹사이트 주소를 입력하세요.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form>
-                    <Input
-                      type="url"
-                      value={text}
-                      onChange={(e) => setText(e.target.value)}
-                      placeholder="https://example.com"
-                      required
-                    />
-                  </form>
-                </CardContent>
-              </Card>
+              <UrlForm value={qrData} onChange={setQrData} />
             </TabsContent>
             <TabsContent value="text">
-              <Card>
-                <CardHeader>
-                  <CardTitle>일반 텍스트</CardTitle>
-                  <CardDescription>
-                    공유하고 싶은 텍스트를 자유롭게 입력하세요.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form>
-                    <Input
-                      type="text"
-                      value={text}
-                      onChange={(e) => setText(e.target.value)}
-                      placeholder="여기에 텍스트를 입력하세요"
-                      required
-                    />
-                  </form>
-                </CardContent>
-              </Card>
+              <TextForm value={qrData} onChange={setQrData} />
+            </TabsContent>
+            <TabsContent value="wifi">
+              <WifiForm onWifiDataChange={setQrData} />
             </TabsContent>
           </Tabs>
 
@@ -200,7 +186,7 @@ export default function HomePage() {
             <CardFooter className="flex flex-col gap-4">
               <Button
                 onClick={handleGenerate}
-                disabled={isLoading || !text}
+                disabled={isLoading || !qrData}
                 className="w-full"
               >
                 {isLoading ? "생성 중..." : "QR 코드 생성"}
