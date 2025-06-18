@@ -25,6 +25,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UrlForm } from "@/components/qr-code-forms/url-form";
 import { TextForm } from "@/components/qr-code-forms/text-form";
 import { WifiForm } from "@/components/qr-code-forms/wifi-form";
+import { QrCodeFramesSelector } from "@/components/qr-code-frames/index";
+import { QrCodePreviewWithFrame } from "@/components/qr-code-preview-with-frame";
+import {
+  FrameSelector,
+  FrameRenderer,
+} from "@/components/qr-code-frames/frame-selector";
+import usePdfGenerator from "@/hooks/use-pdf-generator";
 
 export default function HomePage() {
   const [qrData, setQrData] = useState(
@@ -38,8 +45,20 @@ export default function HomePage() {
   const [foregroundColor, setForegroundColor] = useState("#000000");
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [logo, setLogo] = useState<string | null>(null);
-  const [format, setFormat] = useState<"png" | "svg" | "jpeg">("png");
+  const [format, setFormat] = useState<"png" | "svg" | "jpeg" | "pdf">("png");
   const [width, setWidth] = useState(400);
+  const [frameOptions, setFrameOptions] = useState<
+    import("@/components/qr-code-frames").FrameOptions
+  >({
+    type: "none",
+    text: "스캔해 주세요",
+    textColor: "#000000",
+    borderColor: "#000000",
+    backgroundColor: "#ffffff",
+  });
+
+  // PDF 생성 기능 추가
+  const { generatePdf, isGenerating: isPdfGenerating } = usePdfGenerator();
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -58,18 +77,50 @@ export default function HomePage() {
 
     setIsLoading(true);
     try {
-      const options = {
-        type: format,
-        width: width,
-        color: {
-          dark: foregroundColor,
-          light: backgroundColor,
-        },
-        logo: logo || undefined,
-      };
-      // @ts-ignore
-      const qrCodeDataUrl = await generateQrCode(qrData, options);
-      setQrCode(qrCodeDataUrl as string);
+      // PDF 형식인 경우 먼저 PNG로 QR 코드를 생성한 후, PDF로 변환
+      if (format === "pdf") {
+        const pngOptions = {
+          text: qrData,
+          type: "png" as const,
+          width: width,
+          color: {
+            dark: foregroundColor,
+            light: backgroundColor,
+          },
+          logo: logo || undefined,
+        };
+
+        // @ts-ignore
+        const pngDataUrl = await generateQrCode(pngOptions);
+
+        // PNG QR 코드가 생성되면 PDF로 변환
+        const pdfDataUrl = await generatePdf({
+          qrCodeUrl: pngDataUrl,
+          qrText: qrData,
+          frameOptions: frameOptions.type !== "none" ? frameOptions : undefined,
+        });
+
+        setQrCode(pdfDataUrl);
+      } else {
+        // 일반적인 이미지 형식의 QR 코드 생성
+        const options = {
+          text: qrData,
+          type: format,
+          width: width,
+          color: {
+            dark: foregroundColor,
+            light: backgroundColor,
+          },
+          logo: logo || undefined,
+        };
+
+        // @ts-ignore
+        const qrCodeDataUrl = await generateQrCode(options);
+
+        // 프레임 적용 (현재는 PDF에서만 프레임을 적용하지만,
+        // 향후 canvas나 SVG를 사용하여 이미지 레벨에서 프레임을 적용할 수 있음)
+        setQrCode(qrCodeDataUrl);
+      }
     } catch (error) {
       console.error(error);
       // TODO: 사용자에게 에러 메시지 표시
@@ -80,6 +131,33 @@ export default function HomePage() {
 
   const getDownloadFilename = () => {
     return `qrcode.${format}`;
+  };
+
+  const handleFormatChange = async (
+    newFormat: "png" | "svg" | "jpeg" | "pdf",
+  ) => {
+    setFormat(newFormat);
+
+    // 이미 생성된 QR 코드가 있고 PDF로 변환하는 경우
+    if (
+      qrCode &&
+      newFormat === "pdf" &&
+      qrCode.indexOf("data:application/pdf") === -1
+    ) {
+      setIsLoading(true);
+      try {
+        const pdfDataUrl = await generatePdf({
+          qrCodeUrl: qrCode,
+          qrText: qrData,
+          frameOptions: frameOptions.type !== "none" ? frameOptions : undefined,
+        });
+        setQrCode(pdfDataUrl);
+      } catch (error) {
+        console.error("PDF 변환 오류:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   const handleTabChange = (value: string) => {
@@ -159,6 +237,21 @@ export default function HomePage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>프레임 추가</CardTitle>
+              <CardDescription>
+                QR 코드에 안내 문구와 프레임을 추가해 스캔율을 높이세요.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <QrCodeFramesSelector
+                value={frameOptions}
+                onChange={setFrameOptions}
+              />
+            </CardContent>
+          </Card>
         </div>
 
         <div className="flex-1 mt-8 lg:mt-0">
@@ -168,9 +261,9 @@ export default function HomePage() {
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center gap-4 min-h-[300px]">
               {qrCode ? (
-                <Image
-                  src={qrCode}
-                  alt="Generated QR Code"
+                <QrCodePreviewWithFrame
+                  qrCodeUrl={qrCode}
+                  frameOptions={frameOptions}
                   width={256}
                   height={256}
                   className="rounded-lg"
@@ -195,9 +288,9 @@ export default function HomePage() {
                 <Select
                   value={format}
                   onValueChange={(value) =>
-                    setFormat(value as "png" | "svg" | "jpeg")
+                    handleFormatChange(value as "png" | "svg" | "jpeg" | "pdf")
                   }
-                  disabled={!qrCode}
+                  disabled={!qrCode || isLoading}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="포맷 선택" />
@@ -206,6 +299,7 @@ export default function HomePage() {
                     <SelectItem value="png">PNG</SelectItem>
                     <SelectItem value="svg">SVG</SelectItem>
                     <SelectItem value="jpeg">JPG</SelectItem>
+                    <SelectItem value="pdf">PDF</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button asChild disabled={!qrCode} className="w-full">

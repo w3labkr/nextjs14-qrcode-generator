@@ -22,7 +22,7 @@ export type { DotType, CornerSquareType };
 
 export interface QrCodeOptions {
   text: string;
-  type?: "png" | "jpeg" | "svg" | "webp";
+  type?: "png" | "jpeg" | "svg" | "webp" | "pdf";
   width?: number;
   margin?: number;
   // Basic styling
@@ -40,6 +40,16 @@ export interface QrCodeOptions {
     type?: CornerSquareType;
     color?: string;
   };
+  // Frame options
+  frameOptions?: {
+    type?: string;
+    text?: string;
+    textColor?: string;
+    backgroundColor?: string;
+    borderColor?: string;
+    borderWidth?: number;
+    borderRadius?: number;
+  };
 }
 
 export async function generateQrCode(options: QrCodeOptions) {
@@ -53,7 +63,23 @@ export async function generateQrCode(options: QrCodeOptions) {
       logo,
       dotsOptions,
       cornersSquareOptions,
+      frameOptions,
     } = options;
+
+    // PDF는 별도의 처리가 필요하므로 여기서는 먼저 QR 코드를 생성한 후 PDF 생성 함수를 호출하도록 함
+    if (type === "pdf") {
+      // PDF를 생성하려면 먼저 이미지 형태의 QR 코드가 필요합니다.
+      // PNG 형식으로 QR 코드를 생성한 후 PDF로 변환합니다.
+      const pngOptions = {
+        ...options,
+        type: "png" as const,
+      };
+      const pngData = await generateQrCode(pngOptions);
+
+      // PDF 생성을 위한 함수는 별도로 구현해야 함 (actions/pdf-generator.ts)
+      // 이 위치에서는 아직 구현하지 않음
+      return pngData;
+    }
 
     const qrCodeStylingOptions: QRCodeStylingOptions = {
       width,
@@ -68,8 +94,8 @@ export async function generateQrCode(options: QrCodeOptions) {
         color: color?.light || "#ffffff",
       },
       cornersSquareOptions: {
-        color: cornersSquareOptions?.color,
-        type: cornersSquareOptions?.type,
+        color: cornersSquareOptions?.color || color?.dark || "#000000",
+        type: cornersSquareOptions?.type || "square",
       },
       qrOptions: {
         errorCorrectionLevel: "H",
