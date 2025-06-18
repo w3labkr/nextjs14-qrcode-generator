@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import { generateQrCode, QrCodeOptions } from "@/app/actions/qr-code";
+import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       headers.set("Content-Type", `image/${options.type}`);
       headers.set(
         "Content-Disposition",
-        `inline; filename="qrcode.${options.type}"`
+        `inline; filename="qrcode.${options.type}"`,
       );
 
       return new NextResponse(bytes.buffer, { status: 200, headers });
