@@ -125,7 +125,14 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       throw new Error("Failed to generate QR code buffer.");
     }
 
-    const mimeType = type === "svg" ? "svg+xml" : type;
+    if (type === "svg") {
+      const svgString = buffer.toString("utf8");
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+        svgString,
+      )}`;
+    }
+
+    const mimeType = type;
     return `data:image/${mimeType};base64,${buffer.toString("base64")}`;
   } catch (err) {
     console.error(err);
