@@ -54,7 +54,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       text,
       type = "png",
       width = 400,
-      margin = 10,
+      margin = 0,
       color,
       // logo, dotsOptions, cornersSquareOptions are ignored as they are not supported in Edge.
     } = options;
@@ -84,15 +84,10 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
 
     if (type === "svg") {
       const svgString = await QRCode.toString(text, {
+        ...qrcodeOptions,
         type: "svg",
-        width,
-        margin,
-        color: {
-          dark: color?.dark || "#000000",
-          light: color?.light || "#ffffff",
-        },
       });
-      return `data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`;
+      return `data:image/svg+xml,${encodeURIComponent(svgString)}`;
     }
 
     if (type === "jpeg") {
