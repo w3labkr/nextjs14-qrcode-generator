@@ -19,7 +19,7 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
   useEffect(() => {
     // URL 탭이 선택되었을 때 기본값 설정
     if (!value) {
-      onChange("https://github.com/w3labkr/nextjs14-supabase-qrcode");
+      onChange("https://github.com/w3labkr/nextjs14-qrcode");
     }
   }, [value, onChange]);
 

@@ -35,7 +35,7 @@ import usePdfGenerator from "@/hooks/use-pdf-generator";
 
 export default function HomePage() {
   const [qrData, setQrData] = useState(
-    "https://github.com/w3labkr/nextjs14-supabase-qrcode",
+    "https://github.com/w3labkr/nextjs14-qrcode",
   );
   const [activeTab, setActiveTab] = useState("url");
   const [qrCode, setQrCode] = useState("");
@@ -164,7 +164,7 @@ export default function HomePage() {
     setActiveTab(value);
     // 탭 변경 시 입력 데이터 초기화
     if (value === "url") {
-      setQrData("https://github.com/w3labkr/nextjs14-supabase-qrcode");
+      setQrData("https://github.com/w3labkr/nextjs14-qrcode");
     } else {
       setQrData("");
     }
