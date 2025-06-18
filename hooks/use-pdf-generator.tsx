@@ -32,6 +32,20 @@ export default function usePdfGenerator() {
         format: "a4",
       });
 
+      // 폰트 추가
+      const font = await fetch("/fonts/NanumGothic-Regular.ttf").then((res) =>
+        res.arrayBuffer(),
+      );
+      const fontBase64 = btoa(
+        new Uint8Array(font).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          "",
+        ),
+      );
+      doc.addFileToVFS("NanumGothic-Regular.ttf", fontBase64);
+      doc.addFont("NanumGothic-Regular.ttf", "NanumGothic", "normal");
+      doc.setFont("NanumGothic");
+
       // 페이지 크기
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();

@@ -10,7 +10,6 @@
   - [Zustand](#zustand)
   - [Axios](#axios)
   - [React Query](#react-query)
-  - [Nodemailer](#nodemailer)
   - [Browserslist](#browserslist)
   - [Jose (JsonWebToken)](#jose-jsonwebtoken)
   - [Day.js](#dayjs)
@@ -132,15 +131,6 @@ Powerful asynchronous state management, server-state utilities and data fetching
 
 ```shell
 npm install @tanstack/react-query
-```
-
-## Nodemailer
-
-Send e-mails with Node.JS.
-
-```shell
-npm install nodemailer
-npm install --save-dev @types/nodemailer
 ```
 
 ## Browserslist

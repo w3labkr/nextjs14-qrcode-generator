@@ -1,6 +1,8 @@
 "use server";
 
 import { jsPDF } from "jspdf";
+import { promises as fs } from "fs";
+import path from "path";
 
 export async function generatePdfQrCode(dataUrl: string): Promise<string> {
   try {
@@ -9,6 +11,18 @@ export async function generatePdfQrCode(dataUrl: string): Promise<string> {
       unit: "mm",
       format: "a4",
     });
+
+    // 폰트 추가
+    const fontPath = path.join(
+      process.cwd(),
+      "public",
+      "fonts",
+      "NanumGothic-Regular.ttf",
+    );
+    const font = await fs.readFile(fontPath);
+    doc.addFileToVFS("NanumGothic-Regular.ttf", font.toString("base64"));
+    doc.addFont("NanumGothic-Regular.ttf", "NanumGothic", "normal");
+    doc.setFont("NanumGothic");
 
     // A4 크기는 210mm x 297mm
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -43,7 +57,10 @@ export async function generatePdfQrCode(dataUrl: string): Promise<string> {
 
     // 생성 날짜 추가
     const now = new Date();
-    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0",
+    )}-${String(now.getDate()).padStart(2, "0")}`;
     doc.setFontSize(10);
     doc.text(`생성일: ${dateStr}`, pageWidth / 2, pageHeight - 20, {
       align: "center",
