@@ -105,11 +105,12 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
     const finalType = type as FileType;
     const encodedText = text.trim();
 
-    // 한글 텍스트 처리를 위한 UTF-8 인코딩 확인
-    const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
+    // 한글, 중국어(간체/번체), 일본어 텍스트 처리를 위한 UTF-8 인코딩 확인
+    const hasAsianText =
+      /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣|一-龯|ひらがな-ゟ|カタカナ-ヿ]/.test(text);
 
-    if (hasKorean && !logo && !dotsOptions && !cornersSquareOptions) {
-      // 한글이 포함되고 기본 스타일인 경우 qrcode 라이브러리 사용
+    if (hasAsianText && !logo && !dotsOptions && !cornersSquareOptions) {
+      // 한글, 중국어(간체/번체), 일본어가 포함되고 기본 스타일인 경우 qrcode 라이브러리 사용
       const qrOptions = {
         errorCorrectionLevel: "H" as const,
         margin: Math.floor(margin / 10),
