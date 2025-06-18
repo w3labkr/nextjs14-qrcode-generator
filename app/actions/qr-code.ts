@@ -15,6 +15,8 @@ if (typeof global.window === "undefined") {
   global.window = dom.window;
   // @ts-ignore
   global.document = dom.window.document;
+  // @ts-ignore
+  global.self = dom.window; // self 전역 객체 추가
 }
 
 // Re-exporting types for frontend usage
@@ -52,7 +54,7 @@ export interface QrCodeOptions {
   };
 }
 
-export async function generateQrCode(options: QrCodeOptions) {
+export async function generateQrCode(options: QrCodeOptions): Promise<string> {
   try {
     const {
       text,
@@ -74,7 +76,7 @@ export async function generateQrCode(options: QrCodeOptions) {
         ...options,
         type: "png" as const,
       };
-      const pngData = await generateQrCode(pngOptions);
+      const pngData: string = await generateQrCode(pngOptions);
 
       // PDF 생성을 위한 함수는 별도로 구현해야 함 (actions/pdf-generator.ts)
       // 이 위치에서는 아직 구현하지 않음
@@ -106,7 +108,7 @@ export async function generateQrCode(options: QrCodeOptions) {
         margin: 4,
       },
       nodeCanvas: require("canvas"),
-      jsdom: JSDOM,
+      jsdom: JSDOM as any,
     };
 
     if (logo) {
