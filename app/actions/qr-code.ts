@@ -4,28 +4,13 @@ import type {
   Options as QRCodeStylingOptions,
   DotType,
   CornerSquareType,
-  FileType,
 } from "qr-code-styling-node";
 import { JSDOM } from "jsdom";
 import QRCode from "qrcode";
 
 // qr-code-styling-node requires a DOM environment.
 // Polyfill must run before the library is imported.
-if (typeof window === "undefined") {
-  const dom = new JSDOM();
-  // @ts-ignore
-  global.window = dom.window;
-  // @ts-ignore
-  global.document = dom.window.document;
-  // @ts-ignore
-  global.self = dom.window;
-}
-
-const QRCodeStyling = require("qr-code-styling-node");
 const { Canvas, Image } = require("canvas");
-
-// qr-code-styling-node requires a DOM environment.
-// Polyfill must run before the library is imported.
 if (typeof window === "undefined") {
   const dom = new JSDOM();
   // @ts-ignore
@@ -38,17 +23,17 @@ if (typeof window === "undefined") {
   global.Image = Image;
 }
 
-const qrCodeStyling = new QRCodeStyling({
-  nodeCanvas: Canvas,
-  jsdom: JSDOM,
-});
+const QRCodeStyling = require("qr-code-styling-node");
 
 // Re-exporting types for frontend usage
 export type { DotType, CornerSquareType };
 
+// This type is not exported by the library, so we define it locally.
+type FileType = "png" | "jpeg" | "svg" | "webp";
+
 export interface QrCodeOptions {
   text: string;
-  type?: "png" | "jpeg" | "svg" | "webp" | "pdf";
+  type?: FileType | "pdf";
   width?: number;
   margin?: number;
   // Basic styling
@@ -96,18 +81,13 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       throw new Error("PDF generation is not supported through this endpoint.");
     }
 
+    const finalType = type as FileType;
     const encodedText = text;
 
     // 한글 텍스트 처리를 위한 UTF-8 인코딩 확인
     const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
 
-    if (
-      hasKorean &&
-      type !== "pdf" &&
-      !logo &&
-      !dotsOptions &&
-      !cornersSquareOptions
-    ) {
+    if (hasKorean && !logo && !dotsOptions && !cornersSquareOptions) {
       // 한글이 포함되고 기본 스타일인 경우 qrcode 라이브러리 사용
       const qrOptions = {
         errorCorrectionLevel: "H" as const,
@@ -119,7 +99,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
         width: width,
       };
 
-      if (type === "svg") {
+      if (finalType === "svg") {
         const svgString = await QRCode.toString(encodedText, {
           ...qrOptions,
           type: "svg",
@@ -129,7 +109,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
         )}`;
       } else {
         // 기본 PNG 또는 기타 형식
-        const imageMimeType = `image/${type}` as
+        const imageMimeType = `image/${finalType}` as
           | "image/png"
           | "image/jpeg"
           | "image/webp";
@@ -161,14 +141,19 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       },
     };
 
-    const qrCode = new QRCodeStyling(stylingOptions);
-    const buffer = await qrCode.getRawData(type as FileType);
+    const qrCode = new QRCodeStyling({
+      ...stylingOptions,
+      nodeCanvas: Canvas,
+      jsdom: JSDOM,
+    });
+
+    const buffer = await qrCode.getRawData(finalType);
 
     if (!buffer) {
       throw new Error("Generated QR code buffer is empty.");
     }
 
-    return `data:image/${type};base64,${buffer.toString("base64")}`;
+    return `data:image/${finalType};base64,${buffer.toString("base64")}`;
   } catch (error) {
     console.error("Error generating QR code:", error);
     throw new Error("Failed to generate QR code");
