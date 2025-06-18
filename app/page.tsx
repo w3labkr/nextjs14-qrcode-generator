@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { generateQrCode } from "@/app/actions/qr-code";
-import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UrlForm } from "@/components/qr-code-forms/url-form";
 import { TextForm } from "@/components/qr-code-forms/text-form";

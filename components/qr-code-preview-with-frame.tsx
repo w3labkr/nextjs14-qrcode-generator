@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { FrameOptions } from "@/components/qr-code-frames";
 
 interface QrCodePreviewWithFrameProps {
@@ -36,7 +35,7 @@ export function QrCodePreviewWithFrame({
   // 프레임이 없거나 타입이 'none'인 경우 기본 이미지만 표시
   if (!frameOptions || frameOptions.type === "none" || !qrCodeUrl) {
     return (
-      <Image
+      <img
         src={qrCodeUrl}
         alt={alt}
         width={width}
@@ -92,7 +91,7 @@ export function QrCodePreviewWithFrame({
       }}
     >
       <div className="mb-4">
-        <Image
+        <img
           src={qrCodeUrl}
           alt={alt}
           width={width}
