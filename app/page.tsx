@@ -31,11 +31,10 @@ import {
   FrameRenderer,
 } from "@/components/qr-code-frames/frame-selector";
 import usePdfGenerator from "@/hooks/use-pdf-generator";
+import { GITHUB_REPO_URL } from "@/lib/constants";
 
 export default function HomePage() {
-  const [qrData, setQrData] = useState(
-    "https://github.com/w3labkr/nextjs14-qrcode",
-  );
+  const [qrData, setQrData] = useState(GITHUB_REPO_URL);
   const [activeTab, setActiveTab] = useState("url");
   const [qrCode, setQrCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -163,7 +162,7 @@ export default function HomePage() {
     setActiveTab(value);
     // 탭 변경 시 입력 데이터 초기화
     if (value === "url") {
-      setQrData("https://github.com/w3labkr/nextjs14-qrcode");
+      setQrData(GITHUB_REPO_URL);
     } else {
       setQrData("");
     }
