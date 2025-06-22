@@ -17,6 +17,7 @@ import {
   LogOut,
   Bookmark,
   Database,
+  Cloud,
 } from "lucide-react";
 import Link from "next/link";
 import { InstallPrompt } from "@/components/install-prompt";
@@ -32,10 +33,9 @@ export function UserNav() {
     return (
       <div className="flex gap-2">
         <InstallPrompt />
-        <Button variant="outline" asChild>
-          <Link href="/dashboard/history">기록</Link>
+        <Button onClick={() => signIn()} size="icon" variant="ghost">
+          <Cloud className="!size-6" />
         </Button>
-        <Button onClick={() => signIn()}>로그인</Button>
       </div>
     );
   }
