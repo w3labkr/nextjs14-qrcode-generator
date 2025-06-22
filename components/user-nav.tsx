@@ -35,8 +35,13 @@ export function UserNav() {
     return (
       <div className="flex gap-2">
         <InstallPrompt />
-        <Button onClick={() => signIn()} size="icon" variant="ghost">
-          <Cloud className="!size-6" />
+        <Button
+          onClick={() => signIn()}
+          size="icon"
+          variant="ghost"
+          className="hover:bg-transparent"
+        >
+          <Cloud className="!size-8" />
         </Button>
       </div>
     );
