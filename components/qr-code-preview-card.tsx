@@ -111,7 +111,7 @@ export function QrCodePreviewCard({
           <Select
             value={format}
             onValueChange={(value) =>
-              onFormatChange(value as "png" | "svg" | "jpeg")
+              onFormatChange(value as "png" | "svg" | "jpg")
             }
             disabled={!qrCode || isLoading}
           >
@@ -121,7 +121,7 @@ export function QrCodePreviewCard({
             <SelectContent>
               <SelectItem value="png">PNG (기본 해상도)</SelectItem>
               <SelectItem value="svg">SVG (벡터)</SelectItem>
-              <SelectItem value="jpeg">JPG (기본 해상도)</SelectItem>
+              <SelectItem value="jpg">JPG (기본 해상도)</SelectItem>
             </SelectContent>
           </Select>
           <Button

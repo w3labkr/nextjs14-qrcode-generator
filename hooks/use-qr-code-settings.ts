@@ -5,6 +5,7 @@ import type {
   QrCodeSettings,
   FrameOptions,
   QrCodeFormat,
+  QrCodeGeneratorSettings,
 } from "@/types/qr-code";
 import type { QrCodeOptions } from "@/app/actions/qr-code";
 
@@ -52,8 +53,9 @@ export function useQrCodeSettings() {
   }, []);
 
   const getCurrentSettings = useCallback(
-    (qrData: string): QrCodeOptions => ({
+    (qrData: string): QrCodeGeneratorSettings => ({
       text: qrData,
+      type: format,
       color: {
         dark: foregroundColor,
         light: backgroundColor,
@@ -73,7 +75,7 @@ export function useQrCodeSettings() {
             }
           : undefined,
     }),
-    [foregroundColor, backgroundColor, logo, width, frameOptions],
+    [foregroundColor, backgroundColor, logo, width, frameOptions, format],
   );
 
   const handleLogoUpload = useCallback(

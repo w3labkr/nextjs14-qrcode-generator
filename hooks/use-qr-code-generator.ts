@@ -59,7 +59,7 @@ export function useQrCodeGenerator() {
   );
 
   const handleFormatChange = useCallback(
-    async (newFormat: "png" | "svg" | "jpeg") => {
+    async (newFormat: "png" | "svg" | "jpg") => {
       qrCodeSettings.setFormat(newFormat);
       await qrCodeGeneration.handleFormatChange(newFormat);
     },

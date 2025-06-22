@@ -10,7 +10,7 @@ export type DotType =
 
 export type CornerSquareType = "dots" | "square" | "extra-rounded";
 
-export type FileType = "png" | "jpeg" | "svg" | "webp";
+export type FileType = "png" | "jpg" | "svg" | "webp";
 
 export type QrCodeType =
   | "URL"

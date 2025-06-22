@@ -69,8 +69,8 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       return `data:image/svg+xml;base64,${Buffer.from(modifiedSvg).toString("base64")}`;
     }
 
-    if (type === "jpeg") {
-      // JPEG의 경우 투명도를 지원하지 않으므로 배경색이 중요함
+    if (type === "jpg") {
+      // JPG의 경우 투명도를 지원하지 않으므로 배경색이 중요함
       return await QRCode.toDataURL(text, {
         ...qrcodeOptions,
         type: "image/jpeg",

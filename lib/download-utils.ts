@@ -32,7 +32,7 @@ const generateFileName = (
   type: string,
   format: string,
 ): string => {
-  const fileExtension = format === "jpeg" ? "jpg" : format;
+  const fileExtension = format === "jpg" ? "jpg" : format;
   const timestamp = new Date().toISOString().slice(0, 10);
 
   if (title) {

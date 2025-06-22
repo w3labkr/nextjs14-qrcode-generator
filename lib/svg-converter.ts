@@ -136,8 +136,8 @@ export const convertSvgToPng = async (
 /**
  * QR 코드 형식을 감지하는 함수
  */
-export const detectQrCodeFormat = (qrCode: string): "svg" | "jpeg" | "png" => {
+export const detectQrCodeFormat = (qrCode: string): "svg" | "jpg" | "png" => {
   if (qrCode.includes("data:image/svg+xml")) return "svg";
-  if (qrCode.includes("data:image/jpeg")) return "jpeg";
+  if (qrCode.includes("data:image/jpeg")) return "jpg";
   return "png";
 };
