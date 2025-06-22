@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { ensureUserExists } from "@/lib/utils";
 import { TemplateData, TemplateUpdateData } from "@/types/qr-code-server";
 
 export async function getUserTemplates() {
@@ -22,19 +23,10 @@ export async function getUserTemplates() {
 }
 
 export async function saveTemplate(data: TemplateData) {
-  const session = await auth();
+  const { session } = await ensureUserExists();
 
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
-  }
-
-  // 사용자가 실제로 데이터베이스에 존재하는지 확인
-  const existingUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
-
-  if (!existingUser) {
-    throw new Error("사용자를 찾을 수 없습니다.");
   }
 
   const { name, settings, isDefault = false } = data;
@@ -67,19 +59,10 @@ export async function updateTemplate(
   templateId: string,
   data: TemplateUpdateData,
 ) {
-  const session = await auth();
+  const { session } = await ensureUserExists();
 
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
-  }
-
-  // 사용자가 실제로 데이터베이스에 존재하는지 확인
-  const existingUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
-
-  if (!existingUser) {
-    throw new Error("사용자를 찾을 수 없습니다.");
   }
 
   const template = await prisma.qrTemplate.findFirst({
@@ -122,19 +105,10 @@ export async function updateTemplate(
 }
 
 export async function deleteTemplate(templateId: string) {
-  const session = await auth();
+  const { session } = await ensureUserExists();
 
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
-  }
-
-  // 사용자가 실제로 데이터베이스에 존재하는지 확인
-  const existingUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
-
-  if (!existingUser) {
-    throw new Error("사용자를 찾을 수 없습니다.");
   }
 
   const template = await prisma.qrTemplate.findFirst({
