@@ -16,10 +16,24 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, FileUp, AlertTriangle } from "lucide-react";
-import { importUserData } from "@/app/actions/qr-code";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Upload,
+  FileUp,
+  AlertTriangle,
+  History,
+  Layout,
+  Database,
+} from "lucide-react";
+import {
+  importUserData,
+  importQrCodes,
+  importTemplates,
+} from "@/app/actions/data-management";
 import { toast } from "sonner";
 import { ImportStats } from "@/types/data-manager";
+
+type ImportType = "all" | "qrcodes" | "templates";
 
 interface ImportSectionProps {
   onImportComplete: (stats: ImportStats) => void;
@@ -32,6 +46,39 @@ export default function ImportSection({
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importData, setImportData] = useState("");
   const [replaceExisting, setReplaceExisting] = useState(false);
+  const [importType, setImportType] = useState<ImportType>("all");
+
+  const validateImportData = (parsedData: any, type: ImportType) => {
+    switch (type) {
+      case "all":
+        return parsedData.qrCodes || parsedData.templates;
+      case "qrcodes":
+        return (
+          parsedData.qrCodes ||
+          (parsedData.dataType === "qrcodes" && parsedData.qrCodes)
+        );
+      case "templates":
+        return (
+          parsedData.templates ||
+          (parsedData.dataType === "templates" && parsedData.templates)
+        );
+      default:
+        return false;
+    }
+  };
+
+  const getImportTypeLabel = (type: ImportType) => {
+    switch (type) {
+      case "all":
+        return "전체 데이터";
+      case "qrcodes":
+        return "QR 코드 히스토리";
+      case "templates":
+        return "템플릿";
+      default:
+        return "";
+    }
+  };
 
   const handleImport = async () => {
     if (!importData.trim()) {
@@ -43,9 +90,68 @@ export default function ImportSection({
       setIsImporting(true);
       const parsedData = JSON.parse(importData);
 
-      // 데이터 형식 검증
-      if (!parsedData.qrCodes && !parsedData.templates) {
-        throw new Error("올바른 형식의 데이터가 아닙니다.");
+      if (!validateImportData(parsedData, importType)) {
+        throw new Error(
+          `올바른 ${getImportTypeLabel(importType)} 형식이 아닙니다.`,
+        );
+      }
+
+      let result;
+
+      switch (importType) {
+        case "all":
+          result = await importUserData({
+            qrCodes: parsedData.qrCodes || [],
+            templates: parsedData.templates || [],
+            replaceExisting,
+          });
+          break;
+        case "qrcodes":
+          result = await importQrCodes(
+            parsedData.qrCodes || [],
+            replaceExisting,
+          );
+          break;
+        case "templates":
+          result = await importTemplates(
+            parsedData.templates || [],
+            replaceExisting,
+          );
+          break;
+        default:
+          throw new Error("지원하지 않는 가져오기 유형입니다.");
+      }
+
+      if (result.success) {
+        const importStats: ImportStats = {
+          imported: {
+            qrCodes: "qrCodes" in result.imported ? result.imported.qrCodes : 0,
+            templates:
+              "templates" in result.imported ? result.imported.templates : 0,
+          },
+          total: {
+            qrCodes: "qrCodes" in result.total ? result.total.qrCodes : 0,
+            templates: "templates" in result.total ? result.total.templates : 0,
+          },
+        };
+
+        onImportComplete(importStats);
+
+        let successMessage = "";
+        if (importType === "all") {
+          successMessage = `데이터를 성공적으로 가져왔습니다! (QR 코드: ${importStats.imported.qrCodes}개, 템플릿: ${importStats.imported.templates}개)`;
+        } else if (importType === "qrcodes") {
+          successMessage = `QR 코드를 성공적으로 가져왔습니다! (${importStats.imported.qrCodes}개)`;
+        } else if (importType === "templates") {
+          successMessage = `템플릿을 성공적으로 가져왔습니다! (${importStats.imported.templates}개)`;
+        }
+
+        toast.success(successMessage);
+        setImportDialogOpen(false);
+        setImportData("");
+        setReplaceExisting(false);
+      } else {
+        throw new Error("데이터 가져오기에 실패했습니다.");
       }
 
       // QR 코드 데이터 검증
@@ -72,20 +178,7 @@ export default function ImportSection({
         }
       }
 
-      const result = await importUserData({
-        qrCodes: parsedData.qrCodes || [],
-        templates: parsedData.templates || [],
-        replaceExisting,
-      });
-
-      onImportComplete(result);
-
-      toast.success(
-        `데이터를 성공적으로 가져왔습니다! (QR 코드: ${result.imported.qrCodes}/${result.total.qrCodes}개, 템플릿: ${result.imported.templates}/${result.total.templates}개)`,
-      );
-
-      setImportData("");
-      setImportDialogOpen(false);
+      // 실제 중복 result 변수 정의 제거 (위에서 이미 정의됨)
     } catch (error) {
       console.error("가져오기 오류:", error);
       if (error instanceof SyntaxError) {
@@ -143,6 +236,47 @@ export default function ImportSection({
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* 가져오기 유형 선택 */}
+            <div>
+              <Label className="text-base font-medium">가져오기 유형</Label>
+              <RadioGroup
+                value={importType}
+                onValueChange={(value) => setImportType(value as ImportType)}
+                className="mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id="all" />
+                  <Label
+                    htmlFor="all"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Database className="h-4 w-4" />
+                    전체 데이터 (QR 코드 + 템플릿)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="qrcodes" id="qrcodes" />
+                  <Label
+                    htmlFor="qrcodes"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <History className="h-4 w-4" />
+                    QR 코드 히스토리만
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="templates" id="templates" />
+                  <Label
+                    htmlFor="templates"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Layout className="h-4 w-4" />
+                    템플릿만
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             {/* 파일 업로드 */}
             <div>
               <Label htmlFor="file-upload">JSON 파일 업로드</Label>
@@ -183,7 +317,10 @@ export default function ImportSection({
                 onCheckedChange={setReplaceExisting}
               />
               <Label htmlFor="replace-existing" className="text-sm">
-                기존 데이터 덮어쓰기 (기존 데이터가 모두 삭제됩니다)
+                기존 데이터 덮어쓰기
+                {importType === "all" && " (모든 데이터가 삭제됩니다)"}
+                {importType === "qrcodes" && " (기존 QR 코드가 삭제됩니다)"}
+                {importType === "templates" && " (기존 템플릿이 삭제됩니다)"}
               </Label>
             </div>
 
@@ -191,8 +328,11 @@ export default function ImportSection({
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>주의:</strong> 이 옵션을 선택하면 현재 계정의 모든 QR
-                  코드와 템플릿이 삭제되고 가져오는 데이터로 교체됩니다.
+                  <strong>주의:</strong> 이 옵션을 선택하면 현재 계정의{" "}
+                  {importType === "all" && "모든 QR 코드와 템플릿이"}
+                  {importType === "qrcodes" && "모든 QR 코드가"}
+                  {importType === "templates" && "모든 템플릿이"} 삭제되고
+                  가져오는 데이터로 교체됩니다.
                 </AlertDescription>
               </Alert>
             )}
@@ -205,12 +345,15 @@ export default function ImportSection({
                 setImportDialogOpen(false);
                 setImportData("");
                 setReplaceExisting(false);
+                setImportType("all");
               }}
             >
               취소
             </Button>
             <Button onClick={handleImport} disabled={isImporting}>
-              {isImporting ? "가져오는 중..." : "데이터 가져오기"}
+              {isImporting
+                ? "가져오는 중..."
+                : `${getImportTypeLabel(importType)} 가져오기`}
             </Button>
           </DialogFooter>
         </DialogContent>

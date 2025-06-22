@@ -30,7 +30,14 @@ export {
 } from "./template-management";
 
 // Data Management
-export { exportUserData, importUserData } from "./data-management";
+export {
+  exportUserData,
+  exportQrCodes,
+  exportTemplates,
+  importUserData,
+  importQrCodes,
+  importTemplates,
+} from "./data-management";
 
 // Account Management
 export { deleteAccount } from "./account-management";
