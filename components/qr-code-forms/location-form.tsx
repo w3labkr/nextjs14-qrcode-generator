@@ -37,14 +37,18 @@ const GEOLOCATION_OPTIONS = {
   },
 } as const;
 
-const GEOLOCATION_ERROR_MESSAGES: Record<number, string> = {
-  [GeolocationPositionError.PERMISSION_DENIED]:
-    "위치 접근 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.",
-  [GeolocationPositionError.POSITION_UNAVAILABLE]:
-    "위치 정보를 사용할 수 없습니다. 네트워크 연결을 확인해주세요.",
-  [GeolocationPositionError.TIMEOUT]:
-    "위치 정보 요청 시간이 초과되었습니다. 실외에서 다시 시도해보거나 수동으로 좌표를 입력해주세요.",
-} as const;
+const getGeolocationErrorMessages = (): Record<number, string> => {
+  if (typeof window === "undefined") return {};
+
+  return {
+    [GeolocationPositionError.PERMISSION_DENIED]:
+      "위치 접근 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.",
+    [GeolocationPositionError.POSITION_UNAVAILABLE]:
+      "위치 정보를 사용할 수 없습니다. 네트워크 연결을 확인해주세요.",
+    [GeolocationPositionError.TIMEOUT]:
+      "위치 정보 요청 시간이 초과되었습니다. 실외에서 다시 시도해보거나 수동으로 좌표를 입력해주세요.",
+  };
+};
 
 export function LocationForm({ onChange, initialValue }: LocationFormProps) {
   const [latitude, setLatitude] = useState("");
@@ -111,9 +115,9 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
   }, [generateLocationString]);
 
   const showErrorMessage = useCallback((error: GeolocationPositionError) => {
+    const errorMessages = getGeolocationErrorMessages();
     const errorMessage =
-      GEOLOCATION_ERROR_MESSAGES[error.code] ||
-      "위치 정보를 가져올 수 없습니다.";
+      errorMessages[error.code] || "위치 정보를 가져올 수 없습니다.";
     alert(errorMessage);
   }, []);
 
