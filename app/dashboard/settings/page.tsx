@@ -1,7 +1,6 @@
 "use client";
 
-import DataManager from "@/components/data-manager";
-
+import DataManager from "./components/data-manager";
 import { ServiceInfo } from "./components/service-info";
 
 export default function SettingsPage() {
