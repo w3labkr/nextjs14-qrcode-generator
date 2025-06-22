@@ -2,20 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User } from "next-auth";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -25,11 +19,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserIcon, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Session } from "next-auth";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { updateProfile } from "@/app/actions/account-management";
 
 const profileSchema = z.object({
@@ -42,10 +39,12 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface ProfileFormProps {
-  user: User;
+  session: Session | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function ProfileForm({ user }: ProfileFormProps) {
+export function ProfileForm({ session, open, onOpenChange }: ProfileFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { update } = useSession();
@@ -53,16 +52,19 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user.name || "",
+      name: "",
     },
     mode: "onChange",
   });
 
+  // session이 변경되거나 다이얼로그가 열릴 때 폼 값 업데이트
   useEffect(() => {
-    form.reset({
-      name: user.name || "",
-    });
-  }, [user, form]);
+    if (open && session?.user?.name) {
+      form.reset({
+        name: session.user.name,
+      });
+    }
+  }, [open, session?.user?.name, form]);
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
@@ -71,7 +73,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
       const result = await updateProfile({
         name: data.name,
-        email: user.email || "",
+        email: session?.user?.email || "", // 기존 이메일 유지
       });
       console.log("프로필 업데이트 결과:", result);
 
@@ -80,10 +82,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
         await update({
           name: data.name,
-          email: user.email,
+          email: session?.user?.email, // 기존 이메일 유지
         });
 
-        form.reset(data);
+        // 폼을 새로운 값으로 reset하여 isDirty 상태 초기화
+        form.reset({
+          name: data.name,
+        });
+        onOpenChange(false);
 
         setTimeout(() => {
           router.refresh();
@@ -99,33 +105,26 @@ export function ProfileForm({ user }: ProfileFormProps) {
     }
   };
 
+  const handleCancel = () => {
+    // 원래 값으로 폼 초기화
+    form.reset({
+      name: session?.user?.name || "",
+    });
+    onOpenChange(false);
+  };
+
   return (
-    <Card data-profile-form>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <UserIcon className="h-5 w-5" />
-          <CardTitle>프로필 수정</CardTitle>
-        </div>
-        <CardDescription>계정 정보를 수정할 수 있습니다.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center space-x-4 mb-6">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={user.image || ""} alt={user.name || "사용자"} />
-            <AvatarFallback>
-              <UserIcon className="h-10 w-10" />
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="text-lg font-medium">{user.name || "사용자"}</h3>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
-          </div>
-        </div>
-
-        <Separator className="mb-6" />
-
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>프로필 수정</DialogTitle>
+          <DialogDescription>
+            계정 정보를 수정할 수 있습니다. 변경사항을 저장하려면 저장 버튼을
+            클릭하세요.
+          </DialogDescription>
+        </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -141,13 +140,24 @@ export function ProfileForm({ user }: ProfileFormProps) {
               )}
             />
 
-            <Separator />
+            <div className="space-y-2">
+              <label className="text-sm font-medium">이메일 (읽기 전용)</label>
+              <Input
+                type="email"
+                value={session?.user?.email || ""}
+                disabled
+                className="bg-muted"
+              />
+              <p className="text-sm text-muted-foreground">
+                OAuth 로그인으로 가입한 계정의 이메일은 수정할 수 없습니다.
+              </p>
+            </div>
 
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/dashboard/account")}
+                onClick={handleCancel}
                 disabled={isLoading}
               >
                 취소
@@ -161,12 +171,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 }
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLoading ? "업데이트 중..." : "업데이트"}
+                {isLoading ? "저장 중..." : "저장"}
               </Button>
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

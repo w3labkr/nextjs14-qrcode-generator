@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 import { AccountInfo } from "./components/account-info";
-// import { ProfileForm } from "./components/profile-form";
 import { PrivacyAndSecurity } from "./components/privacy-and-security";
 import { AccountDeletion } from "./components/account-deletion";
 
@@ -18,7 +17,6 @@ export default async function AccountPage() {
   return (
     <div className="space-y-6">
       <AccountInfo session={session} />
-      {/* <ProfileForm user={session.user} /> */}
       <PrivacyAndSecurity />
       <AccountDeletion />
     </div>

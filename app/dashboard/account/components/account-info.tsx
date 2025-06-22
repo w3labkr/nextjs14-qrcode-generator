@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { User, Edit } from "lucide-react";
 import { Session } from "next-auth";
-import { EditProfileDialog } from "./edit-profile-dialog";
+import { ProfileForm } from "./profile-form";
 
 interface AccountInfoProps {
   session: Session | null;
@@ -65,7 +65,7 @@ export function AccountInfo({ session }: AccountInfoProps) {
         </div>
       </CardContent>
 
-      <EditProfileDialog
+      <ProfileForm
         session={session}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
