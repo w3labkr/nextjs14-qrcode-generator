@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import type { EditModeState } from "@/types/qr-code";
@@ -21,6 +21,7 @@ export function useEditMode({
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingQrCodeId, setEditingQrCodeId] = useState<string | null>(null);
   const [loadedQrCodeId, setLoadedQrCodeId] = useState<string | null>(null);
+  const toastShownRef = useRef<Set<string>>(new Set());
 
   const loadQrCodeForEdit = useCallback(
     async (qrCodeId: string) => {
@@ -44,8 +45,14 @@ export function useEditMode({
             loadSettings(settings);
           }
 
+          // 로드된 QR 코드 ID를 먼저 설정한 후 토스트 표시 (중복 방지)
           setLoadedQrCodeId(qrCodeId);
-          toast.success("편집할 QR 코드를 불러왔습니다.");
+
+          // 이미 토스트를 표시한 QR 코드인지 확인
+          if (!toastShownRef.current.has(qrCodeId)) {
+            toastShownRef.current.add(qrCodeId);
+            toast.success("편집할 QR 코드를 불러왔습니다.");
+          }
         } else {
           toast.error("QR 코드를 불러오는데 실패했습니다.");
         }
@@ -61,6 +68,8 @@ export function useEditMode({
     setIsEditMode(false);
     setEditingQrCodeId(null);
     setLoadedQrCodeId(null);
+    // 편집 모드 종료 시 토스트 기록도 초기화
+    toastShownRef.current.clear();
     window.history.replaceState({}, "", "/");
   }, []);
 
@@ -83,7 +92,7 @@ export function useEditMode({
       setEditingQrCodeId(null);
       setLoadedQrCodeId(null);
     }
-  }, [searchParams, setActiveTab, loadQrCodeForEdit, loadedQrCodeId]);
+  }, [searchParams, setActiveTab, loadQrCodeForEdit]);
 
   return {
     isEditMode,
