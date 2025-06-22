@@ -27,8 +27,7 @@ import {
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import Link from "next/link";
-import { downloadQrCode } from "@/lib/download-utils";
-import { toast } from "sonner";
+import { useQrCodeDownload } from "./qr-code-download";
 
 const QR_CODE_TYPES = {
   URL: { label: "웹사이트", color: "bg-blue-100 text-blue-800" },
@@ -72,25 +71,7 @@ export function QrCodeGrid({
   onEdit,
   onDelete,
 }: QrCodeGridProps) {
-  const handleDownload = async (qrCode: QrCodeData) => {
-    try {
-      const result = await downloadQrCode(
-        qrCode.content,
-        qrCode.type,
-        qrCode.settings,
-        qrCode.title,
-      );
-
-      if (result.success) {
-        toast.success("QR 코드가 다운로드되었습니다.");
-      } else {
-        toast.error(result.error || "다운로드에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("다운로드 오류:", error);
-      toast.error("다운로드에 실패했습니다.");
-    }
-  };
+  const { handleDownload } = useQrCodeDownload();
 
   const getContentPreview = (content: string, type: string) => {
     if (type === "WIFI") {
