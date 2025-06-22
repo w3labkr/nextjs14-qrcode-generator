@@ -27,9 +27,10 @@ import {
 
 interface WifiFormProps {
   onWifiDataChange: (data: string) => void;
+  initialValue?: string;
 }
 
-export function WifiForm({ onWifiDataChange }: WifiFormProps) {
+export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
   const [ssid, setSsid] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +41,36 @@ export function WifiForm({ onWifiDataChange }: WifiFormProps) {
     isValid: boolean;
     errors: string[];
   }>({ isValid: true, errors: [] });
+
+  // Wi-Fi 문자열에서 개별 필드로 파싱하는 함수
+  const parseWifiString = (wifiStr: string) => {
+    // WIFI:T:WPA;S:MyNetwork;P:myPassword123;H:false;;
+    const regex = /WIFI:T:([^;]*);S:([^;]*);P:([^;]*);H:([^;]*);/;
+    const match = wifiStr.match(regex);
+
+    if (match) {
+      return {
+        encryption: match[1] || "WPA",
+        ssid: match[2] || "",
+        password: match[3] || "",
+        hidden: match[4] === "true",
+      };
+    }
+    return null;
+  };
+
+  // 초기값 설정
+  useEffect(() => {
+    if (initialValue && initialValue.startsWith("WIFI:")) {
+      const parsed = parseWifiString(initialValue);
+      if (parsed) {
+        setSsid(parsed.ssid);
+        setPassword(parsed.password);
+        setEncryption(parsed.encryption);
+        setIsHidden(parsed.hidden);
+      }
+    }
+  }, [initialValue]);
 
   const generateWifiString = () => {
     if (!ssid.trim()) {

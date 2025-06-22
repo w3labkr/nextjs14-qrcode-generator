@@ -40,19 +40,19 @@ export function QrCodeTabs({
         <TextForm value={qrData} onChange={setQrData} />
       </TabsContent>
       <TabsContent value="wifi">
-        <WifiForm onWifiDataChange={setQrData} />
+        <WifiForm onWifiDataChange={setQrData} initialValue={qrData} />
       </TabsContent>
       <TabsContent value="email">
-        <EmailForm onChange={setQrData} />
+        <EmailForm onChange={setQrData} initialValue={qrData} />
       </TabsContent>
       <TabsContent value="sms">
-        <SmsForm onChange={setQrData} />
+        <SmsForm onChange={setQrData} initialValue={qrData} />
       </TabsContent>
       <TabsContent value="vcard">
-        <VCardForm onChange={setQrData} />
+        <VCardForm onChange={setQrData} initialValue={qrData} />
       </TabsContent>
       <TabsContent value="location">
-        <LocationForm onChange={setQrData} />
+        <LocationForm onChange={setQrData} initialValue={qrData} />
       </TabsContent>
     </Tabs>
   );

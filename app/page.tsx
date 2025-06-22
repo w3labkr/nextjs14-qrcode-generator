@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
+import { Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { GithubBadge } from "@/components/github-badge";
 import { PageHeader } from "@/components/page-header";
@@ -10,7 +13,7 @@ import TemplateManager from "@/components/template-manager";
 import { useQrCodeGenerator } from "@/hooks/use-qr-code-generator";
 import { COPYRIGHT_TEXT } from "@/lib/constants";
 
-export default function HomePage() {
+function HomePageContent() {
   const { data: session } = useSession();
   const {
     // State
@@ -101,5 +104,19 @@ export default function HomePage() {
         {COPYRIGHT_TEXT}
       </footer>
     </main>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      <HomePageContent />
+    </Suspense>
   );
 }

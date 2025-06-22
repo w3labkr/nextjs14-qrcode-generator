@@ -14,11 +14,36 @@ import {
 
 interface SmsFormProps {
   onChange: (smsString: string) => void;
+  initialValue?: string;
 }
 
-export function SmsForm({ onChange }: SmsFormProps) {
+export function SmsForm({ onChange, initialValue }: SmsFormProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [message, setMessage] = useState("");
+
+  // SMS 문자열에서 개별 필드로 파싱하는 함수
+  const parseSmsString = (smsStr: string) => {
+    // sms:01012345678?body=Hello
+    const smsMatch = smsStr.match(/^sms:([^?]+)/);
+    if (!smsMatch) return null;
+
+    const phoneNumber = smsMatch[1];
+    const url = new URL(smsStr);
+    const message = url.searchParams.get("body") || "";
+
+    return { phoneNumber, message };
+  };
+
+  // 초기값 설정
+  useEffect(() => {
+    if (initialValue && initialValue.startsWith("sms:")) {
+      const parsed = parseSmsString(initialValue);
+      if (parsed) {
+        setPhoneNumber(parsed.phoneNumber);
+        setMessage(parsed.message);
+      }
+    }
+  }, [initialValue]);
 
   const generateSmsString = () => {
     if (!phoneNumber) {

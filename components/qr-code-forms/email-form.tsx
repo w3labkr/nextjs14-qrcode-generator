@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -14,12 +14,39 @@ import {
 
 interface EmailFormProps {
   onChange: (emailString: string) => void;
+  initialValue?: string;
 }
 
-export function EmailForm({ onChange }: EmailFormProps) {
+export function EmailForm({ onChange, initialValue }: EmailFormProps) {
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+
+  // 이메일 문자열에서 개별 필드로 파싱하는 함수
+  const parseEmailString = (emailStr: string) => {
+    // mailto:example@email.com?subject=Subject&body=Body
+    const mailtoMatch = emailStr.match(/^mailto:([^?]+)/);
+    if (!mailtoMatch) return null;
+
+    const email = mailtoMatch[1];
+    const url = new URL(emailStr);
+    const subject = url.searchParams.get("subject") || "";
+    const body = url.searchParams.get("body") || "";
+
+    return { email, subject, body };
+  };
+
+  // 초기값 설정
+  useEffect(() => {
+    if (initialValue && initialValue.startsWith("mailto:")) {
+      const parsed = parseEmailString(initialValue);
+      if (parsed) {
+        setEmail(parsed.email);
+        setSubject(parsed.subject);
+        setBody(parsed.body);
+      }
+    }
+  }, [initialValue]);
 
   const handleEmailChange = (value: string) => {
     setEmail(value);

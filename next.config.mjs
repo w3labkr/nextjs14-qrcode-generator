@@ -9,6 +9,9 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    forceSwcTransforms: true,
+  },
   webpack: (config, { isServer }) => {
     return config;
   },

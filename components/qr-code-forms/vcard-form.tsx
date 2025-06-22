@@ -14,9 +14,10 @@ import {
 
 interface VCardFormProps {
   onChange: (vcardString: string) => void;
+  initialValue?: string;
 }
 
-export function VCardForm({ onChange }: VCardFormProps) {
+export function VCardForm({ onChange, initialValue }: VCardFormProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [organization, setOrganization] = useState("");
@@ -25,6 +26,54 @@ export function VCardForm({ onChange }: VCardFormProps) {
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
   const [address, setAddress] = useState("");
+
+  // VCard 문자열에서 개별 필드로 파싱하는 함수
+  const parseVCardString = (vcardStr: string) => {
+    if (!vcardStr.startsWith("BEGIN:VCARD")) return null;
+
+    const lines = vcardStr.split(/\r?\n/);
+    const data: any = {};
+
+    lines.forEach((line) => {
+      if (line.startsWith("FN:")) {
+        const fullName = line.substring(3);
+        const nameParts = fullName.split(" ");
+        data.firstName = nameParts[0] || "";
+        data.lastName = nameParts.slice(1).join(" ") || "";
+      } else if (line.startsWith("ORG:")) {
+        data.organization = line.substring(4);
+      } else if (line.startsWith("TITLE:")) {
+        data.title = line.substring(6);
+      } else if (line.startsWith("TEL:")) {
+        data.phone = line.substring(4);
+      } else if (line.startsWith("EMAIL:")) {
+        data.email = line.substring(6);
+      } else if (line.startsWith("URL:")) {
+        data.website = line.substring(4);
+      } else if (line.startsWith("ADR:")) {
+        data.address = line.substring(4).split(";").join(" ");
+      }
+    });
+
+    return data;
+  };
+
+  // 초기값 설정
+  useEffect(() => {
+    if (initialValue && initialValue.startsWith("BEGIN:VCARD")) {
+      const parsed = parseVCardString(initialValue);
+      if (parsed) {
+        setFirstName(parsed.firstName || "");
+        setLastName(parsed.lastName || "");
+        setOrganization(parsed.organization || "");
+        setTitle(parsed.title || "");
+        setPhone(parsed.phone || "");
+        setEmail(parsed.email || "");
+        setWebsite(parsed.website || "");
+        setAddress(parsed.address || "");
+      }
+    }
+  }, [initialValue]);
 
   const generateVCardString = () => {
     if (!firstName && !lastName && !phone && !email) {

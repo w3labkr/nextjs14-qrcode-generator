@@ -24,7 +24,7 @@ interface QrCodePreviewCardProps {
   frameOptions: import("@/components/qr-code-frames").FrameOptions;
   format: "png" | "svg" | "jpeg" | "pdf";
   onFormatChange: (format: "png" | "svg" | "jpeg" | "pdf") => void;
-  onGenerate: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onGenerate: () => void;
   onGenerateHighRes: () => void;
   isLoading: boolean;
   isGeneratingHighRes: boolean;
@@ -75,7 +75,7 @@ export function QrCodePreviewCard({
       </CardContent>
       <CardFooter className="flex flex-col gap-4">
         <Button
-          onClick={onGenerate}
+          onClick={() => onGenerate()}
           disabled={isLoading || !qrData}
           className="w-full"
         >

@@ -115,8 +115,7 @@ export function useQrCodeGenerator() {
     }
   };
 
-  const handleGenerate = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  const handleGenerate = async () => {
     if (!qrData) return;
 
     setIsLoading(true);
@@ -281,10 +280,14 @@ export function useQrCodeGenerator() {
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setHighResQrCode("");
-    if (value === "url") {
-      setQrData(GITHUB_REPO_URL);
-    } else {
-      setQrData("");
+
+    // 편집 모드가 아닐 때만 데이터 초기화
+    if (!isEditMode) {
+      if (value === "url") {
+        setQrData(GITHUB_REPO_URL);
+      } else {
+        setQrData("");
+      }
     }
   };
 

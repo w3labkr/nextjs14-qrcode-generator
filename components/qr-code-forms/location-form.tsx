@@ -15,12 +15,48 @@ import { MapPin, Search } from "lucide-react";
 
 interface LocationFormProps {
   onChange: (locationString: string) => void;
+  initialValue?: string;
 }
 
-export function LocationForm({ onChange }: LocationFormProps) {
+export function LocationForm({ onChange, initialValue }: LocationFormProps) {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [address, setAddress] = useState("");
+
+  // 위치 문자열에서 개별 필드로 파싱하는 함수
+  const parseLocationString = (locationStr: string) => {
+    if (locationStr.startsWith("geo:")) {
+      // geo:37.7749,-122.4194
+      const coords = locationStr.substring(4).split(",");
+      return {
+        latitude: coords[0] || "",
+        longitude: coords[1] || "",
+        address: "",
+      };
+    } else if (locationStr.includes("maps.google.com")) {
+      // Google Maps URL
+      const url = new URL(locationStr);
+      const q = url.searchParams.get("q");
+      return {
+        latitude: "",
+        longitude: "",
+        address: q ? decodeURIComponent(q) : "",
+      };
+    }
+    return null;
+  };
+
+  // 초기값 설정
+  useEffect(() => {
+    if (initialValue) {
+      const parsed = parseLocationString(initialValue);
+      if (parsed) {
+        setLatitude(parsed.latitude);
+        setLongitude(parsed.longitude);
+        setAddress(parsed.address);
+      }
+    }
+  }, [initialValue]);
 
   const generateLocationString = () => {
     if (latitude && longitude) {
