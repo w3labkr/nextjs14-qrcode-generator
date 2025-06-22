@@ -96,6 +96,7 @@ function HomePageContent() {
               highResQrCode={highResQrCode}
               getDownloadFilename={getDownloadFilename}
               getHighResDownloadFilename={getHighResDownloadFilename}
+              currentSettings={getCurrentSettings(qrData)}
             />
           </div>
         </div>

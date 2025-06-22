@@ -21,6 +21,11 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       throw new Error("PDF output is not supported in the Edge runtime.");
     }
 
+    // 디버깅을 위한 색상 로깅 (개발환경에서만)
+    if (process.env.NODE_ENV === "development") {
+      console.log("QR Code generation - Type:", type, "Colors:", color);
+    }
+
     const qrcodeOptions: QRCode.QRCodeRenderersOptions = {
       errorCorrectionLevel: "H",
       width,
@@ -36,10 +41,27 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
         ...qrcodeOptions,
         type: "svg",
       });
-      return `data:image/svg+xml,${encodeURIComponent(svgString)}`;
+
+      // SVG에서 색상이 올바르게 적용되는지 확인하고 수정
+      let modifiedSvg = svgString;
+      if (color?.dark && color.dark !== "#000000") {
+        // SVG 내의 검은색 요소를 지정된 색상으로 변경
+        modifiedSvg = svgString
+          .replace(/fill="#000000"/g, `fill="${color.dark}"`)
+          .replace(/fill="#000"/g, `fill="${color.dark}"`)
+          .replace(/fill="black"/g, `fill="${color.dark}"`)
+          .replace(/fill="rgb\(0,\s*0,\s*0\)"/g, `fill="${color.dark}"`)
+          .replace(/stroke="#000000"/g, `stroke="${color.dark}"`)
+          .replace(/stroke="#000"/g, `stroke="${color.dark}"`)
+          .replace(/stroke="black"/g, `stroke="${color.dark}"`);
+      }
+
+      // Base64 인코딩으로 안정적인 브라우저 호환성 제공
+      return `data:image/svg+xml;base64,${Buffer.from(modifiedSvg).toString("base64")}`;
     }
 
     if (type === "jpeg") {
+      // JPEG의 경우 투명도를 지원하지 않으므로 배경색이 중요함
       return await QRCode.toDataURL(text, {
         ...qrcodeOptions,
         type: "image/jpeg",
@@ -105,6 +127,7 @@ export async function generateAndSaveQrCode(options: QrCodeGenerationOptions) {
             title: options.title || null,
             content: options.text,
             settings: JSON.stringify({
+              type: options.type,
               color: options.color,
               width: options.width,
               margin: options.margin,

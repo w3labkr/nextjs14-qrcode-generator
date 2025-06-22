@@ -33,6 +33,7 @@ interface QrCodePreviewCardProps {
   highResQrCode: string;
   getDownloadFilename: () => string;
   getHighResDownloadFilename: () => string;
+  currentSettings: any; // 현재 QR 코드 설정값
 }
 
 export function QrCodePreviewCard({
@@ -49,9 +50,91 @@ export function QrCodePreviewCard({
   highResQrCode,
   getDownloadFilename,
   getHighResDownloadFilename,
+  currentSettings,
 }: QrCodePreviewCardProps) {
   const { data: session } = useSession();
   const isOnline = useOnlineStatus();
+
+  const handleDownload = async () => {
+    if (!qrCode || !qrData) return;
+
+    const filename = getDownloadFilename();
+
+    try {
+      // 현재 표시되고 있는 QR 코드의 형식과 다운로드하려는 형식이 다르면 새로 생성
+      const currentFormat = qrCode.includes("data:image/svg+xml")
+        ? "svg"
+        : qrCode.includes("data:image/jpeg")
+          ? "jpeg"
+          : qrCode.includes("data:application/pdf")
+            ? "pdf"
+            : "png";
+
+      let downloadUrl = qrCode;
+
+      if (currentFormat !== format) {
+        // 새로운 형식으로 QR 코드 재생성
+        const { generateQrCode } = await import(
+          "@/app/actions/qr-code-generator"
+        );
+
+        // 현재 설정값으로 새 QR 코드 생성
+        const settings = {
+          text: qrData,
+          type: format as any,
+          width: 400, // 기본 다운로드 해상도
+          color: {
+            dark: currentSettings?.color?.dark || "#000000",
+            light: currentSettings?.color?.light || "#ffffff",
+          },
+          logo: currentSettings?.logo,
+          dotsOptions: currentSettings?.dotsOptions,
+          cornersSquareOptions: currentSettings?.cornersSquareOptions,
+          frameOptions: currentSettings?.frameOptions,
+        };
+
+        downloadUrl = await generateQrCode(settings);
+      }
+
+      if (format === "svg") {
+        // Base64로 인코딩된 SVG 디코딩
+        const base64Data = downloadUrl.split(",")[1];
+        const svgContent = atob(base64Data);
+        const blob = new Blob([svgContent], { type: "image/svg+xml" });
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        // 다른 형식의 경우 기존 방식 사용
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error("다운로드 오류:", error);
+    }
+  };
+
+  const handleHighResDownload = () => {
+    if (!highResQrCode) return;
+
+    const filename = getHighResDownloadFilename();
+    const link = document.createElement("a");
+    link.href = highResQrCode;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Card className="w-full sticky top-8">
@@ -106,10 +189,12 @@ export function QrCodePreviewCard({
               <SelectItem value="pdf">PDF</SelectItem>
             </SelectContent>
           </Select>
-          <Button asChild disabled={!qrCode} className="w-full">
-            <a href={qrCode} download={getDownloadFilename()}>
-              다운로드
-            </a>
+          <Button
+            disabled={!qrCode}
+            className="w-full"
+            onClick={() => handleDownload()}
+          >
+            다운로드
           </Button>
 
           {!isOnline && (
@@ -136,13 +221,8 @@ export function QrCodePreviewCard({
                 {isGeneratingHighRes ? "생성 중..." : "4K 고해상도 생성"}
               </Button>
               {highResQrCode && (
-                <Button asChild className="flex-1">
-                  <a
-                    href={highResQrCode}
-                    download={getHighResDownloadFilename()}
-                  >
-                    4K 다운로드
-                  </a>
+                <Button className="flex-1" onClick={handleHighResDownload}>
+                  4K 다운로드
                 </Button>
               )}
             </div>

@@ -15,13 +15,31 @@ interface QrCodeData {
 }
 
 export const useQrCodeDownload = () => {
-  const handleDownload = async (qrCode: QrCodeData) => {
+  const handleDownload = async (
+    qrCode: QrCodeData,
+    downloadFormat?: string,
+  ) => {
     try {
+      // settings에서 원본 설정 정보 추출
+      let originalSettings = {};
+      try {
+        originalSettings =
+          typeof qrCode.settings === "string"
+            ? JSON.parse(qrCode.settings)
+            : qrCode.settings || {};
+      } catch (e) {
+        console.warn("Settings 파싱 오류, 기본값 사용:", e);
+      }
+
+      // 다운로드 형식 결정 (매개변수로 받은 형식 우선, 없으면 원본 형식, 최종적으로는 png)
+      const format = downloadFormat || (originalSettings as any)?.type || "png";
+
       const result = await downloadQrCode(
         qrCode.content,
         qrCode.type,
-        qrCode.settings,
+        originalSettings, // 원본 설정값 전달
         qrCode.title,
+        format,
       );
 
       if (result.success) {
