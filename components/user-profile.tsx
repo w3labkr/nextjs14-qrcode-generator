@@ -13,7 +13,7 @@ export function UserProfile({ session }: UserProfileProps) {
   return (
     <DropdownMenuItem asChild>
       <Link
-        href="/dashboard/settings/profile"
+        href="/dashboard/account"
         className="flex items-center justify-start gap-2 p-2"
       >
         <div className="flex flex-col space-y-1 leading-none">

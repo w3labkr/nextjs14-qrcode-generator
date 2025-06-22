@@ -55,10 +55,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
     defaultValues: {
       name: user.name || "",
     },
-    mode: "onChange", // 실시간 검증
+    mode: "onChange",
   });
 
-  // 사용자 정보가 변경될 때마다 폼을 업데이트
   useEffect(() => {
     form.reset({
       name: user.name || "",
@@ -72,23 +71,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
       const result = await updateProfile({
         name: data.name,
-        email: user.email || "", // 기존 이메일 유지
+        email: user.email || "",
       });
       console.log("프로필 업데이트 결과:", result);
 
       if (result.success) {
         toast.success("프로필이 성공적으로 업데이트되었습니다");
 
-        // 세션 업데이트를 통해 JWT 토큰 갱신
         await update({
           name: data.name,
-          email: user.email, // 기존 이메일 유지
+          email: user.email,
         });
 
-        // 폼을 새로운 값으로 리셋하여 isDirty 상태를 초기화
         form.reset(data);
 
-        // 세션 업데이트 후 충분한 시간을 두고 페이지 새로고침
         setTimeout(() => {
           router.refresh();
         }, 100);
@@ -104,7 +100,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   };
 
   return (
-    <Card>
+    <Card data-profile-form>
       <CardHeader>
         <div className="flex items-center gap-2">
           <UserIcon className="h-5 w-5" />
@@ -151,7 +147,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/dashboard/settings")}
+                onClick={() => router.push("/dashboard/account")}
                 disabled={isLoading}
               >
                 취소

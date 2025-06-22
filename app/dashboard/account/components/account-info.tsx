@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -10,13 +11,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { User, Edit } from "lucide-react";
 import { Session } from "next-auth";
-import Link from "next/link";
+import { EditProfileDialog } from "./edit-profile-dialog";
 
 interface AccountInfoProps {
   session: Session | null;
 }
 
 export function AccountInfo({ session }: AccountInfoProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleEditProfile = () => {
+    setIsDialogOpen(true);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -25,12 +32,14 @@ export function AccountInfo({ session }: AccountInfoProps) {
             <User className="h-5 w-5" />
             <CardTitle>계정 정보</CardTitle>
           </div>
-          <Link href="/dashboard/settings/profile">
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              프로필 수정
-            </Button>
-          </Link>
+          <Button
+            size="sm"
+            onClick={handleEditProfile}
+            className="flex items-center gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            프로필 수정
+          </Button>
         </div>
         <CardDescription>로그인한 계정의 기본 정보입니다.</CardDescription>
       </CardHeader>
@@ -49,10 +58,18 @@ export function AccountInfo({ session }: AccountInfoProps) {
             <p className="text-lg">{session?.user?.email || "정보 없음"}</p>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          프로필 수정 버튼을 클릭하여 계정 정보를 수정할 수 있습니다.
-        </p>
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-muted-foreground">
+            프로필 수정 버튼을 클릭하여 계정 정보를 수정할 수 있습니다.
+          </p>
+        </div>
       </CardContent>
+
+      <EditProfileDialog
+        session={session}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+      />
     </Card>
   );
 }

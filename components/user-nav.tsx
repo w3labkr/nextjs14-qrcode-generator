@@ -18,6 +18,7 @@ import {
   Bookmark,
   Database,
   Cloud,
+  UserCog,
 } from "lucide-react";
 import Link from "next/link";
 import { InstallPrompt } from "@/components/install-prompt";

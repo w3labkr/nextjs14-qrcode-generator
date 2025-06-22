@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Shield } from "lucide-react";
-import AccountDeletion from "@/components/account-deletion";
 
 export function PrivacyAndSecurity() {
   return (
@@ -34,17 +33,6 @@ export function PrivacyAndSecurity() {
             <li>• 보관 기간: 계정 삭제 시까지</li>
             <li>• 암호화: 세션 정보 및 민감 데이터 암호화</li>
           </ul>
-        </div>
-
-        <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-          <div className="mb-4">
-            <h4 className="font-medium text-red-900">계정 삭제</h4>
-            <p className="text-sm text-red-700">
-              계정과 모든 데이터를 영구적으로 삭제합니다. 이 작업은 되돌릴 수
-              없습니다.
-            </p>
-          </div>
-          <AccountDeletion />
         </div>
       </CardContent>
     </Card>
