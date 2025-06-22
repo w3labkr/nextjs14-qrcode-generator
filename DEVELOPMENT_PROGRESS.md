@@ -31,6 +31,7 @@
 - **설정 페이지**: 계정 정보, 개인정보 보호 안내
 - **반응형 디자인**: 모바일/태블릿/데스크톱 최적화
 - **고해상도 다운로드**: 로그인 사용자 전용 4096x4096 QR 코드 생성 및 다운로드
+- **개인 템플릿 시스템**: 자주 사용하는 QR 코드 설정 저장 및 재사용
 
 ## 📁 프로젝트 구조
 
@@ -42,6 +43,7 @@
   /dashboard/page.tsx                # 사용자 대시보드
   /history/page.tsx                  # QR 코드 히스토리
   /settings/page.tsx                 # 설정 페이지
+  /templates/page.tsx                # 템플릿 관리 페이지
   /actions/qr-code.ts               # QR 코드 서버 액션
   page.tsx                          # 메인 QR 생성 페이지
   layout.tsx                        # 루트 레이아웃
@@ -57,6 +59,7 @@
     location-form.tsx
   user-nav.tsx                      # 사용자 네비게이션
   auth-provider.tsx                 # 세션 프로바이더
+  template-manager.tsx              # 템플릿 관리 컴포넌트
 
 /prisma
   schema.prisma                     # 데이터베이스 스키마
@@ -142,7 +145,7 @@ model QrTemplate {
 
 ### Phase 3: 고급 기능 (예정)
 - ~~**고해상도 다운로드**: 로그인 사용자 4096x4096 지원~~ ✅ **완료**
-- **개인 템플릿 시스템**: 자주 사용하는 설정 저장
+- ~~**개인 템플릿 시스템**: 자주 사용하는 설정 저장~~ ✅ **완료**
 - **데이터 내보내기/가져오기**: JSON 형식
 - **계정 삭제**: GDPR 준수 완전 삭제
 - **PWA 지원**: 오프라인 사용 가능

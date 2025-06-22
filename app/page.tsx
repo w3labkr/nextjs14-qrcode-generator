@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,6 +44,8 @@ import { GithubBadge } from "@/components/github-badge";
 import { UserNav } from "@/components/user-nav";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import TemplateManager from "@/components/template-manager";
+import { getDefaultTemplate } from "@/app/actions/qr-code";
 
 export default function HomePage() {
   const { data: session } = useSession();
@@ -72,6 +74,75 @@ export default function HomePage() {
 
   // PDF 생성 기능 추가
   const { generatePdf, isGenerating: isPdfGenerating } = usePdfGenerator();
+
+  // 로그인 시 기본 템플릿 로드
+  useEffect(() => {
+    const loadDefaultTemplate = async () => {
+      if (session?.user) {
+        try {
+          const defaultTemplate = await getDefaultTemplate();
+          if (defaultTemplate) {
+            const settings = JSON.parse(defaultTemplate.settings);
+            handleLoadTemplate(settings);
+            toast.success(
+              `기본 템플릿 "${defaultTemplate.name}"이 적용되었습니다.`,
+            );
+          }
+        } catch (error) {
+          console.error("기본 템플릿 로드 오류:", error);
+        }
+      }
+    };
+
+    loadDefaultTemplate();
+  }, [session?.user]);
+
+  // 로컬 스토리지에서 템플릿 설정 읽기
+  useEffect(() => {
+    const savedSettings = localStorage.getItem("qr-template-settings");
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        handleLoadTemplate(settings);
+        localStorage.removeItem("qr-template-settings"); // 한 번 사용 후 삭제
+        toast.success("템플릿이 적용되었습니다!");
+      } catch (error) {
+        console.error("템플릿 설정 로드 오류:", error);
+      }
+    }
+  }, []);
+
+  // 템플릿 적용 함수
+  const handleLoadTemplate = (
+    settings: import("@/app/actions/qr-code").QrCodeOptions,
+  ) => {
+    if (settings.color?.dark) setForegroundColor(settings.color.dark);
+    if (settings.color?.light) setBackgroundColor(settings.color.light);
+    if (settings.logo) setLogo(settings.logo);
+    if (settings.width) setWidth(settings.width);
+    if (settings.frameOptions && settings.frameOptions.type) {
+      setFrameOptions({
+        type: settings.frameOptions.type as any,
+        text: settings.frameOptions.text || "스캔해 주세요",
+        textColor: settings.frameOptions.textColor || "#000000",
+        borderColor: settings.frameOptions.borderColor || "#000000",
+        backgroundColor: settings.frameOptions.backgroundColor || "#ffffff",
+      });
+    }
+  };
+
+  // 현재 설정을 QrCodeOptions 형태로 반환
+  const getCurrentSettings =
+    (): import("@/app/actions/qr-code").QrCodeOptions => ({
+      text: qrData,
+      color: {
+        dark: foregroundColor,
+        light: backgroundColor,
+      },
+      logo: logo || undefined,
+      width,
+      frameOptions: frameOptions.type !== "none" ? frameOptions : undefined,
+    });
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -376,6 +447,14 @@ export default function HomePage() {
                 />
               </CardContent>
             </Card>
+
+            {/* 로그인 사용자에게만 템플릿 관리 기능 표시 */}
+            {session?.user && (
+              <TemplateManager
+                currentSettings={getCurrentSettings()}
+                onLoadTemplate={handleLoadTemplate}
+              />
+            )}
           </div>
 
           <div className="flex-1 mt-8 lg:mt-0">

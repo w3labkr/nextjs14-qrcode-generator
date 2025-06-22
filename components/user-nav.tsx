@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, History, Settings, LogOut } from "lucide-react";
+import { User, History, Settings, LogOut, Bookmark } from "lucide-react";
 import Link from "next/link";
 
 export function UserNav() {
@@ -67,6 +67,12 @@ export function UserNav() {
           <Link href="/history">
             <History className="mr-2 h-4 w-4" />
             QR 코드 히스토리
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/templates">
+            <Bookmark className="mr-2 h-4 w-4" />
+            템플릿 관리
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

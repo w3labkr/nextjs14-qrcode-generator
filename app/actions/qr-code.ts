@@ -284,3 +284,164 @@ export async function deleteQrCode(qrCodeId: string) {
 
   return { success: true };
 }
+
+// 템플릿 관련 액션들
+
+// 사용자의 템플릿 목록 조회
+export async function getUserTemplates() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const templates = await prisma.qrTemplate.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }],
+  });
+
+  return templates;
+}
+
+// 템플릿 저장
+export async function saveTemplate(data: {
+  name: string;
+  settings: QrCodeOptions;
+  isDefault?: boolean;
+}) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const { name, settings, isDefault = false } = data;
+
+  // 기본 템플릿으로 설정하는 경우, 다른 템플릿들의 기본 설정 해제
+  if (isDefault) {
+    await prisma.qrTemplate.updateMany({
+      where: {
+        userId: session.user.id,
+        isDefault: true,
+      },
+      data: {
+        isDefault: false,
+      },
+    });
+  }
+
+  const template = await prisma.qrTemplate.create({
+    data: {
+      userId: session.user.id,
+      name,
+      settings: JSON.stringify(settings),
+      isDefault,
+    },
+  });
+
+  return template;
+}
+
+// 템플릿 업데이트
+export async function updateTemplate(
+  templateId: string,
+  data: {
+    name?: string;
+    settings?: QrCodeOptions;
+    isDefault?: boolean;
+  },
+) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  // 템플릿 소유권 확인
+  const template = await prisma.qrTemplate.findFirst({
+    where: {
+      id: templateId,
+      userId: session.user.id,
+    },
+  });
+
+  if (!template) {
+    throw new Error("Template not found");
+  }
+
+  const { name, settings, isDefault } = data;
+
+  // 기본 템플릿으로 설정하는 경우, 다른 템플릿들의 기본 설정 해제
+  if (isDefault) {
+    await prisma.qrTemplate.updateMany({
+      where: {
+        userId: session.user.id,
+        isDefault: true,
+      },
+      data: {
+        isDefault: false,
+      },
+    });
+  }
+
+  const updatedTemplate = await prisma.qrTemplate.update({
+    where: {
+      id: templateId,
+    },
+    data: {
+      ...(name && { name }),
+      ...(settings && { settings: JSON.stringify(settings) }),
+      ...(isDefault !== undefined && { isDefault }),
+    },
+  });
+
+  return updatedTemplate;
+}
+
+// 템플릿 삭제
+export async function deleteTemplate(templateId: string) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const template = await prisma.qrTemplate.findFirst({
+    where: {
+      id: templateId,
+      userId: session.user.id,
+    },
+  });
+
+  if (!template) {
+    throw new Error("Template not found");
+  }
+
+  await prisma.qrTemplate.delete({
+    where: {
+      id: templateId,
+    },
+  });
+
+  return { success: true };
+}
+
+// 기본 템플릿 가져오기
+export async function getDefaultTemplate() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return null;
+  }
+
+  const defaultTemplate = await prisma.qrTemplate.findFirst({
+    where: {
+      userId: session.user.id,
+      isDefault: true,
+    },
+  });
+
+  return defaultTemplate;
+}
