@@ -48,3 +48,34 @@ export interface TemplateState {
   templateApplied: boolean;
   defaultTemplateLoaded: boolean;
 }
+
+export interface QrCodePreviewCardProps {
+  qrCode: string;
+  frameOptions: FrameOptions;
+  format: QrCodeFormat;
+  onFormatChange: (format: QrCodeFormat) => void;
+  onGenerate: () => void;
+  onGenerateHighRes: () => void;
+  isLoading: boolean;
+  isGeneratingHighRes: boolean;
+  isEditMode: boolean;
+  qrData: string;
+  highResQrCode: string;
+  getDownloadFilename: () => string;
+  getHighResDownloadFilename: () => string;
+  currentSettings: QrCodeGeneratorSettings;
+}
+
+export interface QrCodeGeneratorSettings {
+  text: string;
+  type: QrCodeFormat;
+  width: number;
+  color?: {
+    dark: string;
+    light: string;
+  };
+  logo?: string;
+  dotsOptions?: any;
+  cornersSquareOptions?: any;
+  frameOptions?: FrameOptions;
+}
