@@ -88,22 +88,6 @@ export function QrCodePreviewCard({
               : "QR 코드 생성"}
         </Button>
 
-        {/* 로그인 상태에 따른 안내 */}
-        {!session ? (
-          <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-lg border">
-            💡 <strong>로그인하면 더 많은 혜택을!</strong>
-            <ul className="mt-2 space-y-1 text-xs">
-              <li>• QR 코드 자동 저장 및 히스토리 관리</li>
-              <li>• 고해상도 다운로드 (최대 4096x4096)</li>
-              <li>• 개인 템플릿 저장</li>
-            </ul>
-          </div>
-        ) : (
-          <div className="text-sm text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
-            ✅ 프리미엄 사용자 - 고급 기능 이용 가능
-          </div>
-        )}
-
         <div className="flex gap-2 w-full">
           <Select
             value={format}
