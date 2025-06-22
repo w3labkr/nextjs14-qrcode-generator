@@ -120,9 +120,7 @@ export default function ExportSection() {
           variant="outline"
         >
           <History className="h-4 w-4 mr-2" />
-          {isExporting === "qrcodes"
-            ? "내보내는 중..."
-            : "QR 코드 히스토리 내보내기"}
+          {isExporting === "qrcodes" ? "내보내는 중..." : "히스토리 내보내기"}
         </Button>
 
         <Button
