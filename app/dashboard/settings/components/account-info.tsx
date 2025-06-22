@@ -7,8 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, Edit } from "lucide-react";
 import { Session } from "next-auth";
+import Link from "next/link";
 
 interface AccountInfoProps {
   session: Session | null;
@@ -18,9 +20,17 @@ export function AccountInfo({ session }: AccountInfoProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          <CardTitle>계정 정보</CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            <CardTitle>계정 정보</CardTitle>
+          </div>
+          <Link href="/dashboard/settings/profile">
+            <Button variant="outline" size="sm">
+              <Edit className="h-4 w-4 mr-2" />
+              프로필 수정
+            </Button>
+          </Link>
         </div>
         <CardDescription>로그인한 계정의 기본 정보입니다.</CardDescription>
       </CardHeader>
@@ -40,8 +50,7 @@ export function AccountInfo({ session }: AccountInfoProps) {
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          계정 정보는 Google OAuth를 통해 제공되며, 본 서비스에서는 수정할 수
-          없습니다.
+          프로필 수정 버튼을 클릭하여 계정 정보를 수정할 수 있습니다.
         </p>
       </CardContent>
     </Card>

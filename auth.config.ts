@@ -46,7 +46,7 @@ export default {
     verifyRequest: "/auth/verify-request",
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
       // 개발자 로그인 처리
       if (account?.provider === "dev-login") {
         token.sub = "dev-user";
@@ -54,6 +54,13 @@ export default {
         token.email = "dev@example.com";
         token.picture = null;
       }
+
+      // 세션 업데이트 시 토큰 갱신
+      if (trigger === "update" && session) {
+        token.name = session.name || token.name;
+        token.email = session.email || token.email;
+      }
+
       return token;
     },
     async session({ session, token }) {
