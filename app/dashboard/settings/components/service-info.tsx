@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import packageJson from "@/package.json";
 
 export function ServiceInfo() {
   return (
@@ -24,7 +25,7 @@ export function ServiceInfo() {
             <label className="text-sm font-medium text-muted-foreground">
               버전
             </label>
-            <p>v1.0.9</p>
+            <p>v{packageJson.version}</p>
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground">
