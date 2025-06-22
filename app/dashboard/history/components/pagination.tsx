@@ -23,6 +23,14 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
     <div className="flex items-center justify-center space-x-2 mt-8">
       <Button
         variant="outline"
+        onClick={() => onPageChange(1)}
+        disabled={pagination.page === 1}
+      >
+        처음
+      </Button>
+
+      <Button
+        variant="outline"
         onClick={() => onPageChange(pagination.page - 1)}
         disabled={pagination.page === 1}
       >
@@ -50,6 +58,14 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
         disabled={pagination.page === pagination.pages}
       >
         다음
+      </Button>
+
+      <Button
+        variant="outline"
+        onClick={() => onPageChange(pagination.pages)}
+        disabled={pagination.page === pagination.pages}
+      >
+        마지막
       </Button>
     </div>
   );
