@@ -97,4 +97,6 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,nextjs
 
+# PWA specific files (if using next-pwa or similar)
+public/sw.js
 public/workbox-*.js

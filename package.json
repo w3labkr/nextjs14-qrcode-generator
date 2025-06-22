@@ -1,16 +1,21 @@
 {
   "name": "nextjs14-qrcode-generator",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": true,
   "browserslist": [
     "defaults and fully supports es6-module",
     "maintained node versions"
   ],
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean:files": "rm -rf node_modules && rm -rf .next && rm package-lock.json",
+    "clean:cache": "npm cache clean --force && npm cache verify",
+    "clean": "npm run clean:files && npm run clean:cache",
+    "upgrade:latest": "npm run clean && npx npm-check-updates -u && npm install",
+    "reinstall": "npm run clean && npm install"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
