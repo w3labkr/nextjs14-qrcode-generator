@@ -19,7 +19,7 @@ const QR_CODE_TYPES = {
   EMAIL: { label: "이메일", color: "bg-purple-100 text-purple-800" },
   SMS: { label: "문자메시지", color: "bg-yellow-100 text-yellow-800" },
   VCARD: { label: "연락처", color: "bg-pink-100 text-pink-800" },
-  LOCATION: { label: "위치", color: "bg-red-100 text-red-800" },
+  LOCATION: { label: "지도", color: "bg-red-100 text-red-800" },
 };
 
 interface SearchAndFiltersProps {

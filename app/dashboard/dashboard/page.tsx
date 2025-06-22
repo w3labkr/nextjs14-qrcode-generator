@@ -61,7 +61,7 @@ export default function DashboardPage() {
       EMAIL: "이메일",
       SMS: "문자",
       VCARD: "연락처",
-      LOCATION: "위치",
+      LOCATION: "지도",
     };
     return typeMap[type] || type;
   };

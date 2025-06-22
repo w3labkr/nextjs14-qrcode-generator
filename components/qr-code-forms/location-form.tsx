@@ -61,7 +61,7 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>위치/지도</CardTitle>
+        <CardTitle>지도</CardTitle>
         <CardDescription>
           주소를 입력하여 지도 앱을 실행하는 QR 코드를 생성하세요.
         </CardDescription>

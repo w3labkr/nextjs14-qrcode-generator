@@ -66,7 +66,7 @@ export function QrCodeTabs({
             value="location"
             className="flex-shrink-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
           >
-            위치
+            지도
           </TabsTrigger>
         </TabsList>
       </div>
