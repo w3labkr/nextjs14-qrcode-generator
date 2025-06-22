@@ -1,123 +1,46 @@
-"use client";
-
-export const dynamic = "force-dynamic";
-
-import { Suspense } from "react";
-import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { GithubBadge } from "@/components/github-badge";
-import { PageHeader } from "@/components/page-header";
-import { QrCodeTabs } from "@/components/qr-code-tabs";
-import { QrCodeSettingsPanel } from "@/components/qr-code-settings-panel";
-import { QrCodePreviewCard } from "@/components/qr-code-preview-card";
-import TemplateManager from "@/components/template-manager";
-import { useQrCodeGenerator } from "@/hooks/use-qr-code-generator";
 import { COPYRIGHT_TEXT } from "@/lib/constants";
-
-function HomePageContent() {
-  const { data: session } = useSession();
-  const {
-    // State
-    qrData,
-    setQrData,
-    activeTab,
-    qrCode,
-    highResQrCode,
-    isLoading,
-    isGeneratingHighRes,
-    isEditMode,
-    foregroundColor,
-    setForegroundColor,
-    backgroundColor,
-    setBackgroundColor,
-    logo,
-    format,
-    frameOptions,
-    setFrameOptions,
-
-    // Handlers
-    handleLogoUpload,
-    handleGenerate,
-    handleFormatChange,
-    handleTabChange,
-    handleGenerateHighRes,
-    handleLoadTemplate,
-    getCurrentSettings,
-    getDownloadFilename,
-    getHighResDownloadFilename,
-  } = useQrCodeGenerator();
-
-  return (
-    <main className="flex min-h-screen flex-col p-4 sm:p-8 md:p-24">
-      <PageHeader isEditMode={isEditMode} />
-
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <GithubBadge />
-        <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
-          <div className="flex flex-col gap-4 flex-1">
-            <QrCodeTabs
-              qrData={qrData}
-              setQrData={setQrData}
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-            />
-
-            <QrCodeSettingsPanel
-              foregroundColor={foregroundColor}
-              setForegroundColor={setForegroundColor}
-              backgroundColor={backgroundColor}
-              setBackgroundColor={setBackgroundColor}
-              logo={logo}
-              onLogoUpload={handleLogoUpload}
-              frameOptions={frameOptions}
-              setFrameOptions={setFrameOptions}
-            />
-
-            {/* 로그인 사용자에게만 템플릿 관리 기능 표시 */}
-            {session?.user && (
-              <TemplateManager
-                currentSettings={getCurrentSettings(qrData)}
-                onLoadTemplate={handleLoadTemplate}
-              />
-            )}
-          </div>
-
-          <div className="flex-1 mt-8 lg:mt-0">
-            <QrCodePreviewCard
-              qrCode={qrCode}
-              frameOptions={frameOptions}
-              format={format}
-              onFormatChange={handleFormatChange}
-              onGenerate={handleGenerate}
-              onGenerateHighRes={handleGenerateHighRes}
-              isLoading={isLoading}
-              isGeneratingHighRes={isGeneratingHighRes}
-              isEditMode={isEditMode}
-              qrData={qrData}
-              highResQrCode={highResQrCode}
-              getDownloadFilename={getDownloadFilename}
-              getHighResDownloadFilename={getHighResDownloadFilename}
-              currentSettings={getCurrentSettings(qrData)}
-            />
-          </div>
-        </div>
-      </div>
-      <footer className="w-full mt-12 flex justify-center text-xs text-muted-foreground">
-        {COPYRIGHT_TEXT}
-      </footer>
-    </main>
-  );
-}
 
 export default function HomePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <main className="flex min-h-screen flex-col">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
+        <div className="text-center max-w-3xl mx-auto">
+          <GithubBadge />
+
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            QR 코드 생성기
+          </h1>
+
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8">
+            빠르고 쉬운 QR 코드 생성 도구
+          </p>
+
+          <div className="space-y-4 mb-12">
+            <p className="text-lg text-muted-foreground">
+              URL, 텍스트, 이메일, WiFi 등 다양한 형태의 QR 코드를 생성하세요.
+            </p>
+            <p className="text-base text-muted-foreground">
+              로고 삽입, 색상 커스터마이징, 프레임 옵션 등 고급 기능을
+              제공합니다.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/qrcode">
+              <Button size="lg" className="w-full sm:w-auto">
+                QR 코드 생성하기
+              </Button>
+            </Link>
+          </div>
         </div>
-      }
-    >
-      <HomePageContent />
-    </Suspense>
+      </div>
+
+      <footer className="w-full py-6 flex justify-center text-xs text-muted-foreground">
+        {COPYRIGHT_TEXT}
+      </footer>
+    </main>
   );
 }
