@@ -445,3 +445,196 @@ export async function getDefaultTemplate() {
 
   return defaultTemplate;
 }
+
+// 데이터 내보내기/가져오기 액션들
+
+// 사용자 데이터 내보내기 (QR 코드 + 템플릿)
+export async function exportUserData() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const [qrCodes, templates] = await Promise.all([
+    prisma.qrCode.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      select: {
+        type: true,
+        title: true,
+        content: true,
+        settings: true,
+        isFavorite: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.qrTemplate.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      select: {
+        name: true,
+        settings: true,
+        isDefault: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+  ]);
+
+  const exportData = {
+    version: "1.0",
+    exportedAt: new Date().toISOString(),
+    user: {
+      name: session.user.name,
+      email: session.user.email,
+    },
+    qrCodes: qrCodes.map((qr) => ({
+      ...qr,
+      settings: JSON.parse(qr.settings),
+    })),
+    templates: templates.map((template) => ({
+      ...template,
+      settings: JSON.parse(template.settings),
+    })),
+    stats: {
+      totalQrCodes: qrCodes.length,
+      totalTemplates: templates.length,
+      favoriteQrCodes: qrCodes.filter((qr) => qr.isFavorite).length,
+      defaultTemplates: templates.filter((t) => t.isDefault).length,
+    },
+  };
+
+  return exportData;
+}
+
+// 데이터 가져오기 (기존 데이터에 추가)
+export async function importUserData(data: {
+  qrCodes?: Array<{
+    type: string;
+    title?: string;
+    content: string;
+    settings: any;
+    isFavorite?: boolean;
+  }>;
+  templates?: Array<{
+    name: string;
+    settings: any;
+    isDefault?: boolean;
+  }>;
+  replaceExisting?: boolean;
+}) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const { qrCodes = [], templates = [], replaceExisting = false } = data;
+
+  try {
+    let importedQrCodes = 0;
+    let importedTemplates = 0;
+
+    // 기존 데이터 삭제 (replaceExisting이 true인 경우)
+    if (replaceExisting) {
+      await Promise.all([
+        prisma.qrCode.deleteMany({
+          where: { userId: session.user.id },
+        }),
+        prisma.qrTemplate.deleteMany({
+          where: { userId: session.user.id },
+        }),
+      ]);
+    }
+
+    // QR 코드 가져오기
+    if (qrCodes.length > 0) {
+      for (const qrCode of qrCodes) {
+        try {
+          await prisma.qrCode.create({
+            data: {
+              userId: session.user.id,
+              type: qrCode.type,
+              title: qrCode.title || null,
+              content: qrCode.content,
+              settings: JSON.stringify(qrCode.settings),
+              isFavorite: qrCode.isFavorite || false,
+            },
+          });
+          importedQrCodes++;
+        } catch (error) {
+          console.error("QR 코드 가져오기 오류:", error);
+          // 개별 오류는 무시하고 계속 진행
+        }
+      }
+    }
+
+    // 템플릿 가져오기
+    if (templates.length > 0) {
+      // 기본 템플릿이 여러 개인 경우 첫 번째만 기본으로 설정
+      let hasDefaultTemplate = false;
+
+      for (const template of templates) {
+        try {
+          const isDefault = template.isDefault && !hasDefaultTemplate;
+
+          // 기본 템플릿으로 설정하는 경우, 기존 기본 템플릿 해제
+          if (isDefault && !replaceExisting) {
+            await prisma.qrTemplate.updateMany({
+              where: {
+                userId: session.user.id,
+                isDefault: true,
+              },
+              data: {
+                isDefault: false,
+              },
+            });
+          }
+
+          await prisma.qrTemplate.create({
+            data: {
+              userId: session.user.id,
+              name: template.name,
+              settings: JSON.stringify(template.settings),
+              isDefault,
+            },
+          });
+
+          if (isDefault) {
+            hasDefaultTemplate = true;
+          }
+
+          importedTemplates++;
+        } catch (error) {
+          console.error("템플릿 가져오기 오류:", error);
+          // 개별 오류는 무시하고 계속 진행
+        }
+      }
+    }
+
+    return {
+      success: true,
+      imported: {
+        qrCodes: importedQrCodes,
+        templates: importedTemplates,
+      },
+      total: {
+        qrCodes: qrCodes.length,
+        templates: templates.length,
+      },
+    };
+  } catch (error) {
+    console.error("데이터 가져오기 오류:", error);
+    throw new Error("데이터 가져오기에 실패했습니다.");
+  }
+}

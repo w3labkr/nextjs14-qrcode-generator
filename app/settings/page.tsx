@@ -12,6 +12,7 @@ import {
 import { UserNav } from "@/components/user-nav";
 import { Trash2, Download, Shield, User } from "lucide-react";
 import Link from "next/link";
+import DataManager from "@/components/data-manager";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -115,43 +116,7 @@ export default function SettingsPage() {
           </Card>
 
           {/* 데이터 관리 */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Download className="h-5 w-5" />
-                <CardTitle>데이터 관리</CardTitle>
-              </div>
-              <CardDescription>
-                생성한 QR 코드 데이터를 관리하세요.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">QR 코드 히스토리</h4>
-                  <p className="text-sm text-muted-foreground">
-                    생성한 모든 QR 코드를 확인하고 관리할 수 있습니다.
-                  </p>
-                </div>
-                <Button asChild variant="outline">
-                  <Link href="/history">히스토리 보기</Link>
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-medium">데이터 내보내기</h4>
-                  <p className="text-sm text-muted-foreground">
-                    생성한 QR 코드 데이터를 JSON 형식으로 다운로드할 수
-                    있습니다.
-                  </p>
-                </div>
-                <Button variant="outline" disabled>
-                  내보내기 (준비 중)
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <DataManager />
 
           {/* 개인정보 및 보안 */}
           <Card>
