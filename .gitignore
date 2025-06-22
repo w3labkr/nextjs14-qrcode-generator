@@ -60,6 +60,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
 
 # vercel
@@ -100,3 +101,6 @@ $RECYCLE.BIN/
 # PWA specific files (if using next-pwa or similar)
 public/sw.js
 public/workbox-*.js
+
+/lib/generated/prisma
+/prisma/dev.db

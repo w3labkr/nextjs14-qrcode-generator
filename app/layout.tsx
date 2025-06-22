@@ -3,6 +3,7 @@ import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
+import { AuthProvider } from "@/components/auth-provider";
 
 export const metadata: Metadata = {
   title: "오픈소스 QR 코드 생성기",
@@ -21,7 +22,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
         <Toaster richColors closeButton />
         <TailwindIndicator />
       </body>

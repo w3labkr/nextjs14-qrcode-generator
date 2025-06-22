@@ -19,11 +19,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { generateQrCode } from "@/app/actions/qr-code";
+import {
+  generateQrCode,
+  generateAndSaveQrCode,
+  generateHighResQrCode,
+} from "@/app/actions/qr-code";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UrlForm } from "@/components/qr-code-forms/url-form";
 import { TextForm } from "@/components/qr-code-forms/text-form";
 import { WifiForm } from "@/components/qr-code-forms/wifi-form";
+import { EmailForm } from "@/components/qr-code-forms/email-form";
+import { SmsForm } from "@/components/qr-code-forms/sms-form";
+import { VCardForm } from "@/components/qr-code-forms/vcard-form";
+import { LocationForm } from "@/components/qr-code-forms/location-form";
 import { QrCodeFramesSelector } from "@/components/qr-code-frames/index";
 import { QrCodePreviewWithFrame } from "@/components/qr-code-preview-with-frame";
 import {
@@ -33,12 +41,18 @@ import {
 import usePdfGenerator from "@/hooks/use-pdf-generator";
 import { GITHUB_REPO_URL } from "@/lib/constants";
 import { GithubBadge } from "@/components/github-badge";
+import { UserNav } from "@/components/user-nav";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 export default function HomePage() {
+  const { data: session } = useSession();
   const [qrData, setQrData] = useState(GITHUB_REPO_URL);
   const [activeTab, setActiveTab] = useState("url");
   const [qrCode, setQrCode] = useState("");
+  const [highResQrCode, setHighResQrCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingHighRes, setIsGeneratingHighRes] = useState(false);
 
   // Customization State
   const [foregroundColor, setForegroundColor] = useState("#000000");
@@ -76,53 +90,100 @@ export default function HomePage() {
 
     setIsLoading(true);
     try {
-      // PDF 형식인 경우 먼저 PNG로 QR 코드를 생성한 후, PDF로 변환
-      if (format === "pdf") {
-        const pngOptions = {
+      // QR 코드 유형 결정
+      let qrType:
+        | "URL"
+        | "TEXT"
+        | "WIFI"
+        | "EMAIL"
+        | "SMS"
+        | "VCARD"
+        | "LOCATION" = "TEXT";
+      if (activeTab === "url") qrType = "URL";
+      else if (activeTab === "wifi") qrType = "WIFI";
+      else if (activeTab === "email") qrType = "EMAIL";
+      else if (activeTab === "sms") qrType = "SMS";
+      else if (activeTab === "vcard") qrType = "VCARD";
+      else if (activeTab === "location") qrType = "LOCATION";
+      else if (activeTab === "text") qrType = "TEXT";
+
+      // 로그인한 사용자의 경우 저장과 함께 생성
+      if (session?.user) {
+        const result = await generateAndSaveQrCode({
           text: qrData,
-          type: "png" as const,
+          type: format === "pdf" ? "png" : format,
           width: width,
           color: {
             dark: foregroundColor,
             light: backgroundColor,
           },
           logo: logo || undefined,
-        };
-
-        // @ts-ignore
-        const pngDataUrl = await generateQrCode(pngOptions);
-
-        // PNG QR 코드가 생성되면 PDF로 변환
-        const pdfDataUrl = await generatePdf({
-          qrCodeUrl: pngDataUrl,
-          qrText: qrData,
           frameOptions: frameOptions.type !== "none" ? frameOptions : undefined,
+          qrType,
+          title: `${qrType} QR 코드 - ${new Date().toLocaleDateString("ko-KR")}`,
         });
 
-        setQrCode(pdfDataUrl);
+        // PDF 변환이 필요한 경우
+        if (format === "pdf") {
+          const pdfDataUrl = await generatePdf({
+            qrCodeUrl: result.qrCodeDataUrl,
+            qrText: qrData,
+            frameOptions:
+              frameOptions.type !== "none" ? frameOptions : undefined,
+          });
+          setQrCode(pdfDataUrl);
+        } else {
+          setQrCode(result.qrCodeDataUrl);
+        }
+
+        if (result.savedId) {
+          toast.success("QR 코드가 생성되고 히스토리에 저장되었습니다!");
+        }
       } else {
-        // 일반적인 이미지 형식의 QR 코드 생성
-        const options = {
-          text: qrData,
-          type: format,
-          width: width,
-          color: {
-            dark: foregroundColor,
-            light: backgroundColor,
-          },
-          logo: logo || undefined,
-        };
+        // 비로그인 사용자는 기존 방식으로 생성
+        if (format === "pdf") {
+          const pngOptions = {
+            text: qrData,
+            type: "png" as const,
+            width: width,
+            color: {
+              dark: foregroundColor,
+              light: backgroundColor,
+            },
+            logo: logo || undefined,
+          };
 
-        // @ts-ignore
-        const qrCodeDataUrl = await generateQrCode(options);
+          // @ts-ignore
+          const pngDataUrl = await generateQrCode(pngOptions);
 
-        // 프레임 적용 (현재는 PDF에서만 프레임을 적용하지만,
-        // 향후 canvas나 SVG를 사용하여 이미지 레벨에서 프레임을 적용할 수 있음)
-        setQrCode(qrCodeDataUrl);
+          const pdfDataUrl = await generatePdf({
+            qrCodeUrl: pngDataUrl,
+            qrText: qrData,
+            frameOptions:
+              frameOptions.type !== "none" ? frameOptions : undefined,
+          });
+
+          setQrCode(pdfDataUrl);
+        } else {
+          const options = {
+            text: qrData,
+            type: format,
+            width: width,
+            color: {
+              dark: foregroundColor,
+              light: backgroundColor,
+            },
+            logo: logo || undefined,
+          };
+
+          // @ts-ignore
+          const qrCodeDataUrl = await generateQrCode(options);
+          setQrCode(qrCodeDataUrl);
+        }
       }
     } catch (error) {
       console.error(error);
-      // TODO: 사용자에게 에러 메시지 표시
+      toast.error("QR 코드 생성에 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -161,7 +222,8 @@ export default function HomePage() {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    // 탭 변경 시 입력 데이터 초기화
+    // 탭 변경 시 입력 데이터와 고해상도 QR 코드 초기화
+    setHighResQrCode("");
     if (value === "url") {
       setQrData(GITHUB_REPO_URL);
     } else {
@@ -169,147 +231,265 @@ export default function HomePage() {
     }
   };
 
+  // 고해상도 QR 코드 생성 (로그인 사용자 전용)
+  const handleGenerateHighRes = async () => {
+    if (!qrData || !session?.user) return;
+
+    setIsGeneratingHighRes(true);
+    try {
+      const highResOptions = {
+        text: qrData,
+        type: format === "pdf" ? "png" : format,
+        width: 4096, // 4K resolution
+        color: {
+          dark: foregroundColor,
+          light: backgroundColor,
+        },
+        logo: logo || undefined,
+        frameOptions: frameOptions.type !== "none" ? frameOptions : undefined,
+      };
+
+      // @ts-ignore
+      const highResDataUrl = await generateHighResQrCode(highResOptions);
+      setHighResQrCode(highResDataUrl);
+      toast.success("고해상도 QR 코드가 생성되었습니다! (4096x4096)");
+    } catch (error) {
+      console.error("고해상도 QR 코드 생성 오류:", error);
+      toast.error("고해상도 QR 코드 생성에 실패했습니다.");
+    } finally {
+      setIsGeneratingHighRes(false);
+    }
+  };
+
+  const getHighResDownloadFilename = () => {
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
+    return `qrcode-4k-${timestamp}.${format === "pdf" ? "png" : format}`;
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-8 md:p-24">
-      <GithubBadge />
-      <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
-        <div className="flex flex-col gap-4 flex-1">
-          <h1 className="text-4xl font-bold">오픈소스 QR 코드 생성기</h1>
-          <p className="text-muted-foreground">
-            URL, 텍스트, Wi-Fi 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요.
-            다양한 옵션으로 자유롭게 커스터마이징할 수 있습니다.
-          </p>
-          <Tabs
-            defaultValue="url"
-            className="w-full"
-            onValueChange={handleTabChange}
-          >
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="url">URL</TabsTrigger>
-              <TabsTrigger value="text">텍스트</TabsTrigger>
-              <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
-            </TabsList>
-            <TabsContent value="url">
-              <UrlForm value={qrData} onChange={setQrData} />
-            </TabsContent>
-            <TabsContent value="text">
-              <TextForm value={qrData} onChange={setQrData} />
-            </TabsContent>
-            <TabsContent value="wifi">
-              <WifiForm onWifiDataChange={setQrData} />
-            </TabsContent>
-          </Tabs>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>디자인</CardTitle>
-              <CardDescription>
-                QR 코드의 색상과 로고를 설정하세요.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="foreground-color">전경색</Label>
-                <Input
-                  id="foreground-color"
-                  type="color"
-                  value={foregroundColor}
-                  onChange={(e) => setForegroundColor(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="background-color">배경색</Label>
-                <Input
-                  id="background-color"
-                  type="color"
-                  value={backgroundColor}
-                  onChange={(e) => setBackgroundColor(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2 sm:col-span-2">
-                <Label htmlFor="logo-upload">로고 (선택 사항)</Label>
-                <Input
-                  id="logo-upload"
-                  type="file"
-                  accept="image/png, image/jpeg, image/svg+xml"
-                  onChange={handleLogoUpload}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>프레임 추가</CardTitle>
-              <CardDescription>
-                QR 코드에 안내 문구와 프레임을 추가해 스캔율을 높이세요.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <QrCodeFramesSelector
-                value={frameOptions}
-                onChange={setFrameOptions}
-              />
-            </CardContent>
-          </Card>
+    <main className="flex min-h-screen flex-col p-4 sm:p-8 md:p-24">
+      {/* 상단 네비게이션 */}
+      <div className="w-full max-w-4xl mx-auto mb-8">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">QR 코드 생성기</h1>
+          </div>
+          <UserNav />
         </div>
+      </div>
 
-        <div className="flex-1 mt-8 lg:mt-0">
-          <Card className="w-full sticky top-8">
-            <CardHeader>
-              <CardTitle>QR 코드 미리보기</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center gap-4 min-h-[300px]">
-              {qrCode ? (
-                <QrCodePreviewWithFrame
-                  qrCodeUrl={qrCode}
-                  frameOptions={frameOptions}
-                  width={256}
-                  height={256}
-                  className="rounded-lg"
-                />
-              ) : (
-                <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <p className="text-muted-foreground">
-                    생성 버튼을 눌러주세요
-                  </p>
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <GithubBadge />
+        <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
+          <div className="flex flex-col gap-4 flex-1">
+            <h2 className="text-4xl font-bold">오픈소스 QR 코드 생성기</h2>
+            <p className="text-muted-foreground">
+              URL, 텍스트, Wi-Fi 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요.
+              다양한 옵션으로 자유롭게 커스터마이징할 수 있습니다.
+            </p>
+            <Tabs
+              defaultValue="url"
+              className="w-full"
+              onValueChange={handleTabChange}
+            >
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-1">
+                <TabsTrigger value="url">URL</TabsTrigger>
+                <TabsTrigger value="text">텍스트</TabsTrigger>
+                <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
+                <TabsTrigger value="email">이메일</TabsTrigger>
+                <TabsTrigger value="sms">SMS</TabsTrigger>
+                <TabsTrigger value="vcard">연락처</TabsTrigger>
+                <TabsTrigger value="location">위치</TabsTrigger>
+              </TabsList>
+              <TabsContent value="url">
+                <UrlForm value={qrData} onChange={setQrData} />
+              </TabsContent>
+              <TabsContent value="text">
+                <TextForm value={qrData} onChange={setQrData} />
+              </TabsContent>
+              <TabsContent value="wifi">
+                <WifiForm onWifiDataChange={setQrData} />
+              </TabsContent>
+              <TabsContent value="email">
+                <EmailForm onChange={setQrData} />
+              </TabsContent>
+              <TabsContent value="sms">
+                <SmsForm onChange={setQrData} />
+              </TabsContent>
+              <TabsContent value="vcard">
+                <VCardForm onChange={setQrData} />
+              </TabsContent>
+              <TabsContent value="location">
+                <LocationForm onChange={setQrData} />
+              </TabsContent>
+            </Tabs>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>디자인</CardTitle>
+                <CardDescription>
+                  QR 코드의 색상과 로고를 설정하세요.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="foreground-color">전경색</Label>
+                  <Input
+                    id="foreground-color"
+                    type="color"
+                    value={foregroundColor}
+                    onChange={(e) => setForegroundColor(e.target.value)}
+                  />
                 </div>
-              )}
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button
-                onClick={handleGenerate}
-                disabled={isLoading || !qrData}
-                className="w-full"
-              >
-                {isLoading ? "생성 중..." : "QR 코드 생성"}
-              </Button>
-              <div className="flex gap-2 w-full">
-                <Select
-                  value={format}
-                  onValueChange={(value) =>
-                    handleFormatChange(value as "png" | "svg" | "jpeg" | "pdf")
-                  }
-                  disabled={!qrCode || isLoading}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="background-color">배경색</Label>
+                  <Input
+                    id="background-color"
+                    type="color"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <Label htmlFor="logo-upload">로고 (선택 사항)</Label>
+                  <Input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/png, image/jpeg, image/svg+xml"
+                    onChange={handleLogoUpload}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>프레임 추가</CardTitle>
+                <CardDescription>
+                  QR 코드에 안내 문구와 프레임을 추가해 스캔율을 높이세요.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <QrCodeFramesSelector
+                  value={frameOptions}
+                  onChange={setFrameOptions}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex-1 mt-8 lg:mt-0">
+            <Card className="w-full sticky top-8">
+              <CardHeader>
+                <CardTitle>QR 코드 미리보기</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center gap-4 min-h-[300px]">
+                {qrCode ? (
+                  <QrCodePreviewWithFrame
+                    qrCodeUrl={qrCode}
+                    frameOptions={frameOptions}
+                    width={256}
+                    height={256}
+                    className="rounded-lg"
+                  />
+                ) : (
+                  <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <p className="text-muted-foreground">
+                      생성 버튼을 눌러주세요
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="flex flex-col gap-4">
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isLoading || !qrData}
+                  className="w-full"
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="포맷 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="png">PNG</SelectItem>
-                    <SelectItem value="svg">SVG</SelectItem>
-                    <SelectItem value="jpeg">JPG</SelectItem>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button asChild disabled={!qrCode} className="w-full">
-                  <a href={qrCode} download={getDownloadFilename()}>
-                    다운로드
-                  </a>
+                  {isLoading ? "생성 중..." : "QR 코드 생성"}
                 </Button>
-              </div>
-            </CardFooter>
-          </Card>
+
+                {/* 로그인 상태에 따른 안내 */}
+                {!session ? (
+                  <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-lg border">
+                    💡 <strong>로그인하면 더 많은 혜택을!</strong>
+                    <ul className="mt-2 space-y-1 text-xs">
+                      <li>• QR 코드 자동 저장 및 히스토리 관리</li>
+                      <li>• 고해상도 다운로드 (최대 4096x4096)</li>
+                      <li>• 개인 템플릿 저장</li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="text-sm text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
+                    ✅ 프리미엄 사용자 - 고급 기능 이용 가능
+                  </div>
+                )}
+
+                <div className="flex gap-2 w-full">
+                  <Select
+                    value={format}
+                    onValueChange={(value) =>
+                      handleFormatChange(
+                        value as "png" | "svg" | "jpeg" | "pdf",
+                      )
+                    }
+                    disabled={!qrCode || isLoading}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="포맷 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="png">PNG (기본 해상도)</SelectItem>
+                      <SelectItem value="svg">SVG (벡터)</SelectItem>
+                      <SelectItem value="jpeg">JPG (기본 해상도)</SelectItem>
+                      <SelectItem value="pdf">PDF</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button asChild disabled={!qrCode} className="w-full">
+                    <a href={qrCode} download={getDownloadFilename()}>
+                      다운로드
+                    </a>
+                  </Button>
+                </div>
+
+                {/* 로그인 사용자 전용 고해상도 다운로드 */}
+                {session?.user && qrCode && (
+                  <div className="w-full space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-green-600">
+                      <span className="text-lg">✨</span>
+                      <span className="font-medium">프리미엄 기능</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleGenerateHighRes}
+                        disabled={isGeneratingHighRes || !qrData}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        {isGeneratingHighRes
+                          ? "생성 중..."
+                          : "4K 고해상도 생성"}
+                      </Button>
+                      {highResQrCode && (
+                        <Button asChild className="flex-1">
+                          <a
+                            href={highResQrCode}
+                            download={getHighResDownloadFilename()}
+                          >
+                            4K 다운로드
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      4096x4096 픽셀의 초고해상도 QR 코드를 다운로드할 수
+                      있습니다. 인쇄나 대형 디스플레이에 최적화되어 있습니다.
+                    </p>
+                  </div>
+                )}
+              </CardFooter>
+            </Card>
+          </div>
         </div>
       </div>
       <footer className="w-full mt-12 flex justify-center text-xs text-muted-foreground">
