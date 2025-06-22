@@ -22,14 +22,14 @@
       "name": "QR 코드 생성",
       "short_name": "생성",
       "description": "새로운 QR 코드 생성",
-      "url": "/",
+      "url": "/qrcode",
       "icons": [{ "src": "/favicon.ico", "sizes": "32x32" }]
     },
     {
       "name": "히스토리",
       "short_name": "히스토리",
       "description": "저장된 QR 코드 보기",
-      "url": "/history",
+      "url": "/dashboard/history",
       "icons": [{ "src": "/favicon.ico", "sizes": "32x32" }]
     }
   ]

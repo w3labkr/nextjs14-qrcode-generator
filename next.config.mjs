@@ -19,6 +19,7 @@ const pwaConfig = {
   register: true,
   skipWaiting: true,
   disable: isDev,
+  buildExcludes: [/middleware-manifest\.json$/],
 };
 
 export default withPWA(pwaConfig)(nextConfig);
