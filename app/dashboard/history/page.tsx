@@ -238,21 +238,7 @@ export default function QrCodeHistoryPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">QR 코드 히스토리</h1>
-          <p className="text-muted-foreground">
-            생성한 QR 코드를 관리하고 다시 다운로드하세요.
-          </p>
-        </div>
-        <Link href="/dashboard">
-          <Button variant="outline">
-            <QrCode className="h-4 w-4 mr-2" />새 QR 코드 만들기
-          </Button>
-        </Link>
-      </div>
-
+    <>
       {/* 검색 및 필터 */}
       <Card className="mb-6">
         <CardContent className="pt-6">
@@ -495,6 +481,6 @@ export default function QrCodeHistoryPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
