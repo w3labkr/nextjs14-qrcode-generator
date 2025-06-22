@@ -285,6 +285,68 @@ export async function deleteQrCode(qrCodeId: string) {
   return { success: true };
 }
 
+// QR 코드 업데이트
+export async function updateQrCode(
+  qrCodeId: string,
+  options: QrCodeOptions & {
+    title?: string;
+    qrType: "URL" | "TEXT" | "WIFI" | "EMAIL" | "SMS" | "VCARD" | "LOCATION";
+  },
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // 기존 QR 코드 확인
+    const existingQrCode = await prisma.qrCode.findFirst({
+      where: {
+        id: qrCodeId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!existingQrCode) {
+      return { success: false, error: "QR Code not found" };
+    }
+
+    // 새로운 QR 코드 생성
+    const qrCodeDataUrl = await generateQrCode(options);
+
+    // 데이터베이스 업데이트
+    const updatedQrCode = await prisma.qrCode.update({
+      where: {
+        id: qrCodeId,
+      },
+      data: {
+        type: options.qrType,
+        title: options.title || null,
+        content: options.text,
+        settings: JSON.stringify({
+          color: options.color,
+          width: options.width,
+          margin: options.margin,
+          logo: options.logo,
+          dotsOptions: options.dotsOptions,
+          cornersSquareOptions: options.cornersSquareOptions,
+          frameOptions: options.frameOptions,
+        }),
+      },
+    });
+
+    return {
+      success: true,
+      qrCodeDataUrl,
+      updatedQrCode,
+    };
+  } catch (error) {
+    console.error("Error updating QR code:", error);
+    return { success: false, error: "Failed to update QR code" };
+  }
+}
+
 // 템플릿 관련 액션들
 
 // 사용자의 템플릿 목록 조회

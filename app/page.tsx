@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,6 +24,7 @@ import {
   generateQrCode,
   generateAndSaveQrCode,
   generateHighResQrCode,
+  updateQrCode,
 } from "@/app/actions/qr-code";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UrlForm } from "@/components/qr-code-forms/url-form";
@@ -52,6 +54,7 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 
 export default function HomePage() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const isOnline = useOnlineStatus();
   const [qrData, setQrData] = useState(GITHUB_REPO_URL);
   const [activeTab, setActiveTab] = useState("url");
@@ -59,6 +62,8 @@ export default function HomePage() {
   const [highResQrCode, setHighResQrCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingHighRes, setIsGeneratingHighRes] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingQrCodeId, setEditingQrCodeId] = useState<string | null>(null);
 
   // Customization State
   const [foregroundColor, setForegroundColor] = useState("#000000");
@@ -100,6 +105,48 @@ export default function HomePage() {
 
     loadDefaultTemplate();
   }, [session?.user]);
+
+  // 편집 모드 처리
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    const editType = searchParams.get("type");
+
+    if (editId && editType) {
+      setIsEditMode(true);
+      setEditingQrCodeId(editId);
+      setActiveTab(editType);
+      loadQrCodeForEdit(editId);
+    }
+  }, [searchParams]);
+
+  // 편집할 QR 코드 데이터 로드
+  const loadQrCodeForEdit = async (qrCodeId: string) => {
+    try {
+      const response = await fetch(`/api/qrcodes/${qrCodeId}`);
+      if (response.ok) {
+        const qrCodeData = await response.json();
+
+        // QR 코드 내용 설정
+        setQrData(qrCodeData.content);
+
+        // 설정 복원
+        if (qrCodeData.settings) {
+          const settings =
+            typeof qrCodeData.settings === "string"
+              ? JSON.parse(qrCodeData.settings)
+              : qrCodeData.settings;
+          handleLoadTemplate(settings);
+        }
+
+        toast.success("편집할 QR 코드를 불러왔습니다.");
+      } else {
+        toast.error("QR 코드를 불러오는데 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("QR 코드 로드 실패:", error);
+      toast.error("QR 코드를 불러오는데 실패했습니다.");
+    }
+  };
 
   // 로컬 스토리지에서 템플릿 설정 읽기
   useEffect(() => {
@@ -184,22 +231,62 @@ export default function HomePage() {
 
       // 로그인한 사용자의 경우 저장과 함께 생성
       if (session?.user) {
-        const result = await generateAndSaveQrCode({
-          text: qrData,
-          type: format === "pdf" ? "png" : format,
-          width: width,
-          color: {
-            dark: foregroundColor,
-            light: backgroundColor,
-          },
-          logo: logo || undefined,
-          frameOptions: frameOptions.type !== "none" ? frameOptions : undefined,
-          qrType,
-          title: `${qrType} QR 코드 - ${new Date().toLocaleDateString("ko-KR")}`,
-        });
+        let result: any = null;
+
+        if (isEditMode && editingQrCodeId) {
+          // 편집 모드: QR 코드 업데이트
+          const updateResult = await updateQrCode(editingQrCodeId, {
+            text: qrData,
+            type: format === "pdf" ? "png" : format,
+            width: width,
+            color: {
+              dark: foregroundColor,
+              light: backgroundColor,
+            },
+            logo: logo || undefined,
+            frameOptions:
+              frameOptions.type !== "none" ? frameOptions : undefined,
+            qrType,
+            title: `${qrType} QR 코드 - ${new Date().toLocaleDateString("ko-KR")}`,
+          });
+
+          if (updateResult.success) {
+            result = {
+              qrCodeDataUrl: updateResult.qrCodeDataUrl,
+              savedId: editingQrCodeId,
+            };
+            toast.success("QR 코드가 성공적으로 업데이트되었습니다!");
+            setIsEditMode(false);
+            setEditingQrCodeId(null);
+
+            // URL에서 편집 파라미터 제거
+            window.history.replaceState({}, "", "/");
+          } else {
+            toast.error(
+              updateResult.error || "QR 코드 업데이트에 실패했습니다.",
+            );
+            return;
+          }
+        } else {
+          // 일반 모드: 새 QR 코드 생성
+          result = await generateAndSaveQrCode({
+            text: qrData,
+            type: format === "pdf" ? "png" : format,
+            width: width,
+            color: {
+              dark: foregroundColor,
+              light: backgroundColor,
+            },
+            logo: logo || undefined,
+            frameOptions:
+              frameOptions.type !== "none" ? frameOptions : undefined,
+            qrType,
+            title: `${qrType} QR 코드 - ${new Date().toLocaleDateString("ko-KR")}`,
+          });
+        }
 
         // PDF 변환이 필요한 경우
-        if (format === "pdf") {
+        if (format === "pdf" && result) {
           const pdfDataUrl = await generatePdf({
             qrCodeUrl: result.qrCodeDataUrl,
             qrText: qrData,
@@ -207,11 +294,11 @@ export default function HomePage() {
               frameOptions.type !== "none" ? frameOptions : undefined,
           });
           setQrCode(pdfDataUrl);
-        } else {
+        } else if (result) {
           setQrCode(result.qrCodeDataUrl);
         }
 
-        if (result.savedId) {
+        if (result?.savedId && !isEditMode) {
           toast.success("QR 코드가 생성되고 히스토리에 저장되었습니다!");
         }
       } else {
@@ -359,7 +446,14 @@ export default function HomePage() {
       <div className="w-full max-w-4xl mx-auto mb-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">QR 코드 생성기</h1>
+            <h1 className="text-2xl font-bold">
+              {isEditMode ? "QR 코드 편집" : "QR 코드 생성기"}
+            </h1>
+            {isEditMode && (
+              <span className="text-sm text-muted-foreground bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                편집 모드
+              </span>
+            )}
           </div>
           <UserNav />
         </div>
@@ -369,10 +463,13 @@ export default function HomePage() {
         <GithubBadge />
         <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
           <div className="flex flex-col gap-4 flex-1">
-            <h2 className="text-4xl font-bold">오픈소스 QR 코드 생성기</h2>
+            <h2 className="text-4xl font-bold">
+              {isEditMode ? "QR 코드 편집하기" : "오픈소스 QR 코드 생성기"}
+            </h2>
             <p className="text-muted-foreground">
-              URL, 텍스트, Wi-Fi 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요.
-              다양한 옵션으로 자유롭게 커스터마이징할 수 있습니다.
+              {isEditMode
+                ? "기존 QR 코드의 내용과 설정을 수정하고 업데이트하세요."
+                : "URL, 텍스트, Wi-Fi 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요. 다양한 옵션으로 자유롭게 커스터마이징할 수 있습니다."}
             </p>
 
             {/* PWA 관련 알림들 */}
@@ -506,7 +603,13 @@ export default function HomePage() {
                   disabled={isLoading || !qrData}
                   className="w-full"
                 >
-                  {isLoading ? "생성 중..." : "QR 코드 생성"}
+                  {isLoading
+                    ? isEditMode
+                      ? "업데이트 중..."
+                      : "생성 중..."
+                    : isEditMode
+                      ? "QR 코드 업데이트"
+                      : "QR 코드 생성"}
                 </Button>
 
                 {/* 로그인 상태에 따른 안내 */}

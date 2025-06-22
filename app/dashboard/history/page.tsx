@@ -201,6 +201,11 @@ export default function QrCodeHistoryPage() {
     setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
+  const handleEdit = (qrCode: QrCodeData) => {
+    const editUrl = `/?edit=${qrCode.id}&type=${qrCode.type.toLowerCase()}`;
+    window.location.href = editUrl;
+  };
+
   const getContentPreview = (content: string, type: string) => {
     if (type === "WIFI") {
       try {
@@ -392,7 +397,7 @@ export default function QrCodeHistoryPage() {
                         <Download className="h-4 w-4 mr-2" />
                         다운로드
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEdit(qrCode)}>
                         <Edit2 className="h-4 w-4 mr-2" />
                         편집
                       </DropdownMenuItem>
