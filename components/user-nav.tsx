@@ -66,7 +66,7 @@ export function UserNav() {
         <DropdownMenuItem asChild>
           <Link href="/dashboard/history">
             <History className="mr-2 h-4 w-4" />
-            QR 코드 히스토리
+            히스토리
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

@@ -248,3 +248,37 @@ export async function getQrCodeStats() {
     };
   }
 }
+
+export async function clearQrCodeHistory() {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const userId = session.user.id;
+
+    // 사용자의 모든 QR 코드 삭제
+    const result = await prisma.qrCode.deleteMany({
+      where: {
+        userId,
+      },
+    });
+
+    return {
+      success: true,
+      message: `${result.count}개의 QR 코드가 삭제되었습니다.`,
+      deletedCount: result.count,
+    };
+  } catch (error) {
+    console.error("QR 코드 히스토리 초기화 실패:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "히스토리 초기화에 실패했습니다.",
+    };
+  }
+}
