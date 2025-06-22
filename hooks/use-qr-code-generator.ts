@@ -45,23 +45,44 @@ export function useQrCodeGenerator() {
 
   const { generatePdf } = usePdfGenerator();
 
+  // 템플릿 적용 상태 추적
+  const [templateApplied, setTemplateApplied] = useState(false);
+
   // 템플릿 적용 함수
-  const handleLoadTemplate = (
+  const handleLoadTemplate = async (
     settings: import("@/app/actions/qr-code").QrCodeOptions,
   ) => {
     if (settings.color?.dark) setForegroundColor(settings.color.dark);
     if (settings.color?.light) setBackgroundColor(settings.color.light);
     if (settings.logo) setLogo(settings.logo);
     if (settings.width) setWidth(settings.width);
-    if (settings.frameOptions && settings.frameOptions.type) {
+
+    // 프레임 옵션 복원
+    if (settings.frameOptions) {
       setFrameOptions({
-        type: settings.frameOptions.type as any,
+        type: (settings.frameOptions.type as any) || "none",
         text: settings.frameOptions.text || "스캔해 주세요",
         textColor: settings.frameOptions.textColor || "#000000",
         borderColor: settings.frameOptions.borderColor || "#000000",
         backgroundColor: settings.frameOptions.backgroundColor || "#ffffff",
+        borderWidth: settings.frameOptions.borderWidth || 2,
+        borderRadius: settings.frameOptions.borderRadius || 8,
+      });
+    } else {
+      // 프레임 옵션이 없는 경우 기본값으로 초기화
+      setFrameOptions({
+        type: "none",
+        text: "스캔해 주세요",
+        textColor: "#000000",
+        borderColor: "#000000",
+        backgroundColor: "#ffffff",
+        borderWidth: 2,
+        borderRadius: 8,
       });
     }
+
+    // 템플릿 적용 플래그 설정
+    setTemplateApplied(true);
   };
 
   // 현재 설정을 QrCodeOptions 형태로 반환
@@ -74,7 +95,18 @@ export function useQrCodeGenerator() {
       },
       logo: logo || undefined,
       width,
-      frameOptions: frameOptions.type !== "none" ? frameOptions : undefined,
+      frameOptions:
+        frameOptions.type !== "none"
+          ? {
+              type: frameOptions.type,
+              text: frameOptions.text,
+              textColor: frameOptions.textColor,
+              backgroundColor: frameOptions.backgroundColor,
+              borderColor: frameOptions.borderColor,
+              borderWidth: frameOptions.borderWidth,
+              borderRadius: frameOptions.borderRadius,
+            }
+          : undefined,
     });
 
   // 편집할 QR 코드 데이터 로드
@@ -389,6 +421,21 @@ export function useQrCodeGenerator() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
+
+  // 템플릿 적용 후 QR 코드 자동 재생성
+  useEffect(() => {
+    if (templateApplied && qrData) {
+      handleGenerate();
+      setTemplateApplied(false);
+    }
+  }, [
+    templateApplied,
+    foregroundColor,
+    backgroundColor,
+    logo,
+    width,
+    frameOptions,
+  ]);
 
   return {
     // State
