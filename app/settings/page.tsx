@@ -13,6 +13,7 @@ import { UserNav } from "@/components/user-nav";
 import { Trash2, Download, Shield, User } from "lucide-react";
 import Link from "next/link";
 import DataManager from "@/components/data-manager";
+import AccountDeletion from "@/components/account-deletion";
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
@@ -154,10 +155,7 @@ export default function SettingsPage() {
                     수 없습니다.
                   </p>
                 </div>
-                <Button variant="destructive" disabled>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  계정 삭제 (준비 중)
-                </Button>
+                <AccountDeletion />
               </div>
             </CardContent>
           </Card>

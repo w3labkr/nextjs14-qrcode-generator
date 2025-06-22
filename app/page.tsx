@@ -337,6 +337,18 @@ export default function HomePage() {
     return `qrcode-4k-${timestamp}.${format === "pdf" ? "png" : format}`;
   };
 
+  // 계정 삭제 성공 메시지 표시
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("deleted") === "true") {
+      toast.success(
+        "계정이 성공적으로 삭제되었습니다. 모든 데이터가 완전히 제거되었습니다.",
+      );
+      // URL에서 파라미터 제거
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   return (
     <main className="flex min-h-screen flex-col p-4 sm:p-8 md:p-24">
       {/* 상단 네비게이션 */}
