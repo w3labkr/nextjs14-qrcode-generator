@@ -26,6 +26,7 @@ export function useQrCodeGenerator() {
 
   const template = useTemplate({
     loadSettings: qrCodeSettings.loadSettings,
+    isEditMode: editMode.isEditMode,
   });
 
   const qrCodeGeneration = useQrCodeGeneration({

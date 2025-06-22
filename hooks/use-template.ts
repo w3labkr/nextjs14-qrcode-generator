@@ -8,9 +8,13 @@ import type { QrCodeOptions } from "@/app/actions/qr-code";
 
 interface UseTemplateProps {
   loadSettings: (settings: QrCodeOptions) => void;
+  isEditMode?: boolean;
 }
 
-export function useTemplate({ loadSettings }: UseTemplateProps) {
+export function useTemplate({
+  loadSettings,
+  isEditMode = false,
+}: UseTemplateProps) {
   const { data: session } = useSession();
   const [templateApplied, setTemplateApplied] = useState(false);
   const [defaultTemplateLoaded, setDefaultTemplateLoaded] = useState(false);
@@ -25,8 +29,19 @@ export function useTemplate({ loadSettings }: UseTemplateProps) {
   );
 
   useEffect(() => {
+    // 편집 모드에서는 기본 템플릿 로드를 건너뛰고 바로 완료 상태로 설정
+    if (isEditMode && !defaultTemplateLoaded) {
+      setDefaultTemplateLoaded(true);
+      return;
+    }
+
     const loadDefaultTemplate = async () => {
-      if (session?.user && !defaultTemplateLoaded && !isInitializing.current) {
+      if (
+        session?.user &&
+        !defaultTemplateLoaded &&
+        !isInitializing.current &&
+        !isEditMode
+      ) {
         isInitializing.current = true;
         try {
           const defaultTemplate = await getDefaultTemplate();
@@ -37,9 +52,12 @@ export function useTemplate({ loadSettings }: UseTemplateProps) {
             toast.success(
               `기본 템플릿 "${defaultTemplate.name}"이 적용되었습니다.`,
             );
+          } else {
+            setDefaultTemplateLoaded(true);
           }
         } catch (error) {
           console.error("기본 템플릿 로드 오류:", error);
+          setDefaultTemplateLoaded(true);
         } finally {
           isInitializing.current = false;
         }
@@ -47,11 +65,11 @@ export function useTemplate({ loadSettings }: UseTemplateProps) {
     };
 
     loadDefaultTemplate();
-  }, [session?.user, defaultTemplateLoaded, handleLoadTemplate]);
+  }, [session?.user, defaultTemplateLoaded, handleLoadTemplate, isEditMode]);
 
   useEffect(() => {
     const savedSettings = localStorage.getItem("qr-template-settings");
-    if (savedSettings) {
+    if (savedSettings && !isEditMode) {
       try {
         const settings = JSON.parse(savedSettings);
         handleLoadTemplate(settings);
@@ -61,7 +79,7 @@ export function useTemplate({ loadSettings }: UseTemplateProps) {
         console.error("템플릿 설정 로드 오류:", error);
       }
     }
-  }, [handleLoadTemplate]);
+  }, [handleLoadTemplate, isEditMode]);
 
   return {
     templateApplied,
