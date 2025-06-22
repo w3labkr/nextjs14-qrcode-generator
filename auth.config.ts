@@ -59,10 +59,10 @@ export default {
     async session({ session, token }) {
       // JWT strategy를 사용하는 경우 token 정보를 session에 복사
       if (token) {
-        session.user.id = token.sub || "dev-user";
-        session.user.name = token.name || "개발자";
-        session.user.email = token.email || "dev@example.com";
-        session.user.image = token.picture || null;
+        session.user.id = token.sub || session.user.id;
+        session.user.name = token.name || session.user.name;
+        session.user.email = token.email || session.user.email;
+        session.user.image = token.picture || session.user.image;
       }
       return session;
     },
