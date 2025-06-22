@@ -73,16 +73,16 @@ export function ProfileForm({ session, open, onOpenChange }: ProfileFormProps) {
 
       const result = await updateProfile({
         name: data.name,
-        email: session?.user?.email || "", // 기존 이메일 유지
+        email: session?.user?.email || "", // 기존 이메일 유지 (읽기 전용)
       });
       console.log("프로필 업데이트 결과:", result);
 
       if (result.success) {
         toast.success("프로필이 성공적으로 업데이트되었습니다");
 
+        // 세션 업데이트 - 개발 사용자의 경우에도 동작하도록 함
         await update({
           name: data.name,
-          email: session?.user?.email, // 기존 이메일 유지
         });
 
         // 폼을 새로운 값으로 reset하여 isDirty 상태 초기화

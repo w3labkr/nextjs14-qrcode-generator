@@ -110,6 +110,31 @@ export async function updateProfile(data: { name: string; email: string }) {
       }
     }
 
+    // 개발 환경에서 dev-user인 경우 특별 처리
+    if (userId === "dev-user" && process.env.NODE_ENV === "development") {
+      console.log("개발 사용자 프로필 업데이트 - 세션에서만 업데이트");
+      return {
+        success: true,
+        message: "프로필이 성공적으로 업데이트되었습니다.",
+        user: {
+          id: userId,
+          name: data.name.trim(),
+          email: data.email.trim(),
+          image: null,
+        },
+      };
+    }
+
+    // 사용자 존재 여부 확인
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      console.log("사용자를 찾을 수 없음:", { userId });
+      return { success: false, error: "사용자를 찾을 수 없습니다." };
+    }
+
     // 사용자 정보 업데이트
     const updatedUser = await prisma.user.update({
       where: { id: userId },
