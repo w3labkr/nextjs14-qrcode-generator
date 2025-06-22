@@ -163,6 +163,15 @@ export async function saveQrCode(data: SaveQrCodeData) {
       throw new Error("로그인이 필요합니다.");
     }
 
+    // 사용자가 실제로 데이터베이스에 존재하는지 확인
+    const existingUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!existingUser) {
+      throw new Error("사용자를 찾을 수 없습니다.");
+    }
+
     const savedQrCode = await prisma.qrCode.create({
       data: {
         userId: session.user.id,

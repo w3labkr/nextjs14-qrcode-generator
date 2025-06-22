@@ -170,6 +170,15 @@ export async function importUserData(data: ImportData) {
     throw new Error("Unauthorized");
   }
 
+  // 사용자가 실제로 데이터베이스에 존재하는지 확인
+  const existingUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
+
+  if (!existingUser) {
+    throw new Error("사용자를 찾을 수 없습니다.");
+  }
+
   const { qrCodes = [], templates = [], replaceExisting = false } = data;
 
   try {

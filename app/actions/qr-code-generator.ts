@@ -92,28 +92,37 @@ export async function generateAndSaveQrCode(options: QrCodeGenerationOptions) {
     const session = await auth();
 
     if (session?.user?.id) {
-      const savedQrCode = await prisma.qrCode.create({
-        data: {
-          userId: session.user.id,
-          type: options.qrType,
-          title: options.title || null,
-          content: options.text,
-          settings: JSON.stringify({
-            color: options.color,
-            width: options.width,
-            margin: options.margin,
-            logo: options.logo,
-            dotsOptions: options.dotsOptions,
-            cornersSquareOptions: options.cornersSquareOptions,
-            frameOptions: options.frameOptions,
-          }),
-        },
+      // 사용자가 실제로 데이터베이스에 존재하는지 확인
+      const existingUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
       });
 
-      return {
-        qrCodeDataUrl,
-        savedId: savedQrCode.id,
-      };
+      if (existingUser) {
+        const savedQrCode = await prisma.qrCode.create({
+          data: {
+            userId: session.user.id,
+            type: options.qrType,
+            title: options.title || null,
+            content: options.text,
+            settings: JSON.stringify({
+              color: options.color,
+              width: options.width,
+              margin: options.margin,
+              logo: options.logo,
+              dotsOptions: options.dotsOptions,
+              cornersSquareOptions: options.cornersSquareOptions,
+              frameOptions: options.frameOptions,
+            }),
+          },
+        });
+
+        return {
+          qrCodeDataUrl,
+          savedId: savedQrCode.id,
+        };
+      } else {
+        console.warn(`User with ID ${session.user.id} not found in database`);
+      }
     }
 
     return {
