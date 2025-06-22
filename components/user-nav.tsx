@@ -72,7 +72,7 @@ export function UserNav() {
         <DropdownMenuItem asChild>
           <Link href="/dashboard/templates">
             <Bookmark className="mr-2 h-4 w-4" />
-            템플릿 관리
+            템플릿
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
