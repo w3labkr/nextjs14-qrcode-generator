@@ -102,7 +102,7 @@ export function useQrCodeGeneration({
             ...settings,
             type: format === "pdf" ? "png" : format,
             qrType,
-            title: `${qrType} QR 코드 - ${new Date().toLocaleDateString("ko-KR")}`,
+            title: `${qrType} QR 코드`,
           });
         }
 
