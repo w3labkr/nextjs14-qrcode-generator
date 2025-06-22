@@ -716,3 +716,106 @@ export async function deleteAccount() {
     );
   }
 }
+
+// QR 코드 저장 관련 타입 정의
+export interface SaveQrCodeData {
+  type: string;
+  title?: string;
+  content: string;
+  settings: any;
+}
+
+// QR 코드를 데이터베이스에 저장
+export async function saveQrCode(data: SaveQrCodeData) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const savedQrCode = await prisma.qrCode.create({
+      data: {
+        userId: session.user.id,
+        type: data.type,
+        title: data.title || null,
+        content: data.content,
+        settings: JSON.stringify(data.settings),
+        isFavorite: false,
+      },
+    });
+
+    return {
+      success: true,
+      qrCode: {
+        ...savedQrCode,
+        settings: JSON.parse(savedQrCode.settings),
+      },
+    };
+  } catch (error) {
+    console.error("QR 코드 저장 실패:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "QR 코드 저장에 실패했습니다.",
+    };
+  }
+}
+
+// QR 코드 통계 조회
+export async function getQrCodeStats() {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    const userId = session.user.id;
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [total, favorites, thisMonth, typeStats] = await Promise.all([
+      prisma.qrCode.count({ where: { userId } }),
+      prisma.qrCode.count({ where: { userId, isFavorite: true } }),
+      prisma.qrCode.count({
+        where: {
+          userId,
+          createdAt: { gte: startOfMonth },
+        },
+      }),
+      prisma.qrCode.groupBy({
+        by: ["type"],
+        where: { userId },
+        _count: true,
+      }),
+    ]);
+
+    const byType = typeStats.reduce(
+      (acc, stat) => {
+        acc[stat.type] = stat._count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    return {
+      success: true,
+      stats: {
+        total,
+        favorites,
+        thisMonth,
+        byType,
+      },
+    };
+  } catch (error) {
+    console.error("QR 코드 통계 조회 실패:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "통계를 불러오는데 실패했습니다.",
+    };
+  }
+}

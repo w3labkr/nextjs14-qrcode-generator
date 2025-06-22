@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { QrCode, Heart, Plus, TrendingUp } from "lucide-react";
-import { getUserQrCodes } from "@/app/actions/qr-code";
+import { getUserQrCodes, getQrCodeStats } from "@/app/actions/qr-code";
 import { toast } from "sonner";
 import Link from "next/link";
 import { UserNav } from "@/components/user-nav";
@@ -33,36 +33,20 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const data = await getUserQrCodes(1, 5); // 최근 5개만 가져오기
 
-      // 통계 계산
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
+      // 병렬로 통계와 최근 QR 코드 조회
+      const [statsResult, recentQrCodesResult] = await Promise.all([
+        getQrCodeStats(),
+        getUserQrCodes(1, 5), // 최근 5개만 가져오기
+      ]);
 
-      const totalResponse = await getUserQrCodes(1, 1000); // 전체 가져오기 (임시)
-      const allQrCodes = totalResponse.qrCodes;
+      if (statsResult.success && statsResult.stats) {
+        setStats(statsResult.stats);
+      }
 
-      const statsData: QrCodeStats = {
-        total: allQrCodes.length,
-        favorites: allQrCodes.filter((qr) => qr.isFavorite).length,
-        thisMonth: allQrCodes.filter((qr) => {
-          const qrDate = new Date(qr.createdAt);
-          return (
-            qrDate.getMonth() === currentMonth &&
-            qrDate.getFullYear() === currentYear
-          );
-        }).length,
-        byType: allQrCodes.reduce(
-          (acc, qr) => {
-            acc[qr.type] = (acc[qr.type] || 0) + 1;
-            return acc;
-          },
-          {} as { [key: string]: number },
-        ),
-      };
-
-      setStats(statsData);
-      setRecentQrCodes(data.qrCodes);
+      if (recentQrCodesResult) {
+        setRecentQrCodes(recentQrCodesResult.qrCodes);
+      }
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
       toast.error("대시보드 데이터를 불러오는데 실패했습니다.");
@@ -149,7 +133,12 @@ export default function DashboardPage() {
               안녕하세요, {session?.user?.name}님! QR 코드 활동을 확인해보세요.
             </p>
           </div>
-          <UserNav />
+          <div className="flex items-center space-x-4">
+            <Button asChild variant="outline">
+              <Link href="/dashboard/history">히스토리 보기</Link>
+            </Button>
+            <UserNav />
+          </div>
         </div>
 
         {/* 통계 카드 */}
