@@ -36,8 +36,8 @@ export function PrivacyAndSecurity() {
           </ul>
         </div>
 
-        <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
-          <div>
+        <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+          <div className="mb-4">
             <h4 className="font-medium text-red-900">계정 삭제</h4>
             <p className="text-sm text-red-700">
               계정과 모든 데이터를 영구적으로 삭제합니다. 이 작업은 되돌릴 수
