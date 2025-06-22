@@ -60,9 +60,14 @@ export function ProfileForm({ session, open, onOpenChange }: ProfileFormProps) {
   // session이 변경되거나 다이얼로그가 열릴 때 폼 값 업데이트
   useEffect(() => {
     if (open && session?.user?.name) {
-      form.reset({
-        name: session.user.name,
-      });
+      form.reset(
+        {
+          name: session.user.name,
+        },
+        {
+          keepDefaultValues: false, // 기본값도 함께 업데이트
+        },
+      );
     }
   }, [open, session?.user?.name, form]);
 
@@ -166,8 +171,8 @@ export function ProfileForm({ session, open, onOpenChange }: ProfileFormProps) {
                 type="submit"
                 disabled={
                   isLoading ||
-                  !form.formState.isDirty ||
-                  !form.formState.isValid
+                  !form.formState.isValid ||
+                  form.watch("name")?.trim() === session?.user?.name?.trim()
                 }
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
