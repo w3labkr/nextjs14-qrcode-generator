@@ -1,7 +1,7 @@
 "use client";
 
-import TemplateManager from "@/components/template-manager";
 import { QrCodeOptions } from "@/app/actions/qr-code";
+import TemplateManager from "@/components/template-manager";
 
 export default function TemplatesPage() {
   const handleLoadTemplate = (settings: QrCodeOptions) => {
