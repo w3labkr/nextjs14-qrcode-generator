@@ -79,7 +79,7 @@ export default function HistoryLayout({ children }: HistoryLayoutProps) {
           </div>
           <div className="flex items-center space-x-4">
             <Button asChild variant="outline">
-              <Link href="/dashboard">
+              <Link href="/">
                 <QrCode className="h-4 w-4 mr-2" />새 QR 코드 만들기
               </Link>
             </Button>
