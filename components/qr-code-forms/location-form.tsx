@@ -77,19 +77,67 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
     generateLocationString();
   }, [latitude, longitude, address]);
 
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+
   const getCurrentLocation = () => {
     if ("geolocation" in navigator) {
+      setIsGettingLocation(true);
+
+      // 먼저 빠른 위치 정보 시도 (캐시된 위치 또는 네트워크 기반)
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLatitude(position.coords.latitude.toString());
           setLongitude(position.coords.longitude.toString());
           setAddress(""); // 좌표가 설정되면 주소는 비움
+          setIsGettingLocation(false);
         },
         (error) => {
-          console.error("위치 정보를 가져올 수 없습니다:", error);
-          alert(
-            "위치 정보를 가져올 수 없습니다. 브라우저 설정을 확인해주세요.",
+          console.warn(
+            "빠른 위치 정보 가져오기 실패, 정확한 위치 정보 시도 중...",
+            error,
           );
+
+          // 첫 번째 시도가 실패하면 더 관대한 옵션으로 재시도
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setLatitude(position.coords.latitude.toString());
+              setLongitude(position.coords.longitude.toString());
+              setAddress(""); // 좌표가 설정되면 주소는 비움
+              setIsGettingLocation(false);
+            },
+            (secondError) => {
+              console.error("위치 정보를 가져올 수 없습니다:", secondError);
+              let errorMessage = "위치 정보를 가져올 수 없습니다.";
+
+              switch (secondError.code) {
+                case secondError.PERMISSION_DENIED:
+                  errorMessage =
+                    "위치 접근 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.";
+                  break;
+                case secondError.POSITION_UNAVAILABLE:
+                  errorMessage =
+                    "위치 정보를 사용할 수 없습니다. 네트워크 연결을 확인해주세요.";
+                  break;
+                case secondError.TIMEOUT:
+                  errorMessage =
+                    "위치 정보 요청 시간이 초과되었습니다. 실외에서 다시 시도해보거나 수동으로 좌표를 입력해주세요.";
+                  break;
+              }
+
+              alert(errorMessage);
+              setIsGettingLocation(false);
+            },
+            {
+              enableHighAccuracy: false, // 정확도보다 속도 우선
+              timeout: 10000, // 10초로 단축
+              maximumAge: 300000, // 5분간 캐시된 위치 사용
+            },
+          );
+        },
+        {
+          enableHighAccuracy: true, // 첫 번째 시도는 높은 정확도
+          timeout: 5000, // 5초로 단축
+          maximumAge: 60000, // 1분간 캐시된 위치 사용
         },
       );
     } else {
@@ -162,10 +210,13 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
             type="button"
             variant="outline"
             onClick={getCurrentLocation}
+            disabled={isGettingLocation}
             className="w-full"
           >
             <MapPin className="h-4 w-4 mr-2" />
-            현재 위치 가져오기
+            {isGettingLocation
+              ? "위치 정보 가져오는 중..."
+              : "현재 위치 가져오기"}
           </Button>
         </div>
 
