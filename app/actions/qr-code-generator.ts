@@ -35,9 +35,27 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
 
       // SVG에서 색상이 올바르게 적용되는지 확인하고 수정
       let modifiedSvg = svgString;
+
+      // 배경색 설정 (SVG 전체 배경)
+      if (color?.light && color.light !== "#ffffff") {
+        // SVG 태그에 배경색 추가
+        modifiedSvg = modifiedSvg.replace(
+          /<svg([^>]*)>/,
+          `<svg$1 style="background-color: ${color.light};">`,
+        );
+
+        // 기존 흰색 요소들을 새 배경색으로 변경
+        modifiedSvg = modifiedSvg
+          .replace(/fill="#ffffff"/g, `fill="${color.light}"`)
+          .replace(/fill="#fff"/g, `fill="${color.light}"`)
+          .replace(/fill="white"/g, `fill="${color.light}"`)
+          .replace(/fill="rgb\(255,\s*255,\s*255\)"/g, `fill="${color.light}"`);
+      }
+
+      // 전경색(QR 코드 도트) 설정
       if (color?.dark && color.dark !== "#000000") {
         // SVG 내의 검은색 요소를 지정된 색상으로 변경
-        modifiedSvg = svgString
+        modifiedSvg = modifiedSvg
           .replace(/fill="#000000"/g, `fill="${color.dark}"`)
           .replace(/fill="#000"/g, `fill="${color.dark}"`)
           .replace(/fill="black"/g, `fill="${color.dark}"`)

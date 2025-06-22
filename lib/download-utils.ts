@@ -58,6 +58,98 @@ const downloadFile = (blob: Blob, filename: string) => {
   window.URL.revokeObjectURL(url);
 };
 
+// SVG를 Canvas를 통해 PNG로 변환하는 함수
+const convertSvgToPng = async (
+  svgDataUrl: string,
+  width: number = 1024,
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    try {
+      let svgContent: string;
+
+      // SVG 데이터 URL에서 콘텐츠 추출
+      if (svgDataUrl.startsWith("data:image/svg+xml;base64,")) {
+        // Base64로 인코딩된 경우
+        const base64Data = svgDataUrl.split(",")[1];
+        svgContent = atob(base64Data);
+      } else if (svgDataUrl.startsWith("data:image/svg+xml,")) {
+        // URL 인코딩된 경우
+        svgContent = decodeURIComponent(svgDataUrl.split(",")[1]);
+      } else {
+        reject(new Error("지원하지 않는 SVG 데이터 형식입니다."));
+        return;
+      }
+
+      // SVG 콘텐츠 검증 및 정리
+      if (!svgContent.includes("<svg")) {
+        reject(new Error("유효하지 않은 SVG 콘텐츠입니다."));
+        return;
+      }
+
+      // SVG를 Blob으로 변환하여 안전하게 처리
+      const svgBlob = new Blob([svgContent], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const svgUrl = URL.createObjectURL(svgBlob);
+
+      // SVG를 이미지로 로드
+      const img = new Image();
+      img.onload = () => {
+        try {
+          // Canvas 생성
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          if (!ctx) {
+            URL.revokeObjectURL(svgUrl);
+            reject(new Error("Canvas context를 생성할 수 없습니다."));
+            return;
+          }
+
+          // Canvas 크기 설정
+          canvas.width = width;
+          canvas.height = width;
+
+          // 배경을 흰색으로 설정 (투명도 방지)
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, width, width);
+
+          // SVG 이미지를 Canvas에 그리기
+          ctx.drawImage(img, 0, 0, width, width);
+
+          // Canvas를 PNG 데이터 URL로 변환
+          const pngDataUrl = canvas.toDataURL("image/png", 1.0);
+
+          // 메모리 정리
+          URL.revokeObjectURL(svgUrl);
+          resolve(pngDataUrl);
+        } catch (canvasError) {
+          URL.revokeObjectURL(svgUrl);
+          reject(new Error(`Canvas 처리 중 오류: ${canvasError}`));
+        }
+      };
+
+      img.onerror = (error) => {
+        URL.revokeObjectURL(svgUrl);
+        console.error("SVG 로드 오류:", error);
+        reject(new Error("SVG 이미지 로드에 실패했습니다."));
+      };
+
+      // SVG URL 설정
+      img.src = svgUrl;
+
+      // 타임아웃 설정 (10초)
+      setTimeout(() => {
+        URL.revokeObjectURL(svgUrl);
+        reject(new Error("SVG 로드 시간이 초과되었습니다."));
+      }, 10000);
+    } catch (error) {
+      console.error("SVG 변환 오류:", error);
+      reject(new Error(`SVG 변환 중 오류: ${error}`));
+    }
+  });
+};
+
 // SVG로 다운로드하는 함수
 const downloadAsSvg = async (qrCodeDataUrl: string, filename: string) => {
   const response = await fetch(qrCodeDataUrl);
@@ -66,7 +158,27 @@ const downloadAsSvg = async (qrCodeDataUrl: string, filename: string) => {
 };
 
 // 일반 이미지 형식으로 다운로드하는 함수
-const downloadAsImage = async (qrCodeDataUrl: string, filename: string) => {
+const downloadAsImage = async (
+  qrCodeDataUrl: string,
+  filename: string,
+  format: string = "png",
+) => {
+  // SVG를 PNG로 변환하는 경우 특별 처리
+  if (qrCodeDataUrl.includes("data:image/svg+xml") && format === "png") {
+    try {
+      const pngDataUrl = await convertSvgToPng(qrCodeDataUrl, 1024); // 고품질을 위해 1024x1024로 변환
+      const response = await fetch(pngDataUrl);
+      const blob = await response.blob();
+      downloadFile(blob, filename);
+      return;
+    } catch (error) {
+      console.warn("SVG to PNG 변환 실패, PNG로 직접 생성 시도:", error);
+
+      // SVG 변환 실패 시 서버에서 PNG로 직접 생성하도록 함
+      throw error;
+    }
+  }
+
   const response = await fetch(qrCodeDataUrl);
   const blob = await response.blob();
   downloadFile(blob, filename);
@@ -98,12 +210,40 @@ export const downloadQrCode = async (
     if (format === "svg") {
       await downloadAsSvg(qrCodeDataUrl, filename);
     } else {
-      await downloadAsImage(qrCodeDataUrl, filename);
+      await downloadAsImage(qrCodeDataUrl, filename, format);
     }
 
     return { success: true };
   } catch (error) {
     console.error("QR 코드 다운로드 오류:", error);
+
+    // SVG to PNG 변환 실패 시 PNG로 직접 재시도
+    if (
+      format === "png" &&
+      error instanceof Error &&
+      error.message.includes("SVG")
+    ) {
+      try {
+        console.log("PNG로 직접 생성 재시도...");
+        const { generateQrCode } = await import(
+          "@/app/actions/qr-code-generator"
+        );
+        const pngSettings = parseQrSettings(settings, content, "png");
+
+        const pngDataUrl = await generateQrCode(pngSettings);
+        const filename = generateFileName(title, type, "png");
+
+        const response = await fetch(pngDataUrl);
+        const blob = await response.blob();
+        downloadFile(blob, filename);
+
+        return { success: true };
+      } catch (retryError) {
+        console.error("PNG 재시도도 실패:", retryError);
+        return { success: false, error: "다운로드에 실패했습니다." };
+      }
+    }
+
     return { success: false, error: "다운로드에 실패했습니다." };
   }
 };
