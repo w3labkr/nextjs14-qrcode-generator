@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Search } from "lucide-react";
 
@@ -56,6 +57,7 @@ export function AddressSearch({ onAddressSelect, children }: AddressSearchProps)
       <DialogContent className="max-w-md max-h-[80vh] p-0">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>주소 검색</DialogTitle>
+          <DialogDescription>도로명 주소 및 지번 주소를 검색할 수 있습니다.</DialogDescription>
         </DialogHeader>
         <div className="p-6 pt-4">
           <div className="min-h-[400px] w-full">
