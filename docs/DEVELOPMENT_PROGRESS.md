@@ -4,7 +4,7 @@
 
 ### ✅ Phase 1: 기반 구축 완료
 - **데이터베이스 설정**: Prisma + SQLite 연동 완료
-- **인증 시스템**: Auth.js + Google OAuth 구현 완료
+- **인증 시스템**: Auth.js + Google OAuth + 매직 링크 인증 구현 완료
 - **미들웨어**: 인증 보호 라우트 설정 완료
 - **기본 UI**: 사용자 네비게이션, 로그인/로그아웃 페이지 구현
 
@@ -41,8 +41,9 @@
 ```
 /app
   /api/auth/[...nextauth]/route.ts   # Auth.js API 라우트
-  /auth/signin/page.tsx              # 로그인 페이지
+  /auth/signin/page.tsx              # 로그인 페이지 (Google OAuth + 매직 링크)
   /auth/error/page.tsx               # 인증 오류 페이지
+  /auth/verify-request/page.tsx      # 매직 링크 확인 페이지
   /dashboard/page.tsx                # 사용자 대시보드
   /history/page.tsx                  # QR 코드 히스토리
   /settings/page.tsx                 # 설정 페이지
@@ -170,7 +171,7 @@ model QrTemplate {
 
 - **Frontend**: Next.js 14, React 18, TypeScript
 - **Styling**: Tailwind CSS, Shadcn UI
-- **Authentication**: Auth.js (NextAuth v5), Google OAuth
+- **Authentication**: Auth.js (NextAuth v5), Google OAuth, 매직 링크 인증
 - **Database**: Prisma ORM, SQLite (개발), Turso (프로덕션 예정)
 - **QR Generation**: qrcode, qr-code-styling-node
 - **PDF Generation**: jsPDF
@@ -179,8 +180,24 @@ model QrTemplate {
 
 ## 📊 현재 상태
 
-✅ **완료**: 기본 기능 + 사용자 관리 + 히스토리 시스템 + PWA 지원
+✅ **완료**: 기본 기능 + 사용자 관리 + 히스토리 시스템 + PWA 지원 + 매직 링크 인증
 🔄 **진행 중**: API 엔드포인트 개발
 ⏳ **예정**: 프로덕션 배포 최적화
+
+## 🎉 최신 업데이트 (2025-06-22)
+
+### ✅ 매직 링크 인증 시스템 구현 완료
+
+- **Resend 통합**: 안정적인 이메일 전송을 위한 Resend API 통합
+- **매직 링크 로그인**: 패스워드 없이 이메일만으로 로그인 가능
+- **이중 인증 옵션**: Google OAuth와 매직 링크 중 선택 가능
+- **사용자 경험 개선**: 직관적인 로그인 인터페이스 구현
+- **이메일 확인 페이지**: 매직 링크 전송 후 안내 페이지 제공
+
+### 🔧 기술적 개선 사항
+
+- **Nodemailer → Resend 마이그레이션**: Next.js 호환성 개선
+- **환경 변수 구조화**: 명확한 필수/선택 변수 분리
+- **문서 업데이트**: README 및 환경 설정 가이드 개선
 
 이 프로젝트는 PRD 문서의 요구사항을 충실히 따라 구현되었으며, 오픈소스 QR 코드 생성기로서 필요한 핵심 기능들이 모두 구현되었습니다.

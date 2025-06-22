@@ -1,5 +1,6 @@
 import { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
+import Resend from "next-auth/providers/resend";
 
 export default {
   providers: [
@@ -7,10 +8,15 @@ export default {
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
     }),
+    Resend({
+      apiKey: process.env.AUTH_RESEND_KEY,
+      from: process.env.EMAIL_FROM,
+    }),
   ],
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
+    verifyRequest: "/auth/verify-request",
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {

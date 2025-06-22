@@ -11,6 +11,8 @@
 ## 주요 기능
 
 - **다양한 콘텐츠 유형 지원**: URL, 텍스트, Wi-Fi 정보를 QR 코드로 변환할 수 있습니다.
+- **다중 인증 시스템**: Google OAuth와 매직 링크 이메일 인증을 지원하여 사용자가 선호하는 방식으로 로그인할 수 있습니다.
+- **QR 코드 히스토리 관리**: 로그인한 사용자는 생성한 QR 코드를 자동으로 저장하고 관리할 수 있습니다.
 - **자유로운 커스터마이징**: 전경색, 배경색, 로고 삽입, QR 코드 둥글기 및 모서리 패턴 변경 등 세밀한 디자인 설정이 가능합니다.
 - **고해상도 다운로드**: 생성된 QR 코드를 PNG, SVG, JPEG, PDF 등 다양한 형식으로 다운로드할 수 있습니다.
 - **프레임 추가**: "스캔해 주세요!"와 같은 문구를 포함한 여러 유형의 프레임을 추가하여 사용자의 스캔을 유도할 수 있습니다.
@@ -22,6 +24,9 @@
 - **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
+- **Authentication**: [Auth.js](https://authjs.dev/) (NextAuth v5) with Google OAuth & Magic Link
+- **Database**: [Prisma](https://prisma.io/) ORM with SQLite
+- **Email Service**: [Resend](https://resend.com/) for Magic Link authentication
 - **QR Code Generation**: [qr-code-styling-node](https://www.npmjs.com/package/qr-code-styling-node), [qrcode](https://www.npmjs.com/package/qrcode)
 - **PDF Generation**: [jsPDF](https://www.npmjs.com/package/jspdf)
 - **Fonts**: Nanum Gothic (한글 지원)
@@ -42,13 +47,43 @@ cd nextjs14-qrcode-generator
 npm install
 ```
 
-### 3. 개발 서버 실행
+### 3. 환경 변수 설정
+
+`.env.example` 파일을 복사하여 `.env.local` 파일을 생성하고 필요한 환경 변수를 설정하세요:
+
+```bash
+cp .env.example .env.local
+```
+
+#### 필수 환경 변수:
+
+- `AUTH_SECRET`: Auth.js 세션 암호화용 비밀 키
+- `DATABASE_URL`: SQLite 데이터베이스 경로
+
+#### 선택적 환경 변수 (고급 기능 사용 시):
+
+**Google OAuth (소셜 로그인)**:
+- `AUTH_GOOGLE_ID`: Google OAuth 클라이언트 ID
+- `AUTH_GOOGLE_SECRET`: Google OAuth 클라이언트 시크릿
+
+**Resend (매직 링크 인증)**:
+- `AUTH_RESEND_KEY`: Resend API 키
+- `EMAIL_FROM`: 매직 링크 이메일 발신 주소
+
+### 4. 데이터베이스 설정
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+### 5. 개발 서버 실행
 
 ```bash
 npm run dev
 ```
 
-### 4. 프로덕션 빌드
+### 6. 프로덕션 빌드
 
 ```bash
 npm run build
