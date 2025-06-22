@@ -28,7 +28,6 @@
 - **Database**: [Prisma](https://prisma.io/) ORM with SQLite
 - **Email Service**: [Resend](https://resend.com/) for Magic Link authentication
 - **QR Code Generation**: [qr-code-styling-node](https://www.npmjs.com/package/qr-code-styling-node), [qrcode](https://www.npmjs.com/package/qrcode)
-- **Fonts**: Nanum Gothic (한글 지원)
 - **Deployment**: [Vercel](https://vercel.com/)
 
 ## 시작하기
