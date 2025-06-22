@@ -17,11 +17,6 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       throw new Error("QR code width must be between 100px and 4096px.");
     }
 
-    // 디버깅을 위한 색상 로깅 (개발환경에서만)
-    if (process.env.NODE_ENV === "development") {
-      console.log("QR Code generation - Type:", type, "Colors:", color);
-    }
-
     const qrcodeOptions: QRCode.QRCodeRenderersOptions = {
       errorCorrectionLevel: "H",
       width,
