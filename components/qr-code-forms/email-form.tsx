@@ -21,13 +21,15 @@ export function EmailForm({ onChange }: EmailFormProps) {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
 
-  const generateEmailString = () => {
-    if (!email) {
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+
+    if (!value) {
       onChange("");
       return;
     }
 
-    let emailString = `mailto:${email}`;
+    let emailString = `mailto:${value}`;
     const params: string[] = [];
 
     if (subject) {
@@ -44,24 +46,54 @@ export function EmailForm({ onChange }: EmailFormProps) {
     onChange(emailString);
   };
 
-  // 값이 변경될 때마다 이메일 문자열 생성
-  useState(() => {
-    generateEmailString();
-  });
-
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
-    generateEmailString();
-  };
-
   const handleSubjectChange = (value: string) => {
     setSubject(value);
-    generateEmailString();
+
+    if (!email) {
+      onChange("");
+      return;
+    }
+
+    let emailString = `mailto:${email}`;
+    const params: string[] = [];
+
+    if (value) {
+      params.push(`subject=${encodeURIComponent(value)}`);
+    }
+    if (body) {
+      params.push(`body=${encodeURIComponent(body)}`);
+    }
+
+    if (params.length > 0) {
+      emailString += `?${params.join("&")}`;
+    }
+
+    onChange(emailString);
   };
 
   const handleBodyChange = (value: string) => {
     setBody(value);
-    generateEmailString();
+
+    if (!email) {
+      onChange("");
+      return;
+    }
+
+    let emailString = `mailto:${email}`;
+    const params: string[] = [];
+
+    if (subject) {
+      params.push(`subject=${encodeURIComponent(subject)}`);
+    }
+    if (value) {
+      params.push(`body=${encodeURIComponent(value)}`);
+    }
+
+    if (params.length > 0) {
+      emailString += `?${params.join("&")}`;
+    }
+
+    onChange(emailString);
   };
 
   return (
