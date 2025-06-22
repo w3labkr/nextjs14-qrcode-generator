@@ -11,9 +11,7 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/api/qr") ||
     nextUrl.pathname.startsWith("/_next") ||
     nextUrl.pathname.startsWith("/auth");
-  const isProtectedRoute =
-    nextUrl.pathname.startsWith("/dashboard") ||
-    nextUrl.pathname.startsWith("/history");
+  const isProtectedRoute = nextUrl.pathname.startsWith("/dashboard");
 
   if (isApiAuthRoute) {
     return NextResponse.next();

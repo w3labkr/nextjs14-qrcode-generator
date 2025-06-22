@@ -33,7 +33,7 @@ export function UserNav() {
       <div className="flex gap-2">
         <InstallPrompt />
         <Button variant="outline" asChild>
-          <Link href="/history">기록</Link>
+          <Link href="/dashboard/history">기록</Link>
         </Button>
         <Button onClick={() => signIn()}>로그인</Button>
       </div>
@@ -73,25 +73,25 @@ export function UserNav() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/history">
+          <Link href="/dashboard/history">
             <History className="mr-2 h-4 w-4" />
             QR 코드 히스토리
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/templates">
+          <Link href="/dashboard/templates">
             <Bookmark className="mr-2 h-4 w-4" />
             템플릿 관리
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/data">
+          <Link href="/dashboard/data">
             <Database className="mr-2 h-4 w-4" />
             데이터 관리
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/settings">
+          <Link href="/dashboard/settings">
             <Settings className="mr-2 h-4 w-4" />
             설정
           </Link>

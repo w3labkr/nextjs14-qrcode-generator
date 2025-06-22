@@ -266,7 +266,7 @@ export default function DashboardPage() {
                   ))}
                   <div className="text-center pt-4">
                     <Button variant="outline" asChild>
-                      <Link href="/history">모든 히스토리 보기</Link>
+                      <Link href="/dashboard/history">모든 히스토리 보기</Link>
                     </Button>
                   </div>
                 </div>

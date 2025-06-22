@@ -66,7 +66,7 @@ export default function DataPage() {
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/settings">
+              <Link href="/dashboard/settings">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 설정으로 돌아가기
               </Link>

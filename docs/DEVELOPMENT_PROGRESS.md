@@ -45,10 +45,10 @@
   /auth/error/page.tsx               # 인증 오류 페이지
   /auth/verify-request/page.tsx      # 매직 링크 확인 페이지
   /dashboard/page.tsx                # 사용자 대시보드
-  /history/page.tsx                  # QR 코드 히스토리
-  /settings/page.tsx                 # 설정 페이지
-  /templates/page.tsx                # 템플릿 관리 페이지
-  /data/page.tsx                     # 데이터 관리 페이지
+  /dashboard/history/page.tsx        # QR 코드 히스토리
+  /dashboard/settings/page.tsx       # 설정 페이지
+  /dashboard/templates/page.tsx      # 템플릿 관리 페이지
+  /dashboard/data/page.tsx           # 데이터 관리 페이지
   /actions/qr-code.ts               # QR 코드 서버 액션
   page.tsx                          # 메인 QR 생성 페이지
   layout.tsx                        # 루트 레이아웃
