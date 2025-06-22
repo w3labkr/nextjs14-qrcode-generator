@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -12,125 +12,136 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+interface VCardData {
+  firstName: string;
+  lastName: string;
+  organization: string;
+  title: string;
+  phone: string;
+  email: string;
+  website: string;
+  address: string;
+}
+
 interface VCardFormProps {
   onChange: (vcardString: string) => void;
   initialValue?: string;
 }
 
 export function VCardForm({ onChange, initialValue }: VCardFormProps) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [organization, setOrganization] = useState("");
-  const [title, setTitle] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [website, setWebsite] = useState("");
-  const [address, setAddress] = useState("");
+  const [formData, setFormData] = useState<VCardData>({
+    firstName: "",
+    lastName: "",
+    organization: "",
+    title: "",
+    phone: "",
+    email: "",
+    website: "",
+    address: "",
+  });
 
-  // VCard 문자열에서 개별 필드로 파싱하는 함수
-  const parseVCardString = (vcardStr: string) => {
+  const parseVCardString = useCallback((vcardStr: string): VCardData | null => {
     if (!vcardStr.startsWith("BEGIN:VCARD")) return null;
 
     const lines = vcardStr.split(/\r?\n/);
-    const data: any = {};
+    const data: Partial<VCardData> = {};
 
     lines.forEach((line) => {
-      if (line.startsWith("FN:")) {
-        const fullName = line.substring(3);
-        const nameParts = fullName.split(" ");
-        data.firstName = nameParts[0] || "";
-        data.lastName = nameParts.slice(1).join(" ") || "";
-      } else if (line.startsWith("ORG:")) {
-        data.organization = line.substring(4);
-      } else if (line.startsWith("TITLE:")) {
-        data.title = line.substring(6);
-      } else if (line.startsWith("TEL:")) {
-        data.phone = line.substring(4);
-      } else if (line.startsWith("EMAIL:")) {
-        data.email = line.substring(6);
-      } else if (line.startsWith("URL:")) {
-        data.website = line.substring(4);
-      } else if (line.startsWith("ADR:")) {
-        data.address = line.substring(4).split(";").join(" ");
+      const [field, ...valueParts] = line.split(":");
+      const value = valueParts.join(":");
+
+      switch (field) {
+        case "FN": {
+          const nameParts = value.split(" ");
+          data.firstName = nameParts[0] || "";
+          data.lastName = nameParts.slice(1).join(" ") || "";
+          break;
+        }
+        case "ORG":
+          data.organization = value;
+          break;
+        case "TITLE":
+          data.title = value;
+          break;
+        case "TEL":
+          data.phone = value;
+          break;
+        case "EMAIL":
+          data.email = value;
+          break;
+        case "URL":
+          data.website = value;
+          break;
+        case "ADR":
+          data.address = value.split(";").filter(Boolean).join(" ");
+          break;
       }
     });
 
-    return data;
-  };
+    return {
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
+      organization: data.organization || "",
+      title: data.title || "",
+      phone: data.phone || "",
+      email: data.email || "",
+      website: data.website || "",
+      address: data.address || "",
+    };
+  }, []);
 
-  // 초기값 설정
-  useEffect(() => {
-    if (initialValue && initialValue.startsWith("BEGIN:VCARD")) {
-      const parsed = parseVCardString(initialValue);
-      if (parsed) {
-        setFirstName(parsed.firstName || "");
-        setLastName(parsed.lastName || "");
-        setOrganization(parsed.organization || "");
-        setTitle(parsed.title || "");
-        setPhone(parsed.phone || "");
-        setEmail(parsed.email || "");
-        setWebsite(parsed.website || "");
-        setAddress(parsed.address || "");
-      }
-    }
-  }, [initialValue]);
+  const generateVCardString = useCallback((data: VCardData): string => {
+    const {
+      firstName,
+      lastName,
+      organization,
+      title,
+      phone,
+      email,
+      website,
+      address,
+    } = data;
 
-  const generateVCardString = () => {
     if (!firstName && !lastName && !phone && !email) {
-      onChange("");
-      return;
+      return "";
     }
 
     const vcard = ["BEGIN:VCARD", "VERSION:3.0"];
 
-    // 이름
     if (firstName || lastName) {
       vcard.push(`FN:${firstName} ${lastName}`.trim());
       vcard.push(`N:${lastName};${firstName};;;`);
     }
 
-    // 조직 및 직함
-    if (organization) {
-      vcard.push(`ORG:${organization}`);
-    }
-    if (title) {
-      vcard.push(`TITLE:${title}`);
-    }
-
-    // 연락처 정보
-    if (phone) {
-      vcard.push(`TEL:${phone}`);
-    }
-    if (email) {
-      vcard.push(`EMAIL:${email}`);
-    }
-    if (website) {
-      vcard.push(`URL:${website}`);
-    }
-
-    // 주소
-    if (address) {
-      vcard.push(`ADR:;;${address};;;;`);
-    }
+    if (organization) vcard.push(`ORG:${organization}`);
+    if (title) vcard.push(`TITLE:${title}`);
+    if (phone) vcard.push(`TEL:${phone}`);
+    if (email) vcard.push(`EMAIL:${email}`);
+    if (website) vcard.push(`URL:${website}`);
+    if (address) vcard.push(`ADR:;;${address};;;;`);
 
     vcard.push("END:VCARD");
 
-    onChange(vcard.join("\n"));
-  };
+    return vcard.join("\n");
+  }, []);
 
-  // 값이 변경될 때마다 vCard 문자열 생성
+  const updateField = useCallback((field: keyof VCardData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
   useEffect(() => {
-    generateVCardString();
-  }, [
-    firstName,
-    lastName,
-    organization,
-    title,
-    phone,
-    email,
-    website,
-    address,
-  ]);
+    if (initialValue && initialValue.startsWith("BEGIN:VCARD")) {
+      const parsed = parseVCardString(initialValue);
+      if (parsed) {
+        setFormData(parsed);
+      }
+    }
+  }, [initialValue, parseVCardString]);
+
+  useEffect(() => {
+    const vcardString = generateVCardString(formData);
+    onChange(vcardString);
+  }, [formData, generateVCardString, onChange]);
 
   return (
     <Card>
@@ -147,8 +158,8 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
             <Label htmlFor="firstName">이름 *</Label>
             <Input
               id="firstName"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={formData.firstName}
+              onChange={(e) => updateField("firstName", e.target.value)}
               placeholder="홍길동"
               required
             />
@@ -157,8 +168,8 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
             <Label htmlFor="lastName">성 (선택사항)</Label>
             <Input
               id="lastName"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              value={formData.lastName}
+              onChange={(e) => updateField("lastName", e.target.value)}
               placeholder="홍"
             />
           </div>
@@ -169,8 +180,8 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
             <Label htmlFor="organization">회사/조직 (선택사항)</Label>
             <Input
               id="organization"
-              value={organization}
-              onChange={(e) => setOrganization(e.target.value)}
+              value={formData.organization}
+              onChange={(e) => updateField("organization", e.target.value)}
               placeholder="회사명"
             />
           </div>
@@ -178,8 +189,8 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
             <Label htmlFor="title">직함 (선택사항)</Label>
             <Input
               id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={formData.title}
+              onChange={(e) => updateField("title", e.target.value)}
               placeholder="대표이사"
             />
           </div>
@@ -191,8 +202,8 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
             <Input
               id="phone"
               type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              value={formData.phone}
+              onChange={(e) => updateField("phone", e.target.value)}
               placeholder="010-1234-5678"
             />
           </div>
@@ -201,8 +212,8 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
             <Input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={(e) => updateField("email", e.target.value)}
               placeholder="example@example.com"
             />
           </div>
@@ -213,8 +224,8 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
           <Input
             id="website"
             type="url"
-            value={website}
-            onChange={(e) => setWebsite(e.target.value)}
+            value={formData.website}
+            onChange={(e) => updateField("website", e.target.value)}
             placeholder="https://example.com"
           />
         </div>
@@ -223,8 +234,8 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
           <Label htmlFor="address">주소 (선택사항)</Label>
           <Textarea
             id="address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            value={formData.address}
+            onChange={(e) => updateField("address", e.target.value)}
             placeholder="서울특별시 강남구 테헤란로 123"
             rows={2}
           />

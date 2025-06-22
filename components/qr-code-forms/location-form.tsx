@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -18,35 +18,70 @@ interface LocationFormProps {
   initialValue?: string;
 }
 
+interface LocationData {
+  latitude: string;
+  longitude: string;
+  address: string;
+}
+
+const GEOLOCATION_OPTIONS = {
+  HIGH_ACCURACY: {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 60000,
+  },
+  FAST_RESPONSE: {
+    enableHighAccuracy: false,
+    timeout: 10000,
+    maximumAge: 300000,
+  },
+} as const;
+
+const GEOLOCATION_ERROR_MESSAGES: Record<number, string> = {
+  [GeolocationPositionError.PERMISSION_DENIED]:
+    "위치 접근 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.",
+  [GeolocationPositionError.POSITION_UNAVAILABLE]:
+    "위치 정보를 사용할 수 없습니다. 네트워크 연결을 확인해주세요.",
+  [GeolocationPositionError.TIMEOUT]:
+    "위치 정보 요청 시간이 초과되었습니다. 실외에서 다시 시도해보거나 수동으로 좌표를 입력해주세요.",
+} as const;
+
 export function LocationForm({ onChange, initialValue }: LocationFormProps) {
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
   const [address, setAddress] = useState("");
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
-  // 위치 문자열에서 개별 필드로 파싱하는 함수
-  const parseLocationString = (locationStr: string) => {
-    if (locationStr.startsWith("geo:")) {
-      // geo:37.7749,-122.4194
-      const coords = locationStr.substring(4).split(",");
-      return {
-        latitude: coords[0] || "",
-        longitude: coords[1] || "",
-        address: "",
-      };
-    } else if (locationStr.includes("maps.google.com")) {
-      // Google Maps URL
-      const url = new URL(locationStr);
-      const q = url.searchParams.get("q");
-      return {
-        latitude: "",
-        longitude: "",
-        address: q ? decodeURIComponent(q) : "",
-      };
-    }
-    return null;
-  };
+  const parseLocationString = useCallback(
+    (locationStr: string): LocationData | null => {
+      if (locationStr.startsWith("geo:")) {
+        const coords = locationStr.substring(4).split(",");
+        return {
+          latitude: coords[0] || "",
+          longitude: coords[1] || "",
+          address: "",
+        };
+      }
 
-  // 초기값 설정
+      if (locationStr.includes("maps.google.com")) {
+        try {
+          const url = new URL(locationStr);
+          const q = url.searchParams.get("q");
+          return {
+            latitude: "",
+            longitude: "",
+            address: q ? decodeURIComponent(q) : "",
+          };
+        } catch {
+          return null;
+        }
+      }
+
+      return null;
+    },
+    [],
+  );
+
   useEffect(() => {
     if (initialValue) {
       const parsed = parseLocationString(initialValue);
@@ -56,110 +91,84 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
         setAddress(parsed.address);
       }
     }
-  }, [initialValue]);
+  }, [initialValue, parseLocationString]);
 
-  const generateLocationString = () => {
+  const generateLocationString = useCallback(() => {
     if (latitude && longitude) {
-      // 좌표 기반 위치
       const locationString = `geo:${latitude},${longitude}`;
       onChange(locationString);
     } else if (address) {
-      // 주소 기반 구글 지도 링크
       const encodedAddress = encodeURIComponent(address);
       const mapsUrl = `https://maps.google.com/?q=${encodedAddress}`;
       onChange(mapsUrl);
     } else {
       onChange("");
     }
-  };
+  }, [latitude, longitude, address, onChange]);
 
   useEffect(() => {
     generateLocationString();
-  }, [latitude, longitude, address]);
+  }, [generateLocationString]);
 
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const showErrorMessage = useCallback((error: GeolocationPositionError) => {
+    const errorMessage =
+      GEOLOCATION_ERROR_MESSAGES[error.code] ||
+      "위치 정보를 가져올 수 없습니다.";
+    alert(errorMessage);
+  }, []);
 
-  const getCurrentLocation = () => {
-    if ("geolocation" in navigator) {
-      setIsGettingLocation(true);
+  const handleLocationSuccess = useCallback((position: GeolocationPosition) => {
+    setLatitude(position.coords.latitude.toString());
+    setLongitude(position.coords.longitude.toString());
+    setAddress("");
+    setIsGettingLocation(false);
+  }, []);
 
-      // 먼저 빠른 위치 정보 시도 (캐시된 위치 또는 네트워크 기반)
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude.toString());
-          setLongitude(position.coords.longitude.toString());
-          setAddress(""); // 좌표가 설정되면 주소는 비움
-          setIsGettingLocation(false);
-        },
-        (error) => {
-          console.warn(
-            "빠른 위치 정보 가져오기 실패, 정확한 위치 정보 시도 중...",
-            error,
-          );
-
-          // 첫 번째 시도가 실패하면 더 관대한 옵션으로 재시도
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              setLatitude(position.coords.latitude.toString());
-              setLongitude(position.coords.longitude.toString());
-              setAddress(""); // 좌표가 설정되면 주소는 비움
-              setIsGettingLocation(false);
-            },
-            (secondError) => {
-              console.error("위치 정보를 가져올 수 없습니다:", secondError);
-              let errorMessage = "위치 정보를 가져올 수 없습니다.";
-
-              switch (secondError.code) {
-                case secondError.PERMISSION_DENIED:
-                  errorMessage =
-                    "위치 접근 권한이 거부되었습니다. 브라우저 설정에서 위치 권한을 허용해주세요.";
-                  break;
-                case secondError.POSITION_UNAVAILABLE:
-                  errorMessage =
-                    "위치 정보를 사용할 수 없습니다. 네트워크 연결을 확인해주세요.";
-                  break;
-                case secondError.TIMEOUT:
-                  errorMessage =
-                    "위치 정보 요청 시간이 초과되었습니다. 실외에서 다시 시도해보거나 수동으로 좌표를 입력해주세요.";
-                  break;
-              }
-
-              alert(errorMessage);
-              setIsGettingLocation(false);
-            },
-            {
-              enableHighAccuracy: false, // 정확도보다 속도 우선
-              timeout: 10000, // 10초로 단축
-              maximumAge: 300000, // 5분간 캐시된 위치 사용
-            },
-          );
-        },
-        {
-          enableHighAccuracy: true, // 첫 번째 시도는 높은 정확도
-          timeout: 5000, // 5초로 단축
-          maximumAge: 60000, // 1분간 캐시된 위치 사용
-        },
-      );
-    } else {
+  const getCurrentLocation = useCallback(() => {
+    if (!("geolocation" in navigator)) {
       alert("이 브라우저는 위치 서비스를 지원하지 않습니다.");
+      return;
     }
-  };
 
-  const handleCoordinateChange = (lat: string, lng: string) => {
+    setIsGettingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      handleLocationSuccess,
+      (error) => {
+        console.warn(
+          "빠른 위치 정보 가져오기 실패, 정확한 위치 정보 시도 중...",
+          error,
+        );
+
+        navigator.geolocation.getCurrentPosition(
+          handleLocationSuccess,
+          (secondError) => {
+            console.error("위치 정보를 가져올 수 없습니다:", secondError);
+            showErrorMessage(secondError);
+            setIsGettingLocation(false);
+          },
+          GEOLOCATION_OPTIONS.FAST_RESPONSE,
+        );
+      },
+      GEOLOCATION_OPTIONS.HIGH_ACCURACY,
+    );
+  }, [handleLocationSuccess, showErrorMessage]);
+
+  const handleCoordinateChange = useCallback((lat: string, lng: string) => {
     setLatitude(lat);
     setLongitude(lng);
     if (lat || lng) {
-      setAddress(""); // 좌표가 입력되면 주소는 비움
+      setAddress("");
     }
-  };
+  }, []);
 
-  const handleAddressChange = (addr: string) => {
+  const handleAddressChange = useCallback((addr: string) => {
     setAddress(addr);
     if (addr) {
-      setLatitude(""); // 주소가 입력되면 좌표는 비움
+      setLatitude("");
       setLongitude("");
     }
-  };
+  }, []);
 
   return (
     <Card>
@@ -220,7 +229,6 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
           </Button>
         </div>
 
-        {/* 구분선 */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
@@ -232,7 +240,6 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
           </div>
         </div>
 
-        {/* 주소 입력 */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4" />
@@ -253,7 +260,6 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
           </div>
         </div>
 
-        {/* 미리보기 */}
         {latitude && longitude && (
           <div className="p-3 bg-green-50 rounded-lg border border-green-200">
             <p className="text-sm text-green-700">
