@@ -4,6 +4,7 @@
 
 - [DEPENDENCIES](#dependencies)
   - [Table of Contents](#table-of-contents)
+  - [Git](#git)
   - [Next.js](#nextjs)
   - [shadcn](#shadcn)
   - [Tailwindcss](#tailwindcss)
@@ -19,6 +20,15 @@
   - [ESLint](#eslint)
   - [Prettier](#prettier)
   - [Troubleshooting](#troubleshooting)
+
+## Git
+
+Auto-increments patch version and stages files on commit
+
+```bash
+$ chmod +x pre-commit.sh
+$ ./pre-commit.sh
+```
 
 ## Next.js
 
