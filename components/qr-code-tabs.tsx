@@ -24,15 +24,52 @@ export function QrCodeTabs({
 }: QrCodeTabsProps) {
   return (
     <Tabs value={activeTab} className="w-full" onValueChange={onTabChange}>
-      <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-1">
-        <TabsTrigger value="url">URL</TabsTrigger>
-        <TabsTrigger value="text">텍스트</TabsTrigger>
-        <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
-        <TabsTrigger value="email">이메일</TabsTrigger>
-        <TabsTrigger value="sms">SMS</TabsTrigger>
-        <TabsTrigger value="vcard">연락처</TabsTrigger>
-        <TabsTrigger value="location">위치</TabsTrigger>
-      </TabsList>
+      <div className="w-full overflow-x-auto">
+        <TabsList className="inline-flex w-max min-w-full justify-start gap-1 h-auto p-1">
+          <TabsTrigger
+            value="url"
+            className="flex-shrink-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
+          >
+            URL
+          </TabsTrigger>
+          <TabsTrigger
+            value="text"
+            className="flex-shrink-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
+          >
+            텍스트
+          </TabsTrigger>
+          <TabsTrigger
+            value="wifi"
+            className="flex-shrink-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
+          >
+            Wi-Fi
+          </TabsTrigger>
+          <TabsTrigger
+            value="email"
+            className="flex-shrink-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
+          >
+            이메일
+          </TabsTrigger>
+          <TabsTrigger
+            value="sms"
+            className="flex-shrink-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
+          >
+            SMS
+          </TabsTrigger>
+          <TabsTrigger
+            value="vcard"
+            className="flex-shrink-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
+          >
+            연락처
+          </TabsTrigger>
+          <TabsTrigger
+            value="location"
+            className="flex-shrink-0 px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
+          >
+            위치
+          </TabsTrigger>
+        </TabsList>
+      </div>
       <TabsContent value="url">
         <UrlForm value={qrData} onChange={setQrData} />
       </TabsContent>
