@@ -14,7 +14,7 @@
 - **다중 인증 시스템**: Google OAuth와 매직 링크 이메일 인증을 지원하여 사용자가 선호하는 방식으로 로그인할 수 있습니다.
 - **QR 코드 히스토리 관리**: 로그인한 사용자는 생성한 QR 코드를 자동으로 저장하고 관리할 수 있습니다.
 - **자유로운 커스터마이징**: 전경색, 배경색, 로고 삽입, QR 코드 둥글기 및 모서리 패턴 변경 등 세밀한 디자인 설정이 가능합니다.
-- **고해상도 다운로드**: 생성된 QR 코드를 PNG, SVG, JPEG, PDF 등 다양한 형식으로 다운로드할 수 있습니다.
+- **고해상도 다운로드**: 생성된 QR 코드를 PNG, SVG, JPEG 등 다양한 형식으로 다운로드할 수 있습니다.
 - **프레임 추가**: "스캔해 주세요!"와 같은 문구를 포함한 여러 유형의 프레임을 추가하여 사용자의 스캔을 유도할 수 있습니다.
 - **Wi-Fi QR 코드 지원**: Wi-Fi 네트워크 정보를 쉽게 QR 코드로 변환하여 즉시 네트워크에 연결할 수 있습니다.
 - **PWA 지원**: 오프라인 환경에서도 웹 애플리케이션을 사용할 수 있습니다.
@@ -28,7 +28,6 @@
 - **Database**: [Prisma](https://prisma.io/) ORM with SQLite
 - **Email Service**: [Resend](https://resend.com/) for Magic Link authentication
 - **QR Code Generation**: [qr-code-styling-node](https://www.npmjs.com/package/qr-code-styling-node), [qrcode](https://www.npmjs.com/package/qrcode)
-- **PDF Generation**: [jsPDF](https://www.npmjs.com/package/jspdf)
 - **Fonts**: Nanum Gothic (한글 지원)
 - **Deployment**: [Vercel](https://vercel.com/)
 

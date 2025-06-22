@@ -19,19 +19,6 @@ export function QrCodePreviewWithFrame({
   alt = "Generated QR Code",
   className = "",
 }: QrCodePreviewWithFrameProps) {
-  // PDF인 경우 iframe으로 표시
-  if (qrCodeUrl && qrCodeUrl.startsWith("data:application/pdf")) {
-    return (
-      <iframe
-        src={qrCodeUrl}
-        width={width}
-        height={height}
-        style={{ border: "none" }}
-        title="QR Code PDF Preview"
-      />
-    );
-  }
-
   // 프레임이 없거나 타입이 'none'인 경우 기본 이미지만 표시
   if (!frameOptions || frameOptions.type === "none" || !qrCodeUrl) {
     return (

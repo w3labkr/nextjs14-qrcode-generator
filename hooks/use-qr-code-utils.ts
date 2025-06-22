@@ -19,5 +19,5 @@ export function getDownloadFilename(format: string) {
 
 export function getHighResDownloadFilename(format: string) {
   const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
-  return `qrcode-4k-${timestamp}.${format === "pdf" ? "png" : format}`;
+  return `qrcode-4k-${timestamp}.${format}`;
 }

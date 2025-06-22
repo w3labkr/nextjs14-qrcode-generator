@@ -9,7 +9,6 @@ import {
   generateHighResQrCode,
   updateQrCode,
 } from "@/app/actions/qr-code";
-import usePdfGenerator from "@/hooks/use-pdf-generator";
 import type { QrCodeFormat, QrCodeType, FrameOptions } from "@/types/qr-code";
 import type { QrCodeOptions } from "@/app/actions/qr-code";
 
@@ -39,7 +38,6 @@ export function useQrCodeGeneration({
   templateApplied,
 }: UseQrCodeGenerationProps) {
   const { data: session } = useSession();
-  const { generatePdf } = usePdfGenerator();
 
   const [qrCode, setQrCode] = useState("");
   const [highResQrCode, setHighResQrCode] = useState("");
@@ -79,7 +77,7 @@ export function useQrCodeGeneration({
         if (isEditMode && editingQrCodeId) {
           const updateResult = await updateQrCode(editingQrCodeId, {
             ...settings,
-            type: format === "pdf" ? "png" : format,
+            type: format,
             qrType,
             title: `${qrType} QR 코드 - ${new Date().toLocaleDateString("ko-KR")}`,
           });
@@ -100,22 +98,13 @@ export function useQrCodeGeneration({
         } else {
           result = await generateAndSaveQrCode({
             ...settings,
-            type: format === "pdf" ? "png" : format,
+            type: format,
             qrType,
             title: `${qrType} QR 코드`,
           });
         }
 
-        if (format === "pdf" && result) {
-          const pdfDataUrl = await generatePdf({
-            qrCodeUrl: result.qrCodeDataUrl,
-            qrText: qrData,
-            frameOptions:
-              frameOptions.type !== "none" ? frameOptions : undefined,
-            qrSettings: settings,
-          });
-          setQrCode(pdfDataUrl);
-        } else if (result) {
+        if (result) {
           setQrCode(result.qrCodeDataUrl);
         }
 
@@ -125,34 +114,14 @@ export function useQrCodeGeneration({
           }
         }
       } else {
-        if (format === "pdf") {
-          const pngOptions = {
-            ...settings,
-            type: "png" as const,
-          };
+        const options = {
+          ...settings,
+          type: format,
+        };
 
-          // @ts-ignore
-          const pngDataUrl = await generateQrCode(pngOptions);
-
-          const pdfDataUrl = await generatePdf({
-            qrCodeUrl: pngDataUrl,
-            qrText: qrData,
-            frameOptions:
-              frameOptions.type !== "none" ? frameOptions : undefined,
-            qrSettings: settings,
-          });
-
-          setQrCode(pdfDataUrl);
-        } else {
-          const options = {
-            ...settings,
-            type: format,
-          };
-
-          // @ts-ignore
-          const qrCodeDataUrl = await generateQrCode(options);
-          setQrCode(qrCodeDataUrl);
-        }
+        // @ts-ignore
+        const qrCodeDataUrl = await generateQrCode(options);
+        setQrCode(qrCodeDataUrl);
       }
     } catch (error) {
       console.error(error);
@@ -172,37 +141,12 @@ export function useQrCodeGeneration({
     exitEditMode,
     defaultTemplateLoaded,
     templateApplied,
-    generatePdf,
     getQrType,
   ]);
 
-  const handleFormatChange = useCallback(
-    async (newFormat: QrCodeFormat) => {
-      if (
-        qrCode &&
-        newFormat === "pdf" &&
-        qrCode.indexOf("data:application/pdf") === -1
-      ) {
-        setIsLoading(true);
-        try {
-          const settings = getCurrentSettings(qrData);
-          const pdfDataUrl = await generatePdf({
-            qrCodeUrl: qrCode,
-            qrText: qrData,
-            frameOptions:
-              frameOptions.type !== "none" ? frameOptions : undefined,
-            qrSettings: settings,
-          });
-          setQrCode(pdfDataUrl);
-        } catch (error) {
-          console.error("PDF 변환 오류:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    },
-    [qrCode, qrData, frameOptions, generatePdf],
-  );
+  const handleFormatChange = useCallback(async (newFormat: QrCodeFormat) => {
+    // PDF 형식은 더 이상 지원하지 않으므로 아무 작업도 하지 않음
+  }, []);
 
   const handleGenerateHighRes = useCallback(async () => {
     if (!qrData || !session?.user) return;
@@ -212,7 +156,7 @@ export function useQrCodeGeneration({
       const settings = getCurrentSettings(qrData);
       const highResOptions = {
         ...settings,
-        type: format === "pdf" ? "png" : format,
+        type: format,
         width: 4096,
       };
 

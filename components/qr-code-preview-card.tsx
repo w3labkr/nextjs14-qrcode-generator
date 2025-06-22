@@ -22,8 +22,8 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 interface QrCodePreviewCardProps {
   qrCode: string;
   frameOptions: import("@/components/qr-code-frames").FrameOptions;
-  format: "png" | "svg" | "jpeg" | "pdf";
-  onFormatChange: (format: "png" | "svg" | "jpeg" | "pdf") => void;
+  format: "png" | "svg" | "jpeg";
+  onFormatChange: (format: "png" | "svg" | "jpeg") => void;
   onGenerate: () => void;
   onGenerateHighRes: () => void;
   isLoading: boolean;
@@ -61,32 +61,12 @@ export function QrCodePreviewCard({
     const filename = getDownloadFilename();
 
     try {
-      // PDF 형식의 경우 전용 다운로드 함수 사용
-      if (format === "pdf") {
-        const { downloadQrCode } = await import("@/lib/download-utils");
-
-        const result = await downloadQrCode(
-          qrData,
-          "custom", // type은 일반적인 용도로 설정
-          currentSettings,
-          filename.replace(/\.[^/.]+$/, ""), // 확장자 제거
-          format,
-        );
-
-        if (!result.success) {
-          console.error("PDF 다운로드 실패:", result.error);
-        }
-        return;
-      }
-
       // 현재 표시되고 있는 QR 코드의 형식과 다운로드하려는 형식이 다르면 새로 생성
       const currentFormat = qrCode.includes("data:image/svg+xml")
         ? "svg"
         : qrCode.includes("data:image/jpeg")
           ? "jpeg"
-          : qrCode.includes("data:application/pdf")
-            ? "pdf"
-            : "png";
+          : "png";
 
       let downloadUrl = qrCode;
 
@@ -193,7 +173,7 @@ export function QrCodePreviewCard({
           <Select
             value={format}
             onValueChange={(value) =>
-              onFormatChange(value as "png" | "svg" | "jpeg" | "pdf")
+              onFormatChange(value as "png" | "svg" | "jpeg")
             }
             disabled={!qrCode || isLoading}
           >
@@ -204,7 +184,6 @@ export function QrCodePreviewCard({
               <SelectItem value="png">PNG (기본 해상도)</SelectItem>
               <SelectItem value="svg">SVG (벡터)</SelectItem>
               <SelectItem value="jpeg">JPG (기본 해상도)</SelectItem>
-              <SelectItem value="pdf">PDF</SelectItem>
             </SelectContent>
           </Select>
           <Button

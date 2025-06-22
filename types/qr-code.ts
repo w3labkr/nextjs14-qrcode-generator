@@ -1,4 +1,4 @@
-export type QrCodeFormat = "png" | "svg" | "jpeg" | "pdf";
+export type QrCodeFormat = "png" | "svg" | "jpeg";
 
 export type QrCodeType =
   | "URL"
