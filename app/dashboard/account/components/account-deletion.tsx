@@ -94,22 +94,26 @@ export function AccountDeletion() {
                   <AlertTriangle className="h-5 w-5" />
                   계정 삭제
                 </AlertDialogTitle>
-                <AlertDialogDescription className="space-y-3 text-left">
-                  <p className="text-red-600 font-medium">
-                    ⚠️ 이 작업은 되돌릴 수 없습니다!
-                  </p>
-                  <p>계정을 삭제하면 다음 데이터가 영구적으로 삭제됩니다:</p>
-                  <ul className="list-disc list-inside space-y-1 text-sm">
-                    <li>저장된 모든 QR 코드</li>
-                    <li>생성한 모든 템플릿</li>
-                    <li>계정 정보 및 로그인 세션</li>
-                    <li>모든 개인 설정</li>
-                  </ul>
-                  <p className="text-sm text-gray-600">
-                    이는 GDPR 규정에 따른 완전한 데이터 삭제입니다.
-                  </p>
+                <AlertDialogDescription>
+                  이 작업은 되돌릴 수 없으며, 계정과 관련된 모든 데이터가
+                  영구적으로 삭제됩니다.
                 </AlertDialogDescription>
               </AlertDialogHeader>
+              <div className="space-y-3 text-left text-sm text-muted-foreground">
+                <div className="text-red-600 font-medium">
+                  ⚠️ 이 작업은 되돌릴 수 없습니다!
+                </div>
+                <div>계정을 삭제하면 다음 데이터가 영구적으로 삭제됩니다:</div>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>저장된 모든 QR 코드</li>
+                  <li>생성한 모든 템플릿</li>
+                  <li>계정 정보 및 로그인 세션</li>
+                  <li>모든 개인 설정</li>
+                </ul>
+                <div className="text-gray-600">
+                  이는 GDPR 규정에 따른 완전한 데이터 삭제입니다.
+                </div>
+              </div>
 
               <div className="space-y-4">
                 <div>
