@@ -1,6 +1,6 @@
 {
   "name": "nextjs14-qrcode-generator",
-  "version": "1.2.71",
+  "version": "1.2.72",
   "private": true,
   "browserslist": [
     "defaults and fully supports es6-module",
@@ -8,9 +8,10 @@
   ],
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
+    "postinstall": "prisma generate",
     "clean:files": "rm -rf node_modules && rm -rf .next && rm package-lock.json",
     "clean:cache": "npm cache clean --force && npm cache verify",
     "clean": "npm run clean:files && npm run clean:cache",
