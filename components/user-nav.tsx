@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { InstallPrompt } from "@/components/install-prompt";
+import { UserProfile } from "@/components/user-profile";
 
 export function UserNav() {
   const { data: session, status } = useSession();
@@ -53,18 +54,7 @@ export function UserNav() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <div className="flex items-center justify-start gap-2 p-2">
-          <div className="flex flex-col space-y-1 leading-none">
-            {session.user?.name && (
-              <p className="font-medium">{session.user.name}</p>
-            )}
-            {session.user?.email && (
-              <p className="w-[200px] truncate text-sm text-muted-foreground">
-                {session.user.email}
-              </p>
-            )}
-          </div>
-        </div>
+        <UserProfile session={session} />
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/dashboard">
