@@ -75,7 +75,7 @@ function HomePageContent() {
             {/* 로그인 사용자에게만 템플릿 관리 기능 표시 */}
             {session?.user && (
               <TemplateManager
-                currentSettings={getCurrentSettings()}
+                currentSettings={getCurrentSettings(qrData)}
                 onLoadTemplate={handleLoadTemplate}
               />
             )}

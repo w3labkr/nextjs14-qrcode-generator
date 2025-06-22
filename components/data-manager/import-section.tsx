@@ -48,6 +48,30 @@ export default function ImportSection({
         throw new Error("올바른 형식의 데이터가 아닙니다.");
       }
 
+      // QR 코드 데이터 검증
+      if (parsedData.qrCodes && Array.isArray(parsedData.qrCodes)) {
+        for (let i = 0; i < parsedData.qrCodes.length; i++) {
+          const qrCode = parsedData.qrCodes[i];
+          if (!qrCode.content || typeof qrCode.content !== "string") {
+            throw new Error(
+              `QR 코드 ${i + 1}번의 content 필드가 유효하지 않습니다.`,
+            );
+          }
+        }
+      }
+
+      // 템플릿 데이터 검증
+      if (parsedData.templates && Array.isArray(parsedData.templates)) {
+        for (let i = 0; i < parsedData.templates.length; i++) {
+          const template = parsedData.templates[i];
+          if (!template.name || typeof template.name !== "string") {
+            throw new Error(
+              `템플릿 ${i + 1}번의 name 필드가 유효하지 않습니다.`,
+            );
+          }
+        }
+      }
+
       const result = await importUserData({
         qrCodes: parsedData.qrCodes || [],
         templates: parsedData.templates || [],
@@ -66,6 +90,8 @@ export default function ImportSection({
       console.error("가져오기 오류:", error);
       if (error instanceof SyntaxError) {
         toast.error("JSON 형식이 올바르지 않습니다.");
+      } else if (error instanceof Error) {
+        toast.error(error.message);
       } else {
         toast.error("데이터 가져오기에 실패했습니다.");
       }
