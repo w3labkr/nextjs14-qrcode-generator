@@ -61,6 +61,24 @@ export function QrCodePreviewCard({
     const filename = getDownloadFilename();
 
     try {
+      // PDF 형식의 경우 전용 다운로드 함수 사용
+      if (format === "pdf") {
+        const { downloadQrCode } = await import("@/lib/download-utils");
+
+        const result = await downloadQrCode(
+          qrData,
+          "custom", // type은 일반적인 용도로 설정
+          currentSettings,
+          filename.replace(/\.[^/.]+$/, ""), // 확장자 제거
+          format,
+        );
+
+        if (!result.success) {
+          console.error("PDF 다운로드 실패:", result.error);
+        }
+        return;
+      }
+
       // 현재 표시되고 있는 QR 코드의 형식과 다운로드하려는 형식이 다르면 새로 생성
       const currentFormat = qrCode.includes("data:image/svg+xml")
         ? "svg"

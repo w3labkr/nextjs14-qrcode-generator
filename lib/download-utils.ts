@@ -8,6 +8,8 @@ export const downloadQrCode = async (
   try {
     // QR 코드 생성을 위한 모듈 동적 임포트
     const { generateQrCode } = await import("@/app/actions/qr-code-generator");
+    const { jsPDF } =
+      format === "pdf" ? await import("jspdf") : { jsPDF: null };
 
     // 설정값 파싱
     let parsedSettings = settings;
@@ -51,13 +53,14 @@ export const downloadQrCode = async (
 
     // PDF 형식의 경우 별도 처리 (클라이언트 사이드에서)
     if (format === "pdf") {
+      if (!jsPDF) {
+        throw new Error("PDF 생성에 필요한 모듈을 불러오지 못했습니다.");
+      }
       // PDF용으로는 SVG로 먼저 생성
       const svgSettings = { ...qrSettings, type: "svg" as const };
       const svgDataUrl = await generateQrCode(svgSettings);
 
       // jsPDF를 동적으로 임포트하여 클라이언트에서 PDF 생성
-      const { jsPDF } = await import("jspdf");
-
       const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -80,22 +83,70 @@ export const downloadQrCode = async (
       doc.setFontSize(16);
       doc.text("QR 코드", pageWidth / 2, 20, { align: "center" });
 
-      // SVG Base64 데이터에서 실제 SVG 내용 추출
-      const base64Data = svgDataUrl.split(",")[1];
-      const svgContent = atob(base64Data);
+      // SVG를 Canvas로 변환한 후 PDF에 추가하는 더 안정적인 방식
+      const svgToCanvas = async (svgDataUrl: string): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const base64Data = svgDataUrl.split(",")[1];
+          const svgContent = atob(base64Data);
 
-      // SVG를 이미지로 변환하여 PDF에 추가
+          // SVG를 이미지 엘리먼트로 로드
+          const img = new Image();
+          img.onload = () => {
+            // Canvas 생성
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            if (!ctx) {
+              reject(new Error("Canvas context를 생성할 수 없습니다"));
+              return;
+            }
+
+            // 고해상도를 위해 Canvas 크기 설정
+            const scale = 4; // 4배 확대로 고품질 유지
+            canvas.width = qrWidth * 10 * scale; // mm to px 변환 (대략 10px/mm)
+            canvas.height = qrHeight * 10 * scale;
+
+            // 배경을 흰색으로 채움 (PDF에서 투명도 문제 방지)
+            ctx.fillStyle = qrSettings.color?.light || "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 이미지 그리기
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Canvas를 PNG로 변환
+            const pngDataUrl = canvas.toDataURL("image/png");
+            resolve(pngDataUrl);
+          };
+
+          img.onerror = () => {
+            reject(new Error("SVG 이미지 로드에 실패했습니다"));
+          };
+
+          // SVG 데이터를 이미지로 로드
+          const svgBlob = new Blob([svgContent], { type: "image/svg+xml" });
+          const url = URL.createObjectURL(svgBlob);
+          img.src = url;
+
+          // 메모리 정리를 위한 타이머 설정
+          setTimeout(() => {
+            URL.revokeObjectURL(url);
+          }, 5000);
+        });
+      };
+
       try {
-        // SVG 데이터가 유효한지 확인
-        if (base64Data && base64Data.length > 0) {
-          // SVG 추가 시도
-          doc.addImage(base64Data, "SVG", xPos, yPos, qrWidth, qrHeight);
+        // SVG를 Canvas로 변환한 후 PNG로 PDF에 추가
+        const pngDataUrl = await svgToCanvas(svgDataUrl);
+        const pngImageData = pngDataUrl.split(",")[1];
+
+        if (pngImageData && pngImageData.length > 0) {
+          doc.addImage(pngImageData, "PNG", xPos, yPos, qrWidth, qrHeight);
         } else {
-          throw new Error("유효하지 않은 SVG 데이터");
+          throw new Error("Canvas 변환에 실패했습니다");
         }
       } catch (error) {
-        // SVG 추가가 실패하면 PNG로 대체 생성
-        console.warn("SVG 추가 실패, PNG로 대체:", error);
+        // Canvas 변환이 실패하면 PNG로 직접 생성
+        console.warn("SVG Canvas 변환 실패, PNG로 대체:", error);
         try {
           const pngSettings = { ...qrSettings, type: "png" as const };
           const pngDataUrl = await generateQrCode(pngSettings);
