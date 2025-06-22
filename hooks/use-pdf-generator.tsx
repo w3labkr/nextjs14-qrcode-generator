@@ -10,6 +10,7 @@ interface PdfGeneratorProps {
   qrCodeUrl: string;
   qrText: string;
   frameOptions?: QrFrameOptions;
+  qrSettings?: any; // QR 코드 생성 설정
 }
 
 interface PdfConfig {
@@ -109,22 +110,62 @@ export default function usePdfGenerator() {
   }, []);
 
   const addQrCode = useCallback(
-    (doc: jsPDF, qrCodeUrl: string, dimensions: PdfDimensions): void => {
-      const imageType = getImageType(qrCodeUrl);
-      const imageData = qrCodeUrl.split(",")[1];
+    async (
+      doc: jsPDF,
+      qrCodeUrl: string,
+      qrText: string,
+      qrSettings: any,
+      dimensions: PdfDimensions,
+    ): Promise<void> => {
+      try {
+        let imageData: string;
+        let imageType: string;
 
-      if (!imageData) {
-        throw new Error("유효하지 않은 QR 코드 이미지 데이터");
+        // SVG인 경우 PNG로 변환해서 사용
+        if (qrCodeUrl.includes("image/svg")) {
+          const { generateQrCode } = await import(
+            "@/app/actions/qr-code-generator"
+          );
+
+          // 현재 설정으로 PNG QR 코드 생성
+          const pngDataUrl = await generateQrCode({
+            text: qrText,
+            type: "png",
+            width: 800,
+            margin: qrSettings?.margin || 0,
+            color: qrSettings?.color || {
+              dark: "#000000",
+              light: "#ffffff",
+            },
+            logo: qrSettings?.logo,
+            dotsOptions: qrSettings?.dotsOptions,
+            cornersSquareOptions: qrSettings?.cornersSquareOptions,
+          });
+
+          imageData = pngDataUrl.split(",")[1];
+          imageType = "PNG";
+        } else {
+          // PNG, JPEG 등 다른 형식은 그대로 사용
+          imageData = qrCodeUrl.split(",")[1];
+          imageType = getImageType(qrCodeUrl);
+        }
+
+        if (!imageData) {
+          throw new Error("유효하지 않은 QR 코드 이미지 데이터");
+        }
+
+        doc.addImage(
+          imageData,
+          imageType,
+          dimensions.xPos,
+          dimensions.yPos,
+          dimensions.qrWidth,
+          dimensions.qrHeight,
+        );
+      } catch (error) {
+        console.error("QR 코드 이미지 추가 실패:", error);
+        throw new Error("QR 코드 이미지를 PDF에 추가할 수 없습니다");
       }
-
-      doc.addImage(
-        imageData,
-        imageType,
-        dimensions.xPos,
-        dimensions.yPos,
-        dimensions.qrWidth,
-        dimensions.qrHeight,
-      );
     },
     [getImageType],
   );
@@ -175,6 +216,7 @@ export default function usePdfGenerator() {
       qrCodeUrl,
       qrText,
       frameOptions,
+      qrSettings,
     }: PdfGeneratorProps): Promise<string> => {
       if (!qrCodeUrl) return "";
 
@@ -189,7 +231,7 @@ export default function usePdfGenerator() {
 
         addTitle(doc, dimensions.pageWidth);
         addMetadata(doc, qrText);
-        addQrCode(doc, qrCodeUrl, dimensions);
+        await addQrCode(doc, qrCodeUrl, qrText, qrSettings, dimensions);
         addFrameText(doc, frameOptions, dimensions);
         addFooter(doc, dimensions.pageWidth, dimensions.pageHeight);
 

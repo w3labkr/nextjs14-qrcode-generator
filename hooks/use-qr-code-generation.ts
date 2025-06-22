@@ -112,6 +112,7 @@ export function useQrCodeGeneration({
             qrText: qrData,
             frameOptions:
               frameOptions.type !== "none" ? frameOptions : undefined,
+            qrSettings: settings,
           });
           setQrCode(pdfDataUrl);
         } else if (result) {
@@ -138,6 +139,7 @@ export function useQrCodeGeneration({
             qrText: qrData,
             frameOptions:
               frameOptions.type !== "none" ? frameOptions : undefined,
+            qrSettings: settings,
           });
 
           setQrCode(pdfDataUrl);
@@ -183,11 +185,13 @@ export function useQrCodeGeneration({
       ) {
         setIsLoading(true);
         try {
+          const settings = getCurrentSettings(qrData);
           const pdfDataUrl = await generatePdf({
             qrCodeUrl: qrCode,
             qrText: qrData,
             frameOptions:
               frameOptions.type !== "none" ? frameOptions : undefined,
+            qrSettings: settings,
           });
           setQrCode(pdfDataUrl);
         } catch (error) {

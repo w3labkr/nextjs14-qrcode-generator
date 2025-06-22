@@ -49,6 +49,98 @@ export const downloadQrCode = async (
       );
     }
 
+    // PDF 형식의 경우 별도 처리 (클라이언트 사이드에서)
+    if (format === "pdf") {
+      // PDF용으로는 SVG로 먼저 생성
+      const svgSettings = { ...qrSettings, type: "svg" as const };
+      const svgDataUrl = await generateQrCode(svgSettings);
+
+      // jsPDF를 동적으로 임포트하여 클라이언트에서 PDF 생성
+      const { jsPDF } = await import("jspdf");
+
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // A4 크기는 210mm x 297mm
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      // QR 코드 이미지 크기 (페이지 중앙에 위치하도록)
+      const qrWidth = 100; // mm
+      const qrHeight = 100; // mm
+
+      // QR 코드를 페이지 중앙에 배치
+      const xPos = (pageWidth - qrWidth) / 2;
+      const yPos = (pageHeight - qrHeight) / 2;
+
+      // 제목 추가
+      doc.setFontSize(16);
+      doc.text("QR 코드", pageWidth / 2, 20, { align: "center" });
+
+      // SVG Base64 데이터에서 실제 SVG 내용 추출
+      const base64Data = svgDataUrl.split(",")[1];
+      const svgContent = atob(base64Data);
+
+      // SVG를 이미지로 변환하여 PDF에 추가
+      try {
+        // SVG 데이터가 유효한지 확인
+        if (base64Data && base64Data.length > 0) {
+          // SVG 추가 시도
+          doc.addImage(base64Data, "SVG", xPos, yPos, qrWidth, qrHeight);
+        } else {
+          throw new Error("유효하지 않은 SVG 데이터");
+        }
+      } catch (error) {
+        // SVG 추가가 실패하면 PNG로 대체 생성
+        console.warn("SVG 추가 실패, PNG로 대체:", error);
+        try {
+          const pngSettings = { ...qrSettings, type: "png" as const };
+          const pngDataUrl = await generateQrCode(pngSettings);
+          const pngImageData = pngDataUrl.split(",")[1];
+
+          if (pngImageData && pngImageData.length > 0) {
+            doc.addImage(pngImageData, "PNG", xPos, yPos, qrWidth, qrHeight);
+          } else {
+            throw new Error("PNG 대체 생성 실패");
+          }
+        } catch (fallbackError) {
+          console.error("PNG 대체 생성도 실패:", fallbackError);
+          throw new Error("PDF에 QR 코드 이미지를 추가할 수 없습니다");
+        }
+      }
+
+      // 생성 날짜 추가
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(
+        now.getMonth() + 1,
+      ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      doc.setFontSize(10);
+      doc.text(`생성일: ${dateStr}`, pageWidth / 2, pageHeight - 20, {
+        align: "center",
+      });
+
+      // PDF를 Blob으로 생성하여 다운로드
+      const pdfBlob = doc.output("blob");
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = title
+        ? `${title
+            .replace(/[^a-zA-Z0-9가-힣\s]/g, "")
+            .trim()
+            .replace(/\s+/g, "-")}.pdf`
+        : `qrcode-${type.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      return { success: true };
+    }
+
     // 선택된 형식으로 QR 코드 생성
     const qrCodeDataUrl = await generateQrCode(qrSettings);
 
