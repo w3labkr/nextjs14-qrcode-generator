@@ -8,6 +8,7 @@ import { QrCodeSettingsPanel } from "@/components/qr-code-settings-panel";
 import { QrCodePreviewCard } from "@/components/qr-code-preview-card";
 import TemplateManager from "@/components/template-manager";
 import { useQrCodeGenerator } from "@/hooks/use-qr-code-generator";
+import { COPYRIGHT_TEXT } from "@/lib/constants";
 
 export default function HomePage() {
   const { data: session } = useSession();
@@ -97,7 +98,7 @@ export default function HomePage() {
         </div>
       </div>
       <footer className="w-full mt-12 flex justify-center text-xs text-muted-foreground">
-        © 2025 W3LabKr. All rights reserved.
+        {COPYRIGHT_TEXT}
       </footer>
     </main>
   );
