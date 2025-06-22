@@ -43,4 +43,4 @@ export {
 export { deleteAccount } from "./account-management";
 
 // Utilities
-export { inferQrCodeType } from "@/lib/utils/qr-code-helpers";
+export { inferQrCodeType } from "@/lib/utils";

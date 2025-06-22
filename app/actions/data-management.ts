@@ -3,7 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ImportData } from "@/types/qr-code-server";
-import { inferQrCodeType } from "@/lib/utils/qr-code-helpers";
+import { inferQrCodeType } from "@/lib/utils";
 
 export async function exportUserData() {
   const session = await auth();
