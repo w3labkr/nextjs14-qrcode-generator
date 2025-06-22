@@ -30,6 +30,11 @@ export function RecentQrCodes({ recentQrCodes }: RecentQrCodesProps) {
     return typeMap[type] || type;
   };
 
+  const truncateContent = (content: string, maxLength: number = 80) => {
+    if (content.length <= maxLength) return content;
+    return content.substring(0, maxLength) + "...";
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -53,22 +58,28 @@ export function RecentQrCodes({ recentQrCodes }: RecentQrCodesProps) {
             {recentQrCodes.map((qrCode) => (
               <div
                 key={qrCode.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
+                className="flex items-start p-4 border rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-medium">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h4
+                      className="font-medium truncate max-w-[150px] sm:max-w-[200px]"
+                      title={qrCode.title || "제목 없음"}
+                    >
                       {qrCode.title || "제목 없음"}
                     </h4>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs flex-shrink-0"
+                    >
                       {getTypeLabel(qrCode.type)}
                     </Badge>
                     {qrCode.isFavorite && (
-                      <Heart className="h-3 w-3 fill-red-500 text-red-500" />
+                      <Heart className="h-3 w-3 fill-red-500 text-red-500 flex-shrink-0" />
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground truncate mt-1">
-                    {qrCode.content}
+                  <p className="text-sm text-muted-foreground mt-1 break-all">
+                    {truncateContent(qrCode.content)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {new Date(qrCode.createdAt).toLocaleDateString("ko-KR")}

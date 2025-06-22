@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { UserNav } from "@/components/user-nav";
 import Link from "next/link";
+import { NewQrCodeButton } from "@/components/new-qr-code-button";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -77,9 +78,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button asChild variant="outline">
-              <Link href="/dashboard/history">히스토리 보기</Link>
-            </Button>
+            <NewQrCodeButton />
             <UserNav />
           </div>
         </div>

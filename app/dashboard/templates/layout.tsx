@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { UserNav } from "@/components/user-nav";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { NewQrCodeButton } from "@/components/new-qr-code-button";
 
 interface TemplatesLayoutProps {
   children: React.ReactNode;
@@ -73,7 +73,10 @@ export default function TemplatesLayout({ children }: TemplatesLayoutProps) {
               QR 코드 설정을 템플릿으로 저장하고 재사용하세요.
             </p>
           </div>
-          <UserNav />
+          <div className="flex items-center space-x-4">
+            <NewQrCodeButton />
+            <UserNav />
+          </div>
         </div>
         {children}
       </div>

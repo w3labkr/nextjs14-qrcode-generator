@@ -10,8 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserNav } from "@/components/user-nav";
+import { NewQrCodeButton } from "@/components/new-qr-code-button";
 import Link from "next/link";
-import { QrCode } from "lucide-react";
 
 interface HistoryLayoutProps {
   children: React.ReactNode;
@@ -78,11 +78,7 @@ export default function HistoryLayout({ children }: HistoryLayoutProps) {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button asChild variant="outline">
-              <Link href="/">
-                <QrCode className="h-4 w-4 mr-2" />새 QR 코드 만들기
-              </Link>
-            </Button>
+            <NewQrCodeButton />
             <UserNav />
           </div>
         </div>
