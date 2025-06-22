@@ -1,58 +1,51 @@
 "use server";
 
 import { signIn } from "@/auth";
-import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
-// 개발 모드에서만 사용 가능한 임시 로그인
 export async function devLogin() {
-  // 프로덕션에서는 사용 불가
-  if (process.env.NODE_ENV !== "development") {
-    throw new Error("개발 모드에서만 사용 가능합니다.");
+  console.log("devLogin 함수 실행됨");
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+
+  // 개발 모드 체크를 더 관대하게 설정
+  const isDevelopment =
+    process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === undefined ||
+    !process.env.NODE_ENV;
+
+  if (!isDevelopment) {
+    console.log("프로덕션 모드에서 접근 시도");
+    return { success: false, error: "개발 모드에서만 사용 가능합니다." };
   }
 
-  const devUser = {
-    id: "dev-user",
-    name: "개발자",
-    email: "dev@example.com",
-    image: null,
-    emailVerified: new Date(),
-  };
-
   try {
-    // 기존 개발 사용자가 있는지 확인
-    let user = await prisma.user.findUnique({
-      where: { id: devUser.id },
+    console.log("NextAuth signIn 실행 중...");
+
+    const result = await signIn("dev-login", {
+      email: "dev@example.com",
+      redirect: false,
     });
 
-    // 없으면 생성
-    if (!user) {
-      user = await prisma.user.create({
-        data: devUser,
-      });
+    console.log("signIn 결과:", result);
+
+    if (result?.error) {
+      console.error("signIn 에러:", result.error);
+      return { success: false, error: result.error };
     }
 
-    // 기존 세션 삭제
-    await prisma.session.deleteMany({
-      where: { userId: devUser.id },
-    });
-
-    // 새 세션 생성
-    const sessionToken = `dev-session-${Date.now()}`;
-    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30일
-
-    await prisma.session.create({
-      data: {
-        sessionToken,
-        userId: devUser.id,
-        expires,
-      },
-    });
-
-    // 세션 쿠키 설정을 위해 리다이렉트
-    redirect(`/api/auth/dev-callback?token=${sessionToken}`);
+    // 성공 시 리다이렉트
+    redirect("/dashboard");
   } catch (error) {
     console.error("개발 로그인 실패:", error);
-    throw new Error("임시 로그인에 실패했습니다.");
+
+    if (error instanceof Error) {
+      console.error("에러 메시지:", error.message);
+      console.error("에러 스택:", error.stack);
+    }
+
+    return {
+      success: false,
+      error: `임시 로그인에 실패했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
+    };
   }
 }

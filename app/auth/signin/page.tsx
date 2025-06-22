@@ -2,6 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +15,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Mail, Loader2, Code } from "lucide-react";
-import { devLogin } from "@/app/actions/dev-login";
 
 export default function SignIn() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -55,12 +56,40 @@ export default function SignIn() {
   };
 
   const handleDevLogin = async () => {
+    console.log("handleDevLogin 시작");
     setIsDevLoading(true);
+
     try {
-      await devLogin();
+      console.log("NextAuth.js를 통한 개발 로그인 시도 중...");
+
+      const result = await signIn("dev-login", {
+        email: "dev@example.com",
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+
+      console.log("개발 로그인 결과:", result);
+
+      if (result?.ok) {
+        console.log("로그인 성공, 대시보드로 리다이렉트");
+        window.location.href = "/dashboard";
+      } else if (result?.error) {
+        console.error("개발 로그인 실패:", result.error);
+        alert(`로그인에 실패했습니다: ${result.error}`);
+      } else {
+        console.error("알 수 없는 로그인 실패");
+        alert("로그인에 실패했습니다.");
+      }
     } catch (error) {
-      console.error("개발 로그인 실패:", error);
+      console.error("개발 로그인 에러:", error);
+      if (error instanceof Error) {
+        console.error("에러 상세:", error.message, error.stack);
+      }
+      alert(
+        `로그인 처리 중 오류가 발생했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
+      );
     } finally {
+      console.log("handleDevLogin 완료");
       setIsDevLoading(false);
     }
   };

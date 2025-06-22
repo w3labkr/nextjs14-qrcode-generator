@@ -10,6 +10,9 @@ export const {
   signOut,
 } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "database" },
+  session: {
+    strategy: process.env.NODE_ENV === "development" ? "jwt" : "database",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   ...authConfig,
 });
