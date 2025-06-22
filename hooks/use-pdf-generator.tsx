@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { jsPDF } from "jspdf";
 
 import { FrameOptions as QrFrameOptions } from "@/components/qr-code-frames";
@@ -12,27 +12,51 @@ interface PdfGeneratorProps {
   frameOptions?: QrFrameOptions;
 }
 
+interface PdfConfig {
+  orientation: "portrait" | "landscape";
+  unit: "mm" | "pt" | "in" | "px";
+  format: string | number[];
+}
+
+interface PdfColors {
+  black: [number, number, number];
+  gray: [number, number, number];
+  lightGray: [number, number, number];
+}
+
+interface PdfDimensions {
+  pageWidth: number;
+  pageHeight: number;
+  qrWidth: number;
+  qrHeight: number;
+  xPos: number;
+  yPos: number;
+}
+
+const PDF_CONFIG: PdfConfig = {
+  orientation: "portrait",
+  unit: "mm",
+  format: "a4",
+};
+
+const PDF_COLORS: PdfColors = {
+  black: [0, 0, 0],
+  gray: [80, 80, 80],
+  lightGray: [100, 100, 100],
+};
+
+const QR_CODE_SIZE = 100;
+const QR_CODE_Y_POSITION = 70;
+const TEXT_MAX_LENGTH = 50;
+const TRUNCATE_SUFFIX = "...";
+
 export default function usePdfGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generatePdf = async ({
-    qrCodeUrl,
-    qrText,
-    frameOptions,
-  }: PdfGeneratorProps): Promise<string> => {
-    if (!qrCodeUrl) return "";
+  const pdfConfig = useMemo(() => PDF_CONFIG, []);
 
-    setIsGenerating(true);
-
+  const setupFont = useCallback(async (doc: jsPDF): Promise<void> => {
     try {
-      // PDF 문서 생성
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      // 폰트 추가
       const font = await fetch("/fonts/NanumGothic-Regular.ttf").then((res) =>
         res.arrayBuffer(),
       );
@@ -45,99 +69,165 @@ export default function usePdfGenerator() {
       doc.addFileToVFS("NanumGothic-Regular.ttf", fontBase64);
       doc.addFont("NanumGothic-Regular.ttf", "NanumGothic", "normal");
       doc.setFont("NanumGothic");
+    } catch (error) {
+      console.warn("폰트 로드 실패, 기본 폰트 사용:", error);
+    }
+  }, []);
 
-      // 페이지 크기
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
+  const calculateDimensions = useCallback((doc: jsPDF): PdfDimensions => {
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const qrWidth = QR_CODE_SIZE;
+    const qrHeight = QR_CODE_SIZE;
+    const xPos = (pageWidth - qrWidth) / 2;
+    const yPos = QR_CODE_Y_POSITION;
 
-      // 제목 추가
-      doc.setFontSize(24);
-      doc.setTextColor(0, 0, 0);
-      doc.text("QR 코드", pageWidth / 2, 20, { align: "center" });
+    return { pageWidth, pageHeight, qrWidth, qrHeight, xPos, yPos };
+  }, []);
 
-      // QR 코드 정보
-      doc.setFontSize(12);
-      doc.setTextColor(80, 80, 80);
+  const addTitle = useCallback((doc: jsPDF, pageWidth: number): void => {
+    doc.setFontSize(24);
+    doc.setTextColor(...PDF_COLORS.black);
+    doc.text("QR 코드", pageWidth / 2, 20, { align: "center" });
+  }, []);
 
-      // QR 코드에 담긴 데이터 정보 표시
-      const displayText =
-        qrText.length > 50 ? qrText.substring(0, 47) + "..." : qrText;
+  const addMetadata = useCallback((doc: jsPDF, qrText: string): void => {
+    doc.setFontSize(12);
+    doc.setTextColor(...PDF_COLORS.gray);
 
-      doc.text(`내용: ${displayText}`, 20, 40);
+    const displayText = truncateText(qrText, TEXT_MAX_LENGTH);
+    doc.text(`내용: ${displayText}`, 20, 40);
 
-      // 현재 날짜 추가
-      const now = new Date();
-      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-      doc.text(`생성일: ${dateStr}`, 20, 50);
+    const dateStr = formatCurrentDate();
+    doc.text(`생성일: ${dateStr}`, 20, 50);
+  }, []);
 
-      // QR 코드 이미지 추가
-      // QR 코드 크기 설정
-      const qrWidth = 100; // mm
-      const qrHeight = 100; // mm
+  const getImageType = useCallback((qrCodeUrl: string): string => {
+    if (qrCodeUrl.includes("image/svg")) return "SVG";
+    if (qrCodeUrl.includes("image/jpeg")) return "JPEG";
+    return "PNG";
+  }, []);
 
-      // 중앙에 배치
-      const xPos = (pageWidth - qrWidth) / 2;
-      const yPos = 70; // 상단에서 70mm 위치
-
-      // 이미지를 추가하기 전에 데이터 URL에서 메타데이터 제거
-      // 예: 'data:image/png;base64,ABCDE...' => 'ABCDE...'
-      let imageType = "PNG";
-      if (qrCodeUrl.includes("image/svg")) {
-        imageType = "SVG";
-      } else if (qrCodeUrl.includes("image/jpeg")) {
-        imageType = "JPEG";
-      }
-
-      // 이미지 데이터 추출
+  const addQrCode = useCallback(
+    (doc: jsPDF, qrCodeUrl: string, dimensions: PdfDimensions): void => {
+      const imageType = getImageType(qrCodeUrl);
       const imageData = qrCodeUrl.split(",")[1];
 
-      // 이미지 추가
-      doc.addImage(imageData, imageType, xPos, yPos, qrWidth, qrHeight);
-
-      // 프레임 옵션이 있고 타입이 'none'이 아니면 안내 텍스트 추가
-      if (frameOptions && frameOptions.type !== "none") {
-        doc.setFontSize(16);
-        // 색상을 헥사코드에서 RGB로 변환
-        const textColor = hexToRgb(frameOptions.textColor || "#000000");
-        if (textColor) {
-          doc.setTextColor(textColor.r, textColor.g, textColor.b);
-        } else {
-          doc.setTextColor(0, 0, 0); // 기본 검정
-        }
-
-        doc.text(
-          frameOptions.text || "스캔해 주세요",
-          pageWidth / 2,
-          yPos + qrHeight + 20,
-          { align: "center" },
-        );
+      if (!imageData) {
+        throw new Error("유효하지 않은 QR 코드 이미지 데이터");
       }
 
-      // 푸터 추가
+      doc.addImage(
+        imageData,
+        imageType,
+        dimensions.xPos,
+        dimensions.yPos,
+        dimensions.qrWidth,
+        dimensions.qrHeight,
+      );
+    },
+    [getImageType],
+  );
+
+  const addFrameText = useCallback(
+    (
+      doc: jsPDF,
+      frameOptions: QrFrameOptions | undefined,
+      dimensions: PdfDimensions,
+    ): void => {
+      if (!frameOptions || frameOptions.type === "none") return;
+
+      doc.setFontSize(16);
+      const textColor = hexToRgb(frameOptions.textColor || "#000000");
+
+      if (textColor) {
+        doc.setTextColor(textColor.r, textColor.g, textColor.b);
+      } else {
+        doc.setTextColor(...PDF_COLORS.black);
+      }
+
+      doc.text(
+        frameOptions.text || "스캔해 주세요",
+        dimensions.pageWidth / 2,
+        dimensions.yPos + dimensions.qrHeight + 20,
+        { align: "center" },
+      );
+    },
+    [],
+  );
+
+  const addFooter = useCallback(
+    (doc: jsPDF, pageWidth: number, pageHeight: number): void => {
       doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
+      doc.setTextColor(...PDF_COLORS.lightGray);
       doc.text(
         `오픈소스 QR 코드 생성기 - ${GITHUB_REPO_URL}`,
         pageWidth / 2,
         pageHeight - 10,
         { align: "center" },
       );
+    },
+    [],
+  );
 
-      // PDF를 데이터 URL로 변환
-      return doc.output("datauristring");
-    } catch (error) {
-      console.error("PDF 생성 중 오류 발생:", error);
-      return "";
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  const generatePdf = useCallback(
+    async ({
+      qrCodeUrl,
+      qrText,
+      frameOptions,
+    }: PdfGeneratorProps): Promise<string> => {
+      if (!qrCodeUrl) return "";
+
+      setIsGenerating(true);
+
+      try {
+        const doc = new jsPDF(pdfConfig);
+
+        await setupFont(doc);
+
+        const dimensions = calculateDimensions(doc);
+
+        addTitle(doc, dimensions.pageWidth);
+        addMetadata(doc, qrText);
+        addQrCode(doc, qrCodeUrl, dimensions);
+        addFrameText(doc, frameOptions, dimensions);
+        addFooter(doc, dimensions.pageWidth, dimensions.pageHeight);
+
+        return doc.output("datauristring");
+      } catch (error) {
+        console.error("PDF 생성 중 오류 발생:", error);
+        throw new Error("PDF 생성에 실패했습니다.");
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [
+      pdfConfig,
+      setupFont,
+      calculateDimensions,
+      addTitle,
+      addMetadata,
+      addQrCode,
+      addFrameText,
+      addFooter,
+    ],
+  );
 
   return { generatePdf, isGenerating };
 }
 
-// 헥사코드를 RGB로 변환하는 유틸리티 함수
-function hexToRgb(hex: string) {
+function truncateText(text: string, maxLength: number): string {
+  return text.length > maxLength
+    ? text.substring(0, maxLength - TRUNCATE_SUFFIX.length) + TRUNCATE_SUFFIX
+    : text;
+}
+
+function formatCurrentDate(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
