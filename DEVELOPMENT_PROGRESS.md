@@ -34,6 +34,7 @@
 - **개인 템플릿 시스템**: 자주 사용하는 QR 코드 설정 저장 및 재사용
 - **데이터 내보내기/가져오기**: JSON 형식으로 QR 코드와 템플릿 백업/복원
 - **GDPR 준수 계정 삭제**: 사용자 계정 및 모든 관련 데이터 완전 삭제
+- **PWA 지원**: 앱 설치, 오프라인 QR 코드 생성, 푸시 알림
 
 ## 📁 프로젝트 구조
 
@@ -65,6 +66,14 @@
   template-manager.tsx              # 템플릿 관리 컴포넌트
   data-manager.tsx                  # 데이터 내보내기/가져오기 컴포넌트
   account-deletion.tsx              # 계정 삭제 컴포넌트
+  install-prompt.tsx                # PWA 설치 프롬프트
+  offline-indicator.tsx             # 오프라인 상태 표시
+
+/hooks
+  use-mobile.tsx                    # 모바일 감지 훅
+  use-pdf-generator.tsx             # PDF 생성 훅
+  use-install-prompt.ts             # PWA 설치 프롬프트 훅
+  use-online-status.ts              # 온라인 상태 감지 훅
 
 /prisma
   schema.prisma                     # 데이터베이스 스키마
@@ -140,11 +149,12 @@ model QrTemplate {
 
 ## 📈 성과 지표
 
-- **개발 진행률**: Phase 1-2 완료 (약 80%)
+- **개발 진행률**: Phase 1-3 완료 (약 90%)
 - **지원 QR 유형**: 7/7 완료 (100%)
 - **핵심 페이지**: 6개 완료
 - **데이터베이스 테이블**: 6개 완료
 - **API 엔드포인트**: 인증 + QR 관리 완료
+- **PWA 기능**: 설치, 오프라인 지원 완료
 
 ## 🔄 다음 개발 예정 사항
 
@@ -153,7 +163,7 @@ model QrTemplate {
 - ~~**개인 템플릿 시스템**: 자주 사용하는 설정 저장~~ ✅ **완료**
 - ~~**데이터 내보내기/가져오기**: JSON 형식~~ ✅ **완료**
 - ~~**계정 삭제**: GDPR 준수 완전 삭제~~ ✅ **완료**
-- **PWA 지원**: 오프라인 사용 가능
+- ~~**PWA 지원**: 오프라인 사용 가능~~ ✅ **완료**
 - **API 엔드포인트**: 외부 서비스 연동
 
 ## 🛠️ 기술 스택
@@ -165,11 +175,12 @@ model QrTemplate {
 - **QR Generation**: qrcode, qr-code-styling-node
 - **PDF Generation**: jsPDF
 - **State Management**: Zustand, React Hook Form
+- **PWA**: next-pwa, Service Worker, Web App Manifest
 
 ## 📊 현재 상태
 
-✅ **완료**: 기본 기능 + 사용자 관리 + 히스토리 시스템
-🔄 **진행 중**: 고급 기능 구현
-⏳ **예정**: PWA, API, 프로덕션 배포
+✅ **완료**: 기본 기능 + 사용자 관리 + 히스토리 시스템 + PWA 지원
+🔄 **진행 중**: API 엔드포인트 개발
+⏳ **예정**: 프로덕션 배포 최적화
 
 이 프로젝트는 PRD 문서의 요구사항을 충실히 따라 구현되었으며, 오픈소스 QR 코드 생성기로서 필요한 핵심 기능들이 모두 구현되었습니다.

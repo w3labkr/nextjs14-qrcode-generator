@@ -19,6 +19,7 @@ import {
   Database,
 } from "lucide-react";
 import Link from "next/link";
+import { InstallPrompt } from "@/components/install-prompt";
 
 export function UserNav() {
   const { data: session, status } = useSession();
@@ -30,6 +31,7 @@ export function UserNav() {
   if (!session) {
     return (
       <div className="flex gap-2">
+        <InstallPrompt />
         <Button variant="outline" asChild>
           <Link href="/history">기록</Link>
         </Button>

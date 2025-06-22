@@ -46,9 +46,13 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import TemplateManager from "@/components/template-manager";
 import { getDefaultTemplate } from "@/app/actions/qr-code";
+import { InstallPromptBanner } from "@/components/install-prompt";
+import { OfflineIndicator } from "@/components/offline-indicator";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 
 export default function HomePage() {
   const { data: session } = useSession();
+  const isOnline = useOnlineStatus();
   const [qrData, setQrData] = useState(GITHUB_REPO_URL);
   const [activeTab, setActiveTab] = useState("url");
   const [qrCode, setQrCode] = useState("");
@@ -370,6 +374,11 @@ export default function HomePage() {
               URL, 텍스트, Wi-Fi 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요.
               다양한 옵션으로 자유롭게 커스터마이징할 수 있습니다.
             </p>
+
+            {/* PWA 관련 알림들 */}
+            <OfflineIndicator />
+            <InstallPromptBanner />
+
             <Tabs
               defaultValue="url"
               className="w-full"
@@ -541,10 +550,16 @@ export default function HomePage() {
                       다운로드
                     </a>
                   </Button>
+
+                  {!isOnline && (
+                    <p className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
+                      오프라인 상태: 기본 다운로드만 가능합니다
+                    </p>
+                  )}
                 </div>
 
                 {/* 로그인 사용자 전용 고해상도 다운로드 */}
-                {session?.user && qrCode && (
+                {session?.user && qrCode && isOnline && (
                   <div className="w-full space-y-2">
                     <div className="flex items-center gap-2 text-sm text-green-600">
                       <span className="text-lg">✨</span>
