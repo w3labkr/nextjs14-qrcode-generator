@@ -2,135 +2,116 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, FileDown, History, Layout } from "lucide-react";
-import {
-  exportUserData,
-  exportQrCodes,
-  exportTemplates,
-} from "@/app/actions/data-management";
+import { Download, FileDown, FileText } from "lucide-react";
+import { exportUserData } from "@/app/actions/data-management";
+import { convertQrCodesToCSV, convertTemplatesToCSV } from "@/lib/csv-utils";
 import { toast } from "sonner";
 
-type ExportType = "all" | "qrcodes" | "templates";
-
 export default function ExportSection() {
-  const [isExporting, setIsExporting] = useState<ExportType | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
-  const downloadFile = (data: any, filename: string) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleExportAll = async () => {
+  const handleJSONExport = async () => {
     try {
-      setIsExporting("all");
+      setIsExporting(true);
       const data = await exportUserData();
 
-      downloadFile(
-        data,
-        `qr-data-all-${new Date().toISOString().slice(0, 10)}.json`,
-      );
+      // JSON 파일로 다운로드
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `qr-data-export-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
       toast.success(
-        `전체 데이터가 성공적으로 내보내졌습니다! (QR 코드: ${data.stats.totalQrCodes}개, 템플릿: ${data.stats.totalTemplates}개)`,
+        `JSON 데이터를 성공적으로 내보냈습니다! (QR 코드: ${data.qrCodes.length}개, 템플릿: ${data.templates.length}개)`,
       );
     } catch (error) {
-      console.error("전체 내보내기 오류:", error);
-      toast.error("전체 데이터 내보내기에 실패했습니다.");
+      console.error("JSON 내보내기 오류:", error);
+      toast.error("JSON 데이터 내보내기에 실패했습니다.");
     } finally {
-      setIsExporting(null);
+      setIsExporting(false);
     }
   };
 
-  const handleExportQrCodes = async () => {
+  const handleCSVExport = async () => {
     try {
-      setIsExporting("qrcodes");
-      const data = await exportQrCodes();
+      setIsExporting(true);
+      const data = await exportUserData();
 
-      downloadFile(
-        data,
-        `qr-codes-${new Date().toISOString().slice(0, 10)}.json`,
-      );
+      // QR 코드 CSV 파일
+      const qrCsv = convertQrCodesToCSV(data.qrCodes);
+      const qrBlob = new Blob([qrCsv], { type: "text/csv" });
+      const qrUrl = URL.createObjectURL(qrBlob);
+
+      // 템플릿 CSV 파일
+      const templateCsv = convertTemplatesToCSV(data.templates);
+      const templateBlob = new Blob([templateCsv], { type: "text/csv" });
+      const templateUrl = URL.createObjectURL(templateBlob);
+
+      const date = new Date().toISOString().split("T")[0];
+
+      // QR 코드 CSV 다운로드
+      const qrLink = document.createElement("a");
+      qrLink.href = qrUrl;
+      qrLink.download = `qr-codes-${date}.csv`;
+      document.body.appendChild(qrLink);
+      qrLink.click();
+      document.body.removeChild(qrLink);
+      URL.revokeObjectURL(qrUrl);
+
+      // 템플릿 CSV 다운로드
+      const templateLink = document.createElement("a");
+      templateLink.href = templateUrl;
+      templateLink.download = `templates-${date}.csv`;
+      document.body.appendChild(templateLink);
+      templateLink.click();
+      document.body.removeChild(templateLink);
+      URL.revokeObjectURL(templateUrl);
 
       toast.success(
-        `QR 코드 히스토리가 성공적으로 내보내졌습니다! (QR 코드: ${data.stats.totalQrCodes}개)`,
+        `CSV 데이터를 성공적으로 내보냈습니다! (QR 코드: ${data.qrCodes.length}개, 템플릿: ${data.templates.length}개)`,
       );
     } catch (error) {
-      console.error("QR 코드 내보내기 오류:", error);
-      toast.error("QR 코드 내보내기에 실패했습니다.");
+      console.error("CSV 내보내기 오류:", error);
+      toast.error("CSV 데이터 내보내기에 실패했습니다.");
     } finally {
-      setIsExporting(null);
-    }
-  };
-
-  const handleExportTemplates = async () => {
-    try {
-      setIsExporting("templates");
-      const data = await exportTemplates();
-
-      downloadFile(
-        data,
-        `qr-templates-${new Date().toISOString().slice(0, 10)}.json`,
-      );
-
-      toast.success(
-        `템플릿이 성공적으로 내보내졌습니다! (템플릿: ${data.stats.totalTemplates}개)`,
-      );
-    } catch (error) {
-      console.error("템플릿 내보내기 오류:", error);
-      toast.error("템플릿 내보내기에 실패했습니다.");
-    } finally {
-      setIsExporting(null);
+      setIsExporting(false);
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center gap-2">
         <FileDown className="h-4 w-4" />
         <h4 className="font-medium">데이터 내보내기</h4>
       </div>
       <p className="text-sm text-muted-foreground">
-        원하는 데이터 종류를 선택하여 JSON 파일로 다운로드합니다.
+        모든 QR 코드와 템플릿을 JSON 또는 CSV 파일로 내보냅니다.
       </p>
-
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         <Button
-          onClick={handleExportAll}
-          disabled={isExporting !== null}
-          className="w-full justify-start"
+          onClick={handleJSONExport}
+          disabled={isExporting}
           variant="outline"
+          className="w-full"
         >
           <Download className="h-4 w-4 mr-2" />
-          {isExporting === "all" ? "내보내는 중..." : "전체 데이터 내보내기"}
+          {isExporting ? "내보내는 중..." : "JSON으로 내보내기"}
         </Button>
-
         <Button
-          onClick={handleExportQrCodes}
-          disabled={isExporting !== null}
-          className="w-full justify-start"
+          onClick={handleCSVExport}
+          disabled={isExporting}
           variant="outline"
+          className="w-full"
         >
-          <History className="h-4 w-4 mr-2" />
-          {isExporting === "qrcodes" ? "내보내는 중..." : "히스토리 내보내기"}
-        </Button>
-
-        <Button
-          onClick={handleExportTemplates}
-          disabled={isExporting !== null}
-          className="w-full justify-start"
-          variant="outline"
-        >
-          <Layout className="h-4 w-4 mr-2" />
-          {isExporting === "templates" ? "내보내는 중..." : "템플릿 내보내기"}
+          <FileText className="h-4 w-4 mr-2" />
+          {isExporting ? "내보내는 중..." : "CSV로 내보내기"}
         </Button>
       </div>
     </div>

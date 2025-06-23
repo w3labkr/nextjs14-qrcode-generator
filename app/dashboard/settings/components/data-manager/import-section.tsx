@@ -30,6 +30,7 @@ import {
   importQrCodes,
   importTemplates,
 } from "@/app/actions/data-management";
+import { parseQrCodesFromCSV, parseTemplatesFromCSV } from "@/lib/csv-utils";
 import { toast } from "sonner";
 import { ImportStats } from "@/types/data-manager";
 
@@ -47,23 +48,30 @@ export default function ImportSection({
   const [importData, setImportData] = useState("");
   const [replaceExisting, setReplaceExisting] = useState(false);
   const [importType, setImportType] = useState<ImportType>("all");
+  const [isCSV, setIsCSV] = useState(false);
 
   const validateImportData = (parsedData: any, type: ImportType) => {
-    switch (type) {
-      case "all":
-        return parsedData.qrCodes || parsedData.templates;
-      case "qrcodes":
-        return (
-          parsedData.qrCodes ||
-          (parsedData.dataType === "qrcodes" && parsedData.qrCodes)
-        );
-      case "templates":
-        return (
-          parsedData.templates ||
-          (parsedData.dataType === "templates" && parsedData.templates)
-        );
-      default:
-        return false;
+    if (isCSV) {
+      // CSV 파일의 경우 배열 형태로 파싱됨
+      return Array.isArray(parsedData) && parsedData.length > 0;
+    } else {
+      // JSON 파일의 경우 기존 로직 사용
+      switch (type) {
+        case "all":
+          return parsedData.qrCodes || parsedData.templates;
+        case "qrcodes":
+          return (
+            parsedData.qrCodes ||
+            (parsedData.dataType === "qrcodes" && parsedData.qrCodes)
+          );
+        case "templates":
+          return (
+            parsedData.templates ||
+            (parsedData.dataType === "templates" && parsedData.templates)
+          );
+        default:
+          return false;
+      }
     }
   };
 
@@ -88,7 +96,23 @@ export default function ImportSection({
 
     try {
       setIsImporting(true);
-      const parsedData = JSON.parse(importData);
+      let parsedData;
+
+      if (isCSV) {
+        // CSV 파싱
+        if (importType === "qrcodes") {
+          parsedData = parseQrCodesFromCSV(importData);
+        } else if (importType === "templates") {
+          parsedData = parseTemplatesFromCSV(importData);
+        } else {
+          throw new Error(
+            "전체 데이터는 CSV로 가져올 수 없습니다. QR 코드 또는 템플릿 중 하나를 선택해주세요.",
+          );
+        }
+      } else {
+        // JSON 파싱
+        parsedData = JSON.parse(importData);
+      }
 
       if (!validateImportData(parsedData, importType)) {
         throw new Error(
@@ -98,31 +122,41 @@ export default function ImportSection({
 
       let result;
 
-      switch (importType) {
-        case "all":
-          result = await importUserData({
-            qrCodes: parsedData.qrCodes || [],
-            templates: parsedData.templates || [],
-            replaceExisting,
-          });
-          break;
-        case "qrcodes":
-          result = await importQrCodes(
-            parsedData.qrCodes || [],
-            replaceExisting,
-          );
-          break;
-        case "templates":
-          result = await importTemplates(
-            parsedData.templates || [],
-            replaceExisting,
-          );
-          break;
-        default:
-          throw new Error("지원하지 않는 가져오기 유형입니다.");
+      if (isCSV) {
+        // CSV 데이터로 가져오기
+        if (importType === "qrcodes") {
+          result = await importQrCodes(parsedData, replaceExisting);
+        } else if (importType === "templates") {
+          result = await importTemplates(parsedData, replaceExisting);
+        }
+      } else {
+        // JSON 데이터로 가져오기 (기존 로직)
+        switch (importType) {
+          case "all":
+            result = await importUserData({
+              qrCodes: parsedData.qrCodes || [],
+              templates: parsedData.templates || [],
+              replaceExisting,
+            });
+            break;
+          case "qrcodes":
+            result = await importQrCodes(
+              parsedData.qrCodes || [],
+              replaceExisting,
+            );
+            break;
+          case "templates":
+            result = await importTemplates(
+              parsedData.templates || [],
+              replaceExisting,
+            );
+            break;
+          default:
+            throw new Error("지원하지 않는 가져오기 유형입니다.");
+        }
       }
 
-      if (result.success) {
+      if (result && result.success) {
         const importStats: ImportStats = {
           imported: {
             qrCodes: "qrCodes" in result.imported ? result.imported.qrCodes : 0,
@@ -150,39 +184,14 @@ export default function ImportSection({
         setImportDialogOpen(false);
         setImportData("");
         setReplaceExisting(false);
+        setIsCSV(false);
       } else {
         throw new Error("데이터 가져오기에 실패했습니다.");
       }
-
-      // QR 코드 데이터 검증
-      if (parsedData.qrCodes && Array.isArray(parsedData.qrCodes)) {
-        for (let i = 0; i < parsedData.qrCodes.length; i++) {
-          const qrCode = parsedData.qrCodes[i];
-          if (!qrCode.content || typeof qrCode.content !== "string") {
-            throw new Error(
-              `QR 코드 ${i + 1}번의 content 필드가 유효하지 않습니다.`,
-            );
-          }
-        }
-      }
-
-      // 템플릿 데이터 검증
-      if (parsedData.templates && Array.isArray(parsedData.templates)) {
-        for (let i = 0; i < parsedData.templates.length; i++) {
-          const template = parsedData.templates[i];
-          if (!template.name || typeof template.name !== "string") {
-            throw new Error(
-              `템플릿 ${i + 1}번의 name 필드가 유효하지 않습니다.`,
-            );
-          }
-        }
-      }
-
-      // 실제 중복 result 변수 정의 제거 (위에서 이미 정의됨)
     } catch (error) {
       console.error("가져오기 오류:", error);
       if (error instanceof SyntaxError) {
-        toast.error("JSON 형식이 올바르지 않습니다.");
+        toast.error("파일 형식이 올바르지 않습니다.");
       } else if (error instanceof Error) {
         toast.error(error.message);
       } else {
@@ -197,10 +206,16 @@ export default function ImportSection({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== "application/json") {
-      toast.error("JSON 파일만 업로드할 수 있습니다.");
+    const isCSVFile = file.type === "text/csv" || file.name.endsWith(".csv");
+    const isJSONFile =
+      file.type === "application/json" || file.name.endsWith(".json");
+
+    if (!isCSVFile && !isJSONFile) {
+      toast.error("CSV 또는 JSON 파일만 업로드할 수 있습니다.");
       return;
     }
+
+    setIsCSV(isCSVFile);
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -217,7 +232,7 @@ export default function ImportSection({
         <h4 className="font-medium">데이터 가져오기</h4>
       </div>
       <p className="text-sm text-muted-foreground">
-        내보낸 JSON 파일에서 QR 코드와 템플릿을 가져옵니다.
+        내보낸 CSV 또는 JSON 파일에서 QR 코드와 템플릿을 가져옵니다.
       </p>
 
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
@@ -231,7 +246,7 @@ export default function ImportSection({
           <DialogHeader>
             <DialogTitle>데이터 가져오기</DialogTitle>
             <DialogDescription>
-              JSON 파일을 업로드하거나 데이터를 직접 붙여넣으세요.
+              CSV 또는 JSON 파일을 업로드하거나 데이터를 직접 붙여넣으세요.
             </DialogDescription>
           </DialogHeader>
 
@@ -279,11 +294,11 @@ export default function ImportSection({
 
             {/* 파일 업로드 */}
             <div>
-              <Label htmlFor="file-upload">JSON 파일 업로드</Label>
+              <Label htmlFor="file-upload">CSV 또는 JSON 파일 업로드</Label>
               <Input
                 id="file-upload"
                 type="file"
-                accept=".json"
+                accept=".csv,.json"
                 onChange={handleFileUpload}
                 className="mt-1"
               />
@@ -298,12 +313,18 @@ export default function ImportSection({
 
             {/* 텍스트 입력 */}
             <div>
-              <Label htmlFor="import-data">JSON 데이터 붙여넣기</Label>
+              <Label htmlFor="import-data">
+                {isCSV ? "CSV" : "JSON"} 데이터 붙여넣기
+              </Label>
               <Textarea
                 id="import-data"
                 value={importData}
                 onChange={(e) => setImportData(e.target.value)}
-                placeholder="내보낸 JSON 데이터를 여기에 붙여넣으세요..."
+                placeholder={
+                  isCSV
+                    ? "CSV 데이터를 여기에 붙여넣으세요..."
+                    : "내보낸 JSON 데이터를 여기에 붙여넣으세요..."
+                }
                 rows={8}
                 className="mt-1 font-mono text-sm"
               />
@@ -346,6 +367,7 @@ export default function ImportSection({
                 setImportData("");
                 setReplaceExisting(false);
                 setImportType("all");
+                setIsCSV(false);
               }}
             >
               취소
