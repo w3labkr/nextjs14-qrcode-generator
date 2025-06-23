@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,19 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ImportStats } from "@/types/data-manager";
 import ExportSection from "./export-section";
 import ImportSection from "./import-section";
-import ImportResults from "./import-results";
 import UsageGuide from "./usage-guide";
 
 export default function DataManager() {
-  const [importStats, setImportStats] = useState<ImportStats | null>(null);
-
-  const handleImportComplete = (stats: ImportStats) => {
-    setImportStats(stats);
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -35,11 +26,8 @@ export default function DataManager() {
 
         <div className="border-t pt-4">
           {/* 가져오기 섹션 */}
-          <ImportSection onImportComplete={handleImportComplete} />
+          <ImportSection />
         </div>
-
-        {/* 가져오기 결과 표시 */}
-        {importStats && <ImportResults importStats={importStats} />}
 
         {/* 사용 안내 */}
         <UsageGuide />
