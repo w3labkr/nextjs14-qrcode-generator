@@ -9,9 +9,6 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  webpack: (config, { isServer }) => {
-    return config;
-  },
 };
 
 const pwaConfig = {
