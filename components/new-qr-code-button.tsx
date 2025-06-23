@@ -19,7 +19,7 @@ export function NewQrCodeButton({
 }: NewQrCodeButtonProps) {
   return (
     <Button asChild variant={variant} className={className}>
-      <Link href="/">
+      <Link href="/qrcode">
         <QrCode className="h-4 w-4 mr-2" />새 QR 코드 만들기
       </Link>
     </Button>
