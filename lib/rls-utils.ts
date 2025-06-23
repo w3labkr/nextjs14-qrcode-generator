@@ -10,8 +10,20 @@ import { prisma } from "@/lib/prisma";
  * @returns Prisma 클라이언트 인스턴스
  */
 export async function withRLS(userId: string) {
+  // SQL 인젝션을 방지하기 위해 userId 검증
+  if (!userId || typeof userId !== "string") {
+    throw new Error("Invalid user ID");
+  }
+
+  // UUID 형식 검증 (추가 보안)
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(userId)) {
+    throw new Error("Invalid user ID format");
+  }
+
   // PostgreSQL 세션에 현재 사용자 ID 설정
-  await prisma.$executeRaw`SET app.current_user_id = ${userId}`;
+  await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
   return prisma;
 }
 
@@ -19,7 +31,7 @@ export async function withRLS(userId: string) {
  * RLS 설정을 초기화합니다.
  */
 export async function resetRLS() {
-  await prisma.$executeRaw`RESET app.current_user_id`;
+  await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
 }
 
 /**
@@ -32,9 +44,21 @@ export async function withRLSTransaction<T>(
   userId: string,
   callback: (tx: any) => Promise<T>,
 ): Promise<T> {
+  // SQL 인젝션을 방지하기 위해 userId 검증
+  if (!userId || typeof userId !== "string") {
+    throw new Error("Invalid user ID");
+  }
+
+  // UUID 형식 검증 (추가 보안)
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(userId)) {
+    throw new Error("Invalid user ID format");
+  }
+
   return await prisma.$transaction(async (tx) => {
     // 트랜잭션 내에서 사용자 ID 설정
-    await tx.$executeRaw`SET app.current_user_id = ${userId}`;
+    await tx.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
     return await callback(tx);
   });
 }
@@ -80,6 +104,6 @@ export async function testRLS(userId: string) {
  */
 export async function withoutRLS() {
   // RLS 정책을 우회하기 위해 설정 제거
-  await prisma.$executeRaw`RESET app.current_user_id`;
+  await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
   return prisma;
 }

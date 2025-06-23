@@ -128,6 +128,16 @@ console.log(testResult); // { qrCodesCount: 5, templatesCount: 3 }
 
 4. **에러 처리**: RLS 정책 위반 시 적절한 에러 메시지를 제공해야 합니다.
 
+5. **SQL 인젝션 방지**: RLS 유틸리티 함수는 사용자 ID 검증을 통해 SQL 인젝션을 방지합니다.
+
+6. **UUID 형식 검증**: 사용자 ID는 반드시 유효한 UUID 형식이어야 합니다.
+
+**중요**: `$executeRawUnsafe` 사용으로 인한 보안 고려사항:
+
+- PostgreSQL의 `SET` 명령어는 prepared statement를 지원하지 않아 `$executeRawUnsafe`를 사용해야 합니다.
+- 이를 위해 엄격한 사용자 ID 검증을 통해 SQL 인젝션을 방지합니다.
+- 사용자 ID는 UUID 형식으로만 허용되며, 다른 형식은 거부됩니다.
+
 ## 테스트
 
 RLS가 올바르게 작동하는지 확인하려면:
@@ -151,6 +161,14 @@ await testRLS('user-b-id');
 1. `current_setting('app.current_user_id')` 값이 올바르게 설정되었는지 확인
 2. 데이터베이스 연결이 RLS 설정을 유지하고 있는지 확인
 3. 정책이 올바르게 생성되었는지 확인
+
+### SQL 구문 오류가 발생하는 경우
+
+`ERROR: syntax error at or near "$1"` 오류가 발생하면:
+
+1. `$executeRaw` 대신 `$executeRawUnsafe`를 사용하고 있는지 확인
+2. PostgreSQL의 `SET` 명령어는 prepared statement를 지원하지 않음
+3. 사용자 ID가 올바른 UUID 형식인지 확인
 
 ### 성능 이슈
 
