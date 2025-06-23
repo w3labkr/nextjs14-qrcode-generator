@@ -46,7 +46,15 @@ export default function TemplateManager({
       console.error("템플릿 로드 오류:", error);
       setError(errorMessage);
 
-      if (showErrorToast) {
+      // 토큰 관련 오류인 경우 다른 메시지 표시
+      if (
+        errorMessage.includes("Unauthorized") ||
+        errorMessage.includes("TokenExpired")
+      ) {
+        if (showErrorToast) {
+          toast.error("로그인이 필요합니다. 페이지를 새로고침해주세요.");
+        }
+      } else if (showErrorToast) {
         toast.error(errorMessage);
       }
     } finally {

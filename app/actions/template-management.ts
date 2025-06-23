@@ -7,19 +7,31 @@ import { ensureUserExists } from "@/lib/utils";
 import { TemplateData, TemplateUpdateData } from "@/types/qr-code-server";
 
 export async function getUserTemplates() {
-  const session = await auth();
+  try {
+    const session = await auth();
 
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
+    if (!session?.user?.id) {
+      console.log("세션 없음 - 사용자 인증 필요");
+      throw new Error("Unauthorized");
+    }
+
+    // 토큰 오류가 있는 경우 처리
+    if ((session as any)?.error) {
+      console.log("토큰 오류 감지:", (session as any).error);
+      throw new Error("TokenExpired");
+    }
+
+    const db = await withRLS(session.user.id);
+
+    const templates = await db.qrTemplate.findMany({
+      orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }],
+    });
+
+    return templates;
+  } catch (error) {
+    console.error("getUserTemplates 오류:", error);
+    throw error;
   }
-
-  const db = await withRLS(session.user.id);
-
-  const templates = await db.qrTemplate.findMany({
-    orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }],
-  });
-
-  return templates;
 }
 
 export async function saveTemplate(data: TemplateData) {

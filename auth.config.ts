@@ -95,8 +95,8 @@ export default {
         const accessTokenExpires = now + expiresIn;
         const refreshTokenExpires = now + TOKEN_CONFIG.REFRESH_TOKEN_EXPIRES_IN;
 
-        // 기본적으로 기억하기를 false로 설정 (필요시 클라이언트에서 업데이트)
-        const rememberMe = false;
+        // 기본적으로 기억하기를 true로 설정 (필요시 클라이언트에서 업데이트)
+        const rememberMe = true;
 
         return {
           ...extendedToken,
