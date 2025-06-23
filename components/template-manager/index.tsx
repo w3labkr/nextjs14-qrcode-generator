@@ -30,22 +30,30 @@ export default function TemplateManager({
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
+  const [hasShownError, setHasShownError] = useState(false);
 
-  const loadTemplates = async () => {
+  const loadTemplates = async (showErrorToast = true) => {
     try {
       setLoading(true);
       const templatesData = await getUserTemplates();
       setTemplates(templatesData);
+      // 성공하면 에러 상태 리셋
+      setHasShownError(false);
     } catch (error) {
       console.error("템플릿 로드 오류:", error);
-      toast.error("템플릿을 불러오는데 실패했습니다.");
+      // 중복 에러 메시지 방지: 이미 에러를 표시했거나 showErrorToast가 false면 토스트 표시 안함
+      if (showErrorToast && !hasShownError) {
+        toast.error("템플릿을 불러오는데 실패했습니다.");
+        setHasShownError(true);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadTemplates();
+    // 초기 로드시에는 에러 토스트를 표시하지 않음
+    loadTemplates(false);
   }, []);
 
   const openEditDialog = (template: Template) => {
@@ -83,7 +91,7 @@ export default function TemplateManager({
           </div>
           <SaveTemplateDialog
             currentSettings={currentSettings}
-            onSaveComplete={loadTemplates}
+            onSaveComplete={() => loadTemplates(true)}
           />
         </div>
       </CardHeader>
@@ -92,7 +100,7 @@ export default function TemplateManager({
           templates={templates}
           onLoadTemplate={onLoadTemplate}
           onEditTemplate={openEditDialog}
-          onTemplateUpdate={loadTemplates}
+          onTemplateUpdate={() => loadTemplates(true)}
         />
       </CardContent>
 
@@ -100,7 +108,7 @@ export default function TemplateManager({
         template={editingTemplate}
         isOpen={editDialogOpen}
         onClose={closeEditDialog}
-        onUpdateComplete={loadTemplates}
+        onUpdateComplete={() => loadTemplates(true)}
       />
     </Card>
   );
