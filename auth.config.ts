@@ -1,6 +1,5 @@
 import { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
-import Resend from "next-auth/providers/resend";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 
@@ -85,15 +84,10 @@ export default {
         },
       },
     }),
-    Resend({
-      apiKey: process.env.AUTH_RESEND_KEY,
-      from: process.env.EMAIL_FROM,
-    }),
   ],
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
-    verifyRequest: "/auth/verify-request",
   },
   callbacks: {
     async jwt({ token, user, account, trigger, session }) {

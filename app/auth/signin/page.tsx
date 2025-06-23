@@ -1,12 +1,8 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
@@ -14,67 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Mail, Loader2 } from "lucide-react";
 
 export default function SignIn() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setIsLoading(true);
-    try {
-      const result = await signIn("resend", {
-        email,
-        redirect: false,
-        callbackUrl: "/dashboard",
-      });
-
-      if (result?.ok) {
-        setEmailSent(true);
-      }
-    } catch (error) {
-      console.error("매직 링크 전송 실패:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (emailSent) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-              <Mail className="h-6 w-6 text-blue-600" />
-            </div>
-            <CardTitle className="text-2xl">이메일을 확인해 주세요</CardTitle>
-            <CardDescription>
-              {email}로 로그인 링크를 전송했습니다.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4 text-sm text-gray-600">
-              이메일함을 확인하시고 로그인 링크를 클릭해 주세요.
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEmailSent(false);
-                setEmail("");
-              }}
-            >
-              다른 이메일로 시도
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
@@ -86,50 +24,6 @@ export default function SignIn() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* 매직 링크 로그인 */}
-          <div className="space-y-4">
-            <form onSubmit={handleEmailSignIn} className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="email">이메일 주소</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading || !email}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    로그인 링크 전송 중...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="mr-2 h-4 w-4" />
-                    매직 링크로 로그인
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-500">또는</span>
-            </div>
-          </div>
-
           {/* Google 로그인 */}
           <Button
             className="w-full"

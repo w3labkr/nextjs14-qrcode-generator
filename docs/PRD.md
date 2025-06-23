@@ -74,7 +74,6 @@
 
 * **인증 시스템**:
   * **OAuth 로그인**: Google OAuth를 통한 간편 로그인 지원
-  * **매직 링크 인증**: 이메일 주소만으로 패스워드 없이 로그인할 수 있는 매직 링크 인증 지원
   * **세션 관리**: 보안이 강화된 JWT 기반 세션 관리
   * **선택적 로그인**: 로그인 없이도 모든 QR 코드 생성 기능을 사용할 수 있으며, 로그인 시에만 추가 기능 제공
 
@@ -102,7 +101,7 @@
 | | 서버 액션 (Server Actions) | QR 코드 생성 로직을 서버에서 처리하여 클라이언트의 부담을 줄이고, 일관된 생성 결과를 보장할 수 있습니다. |
 | | API Routes | 사용자 인증 및 QR 코드 CRUD 작업을 위한 RESTful API 엔드포인트를 제공합니다. |
 | | 성능 최적화 (Turbopack) | 로컬 개발 서버의 빠른 구동 및 코드 업데이트 속도로 개발 생산성을 높입니다. |
-| **Auth.js (NextAuth.js v5)** | OAuth 인증, 매직 링크 인증, 세션 관리 | Google OAuth와 이메일 매직 링크를 통한 안전하고 편리한 다중 인증 시스템을 제공합니다. |
+| **Auth.js (NextAuth.js v5)** | OAuth 인증, 세션 관리 | Google OAuth를 통한 안전하고 편리한 인증 시스템을 제공합니다. |
 | | Prisma 어댑터 | 사용자 세션과 계정 정보를 데이터베이스에 안전하게 저장하고 관리합니다. |
 | **Turso Database** | SQLite 호환 분산 데이터베이스 | 빠른 응답 속도와 글로벌 분산으로 최적의 성능을 제공하며, 개발 환경에서는 로컬 SQLite로 쉽게 개발할 수 있습니다. |
 | | 엣지 컴퓨팅 최적화 | 전 세계 여러 지역에 분산된 데이터베이스로 사용자에게 가장 가까운 위치에서 빠른 데이터 접근을 제공합니다. |
@@ -199,8 +198,6 @@ model QrTemplate {
 * **인증 관련 API**:
   * `GET /api/auth/session` - 현재 사용자 세션 정보 조회
   * `POST /api/auth/signin` - OAuth 로그인 (Auth.js 제공)
-  * `POST /api/auth/signin/email` - 매직 링크 이메일 전송 (Auth.js 제공)
-  * `GET /api/auth/verify-request` - 매직 링크 확인 페이지 (Auth.js 제공)
   * `POST /api/auth/signout` - 로그아웃 (Auth.js 제공)
 
 * **QR 코드 관리 API**:
@@ -254,7 +251,7 @@ model QrTemplate {
     * 지원 콘텐츠 유형 확대 (Wi-Fi, vCard, 이메일 등).
     * 고급 사용자 정의 기능 추가 (다양한 모양, 패턴, 프레임/CTA).
     * 지원 다운로드 형식 확대 (JPG, PDF).
-    * **Auth.js 기반 Google OAuth 및 매직 링크 인증 시스템 구축**.
+    * **Auth.js 기반 Google OAuth 인증 시스템 구축**.
     * **Turso 데이터베이스 및 Prisma ORM 연동**.
     * **로그인 사용자를 위한 QR 코드 히스토리 관리 기능**.
     * **개인 템플릿 및 즐겨찾기 기능**.
@@ -310,8 +307,8 @@ model QrTemplate {
 
 * **Week 1-2**:
   * Turso 데이터베이스 설정 및 Prisma 스키마 정의
-  * Auth.js 설정 및 Google OAuth, 매직 링크 이메일 프로바이더 연동
-  * 기본 인증 플로우 구현 (소셜 로그인 + 이메일 매직 링크)
+  * Auth.js 설정 및 Google OAuth 프로바이더 연동
+  * 기본 인증 플로우 구현 (소셜 로그인)
 
 * **Week 3-4**:
   * 기존 QR 코드 생성 기능 유지하면서 데이터베이스 저장 로직 추가
