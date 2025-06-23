@@ -1,20 +1,54 @@
-# Git commit message guidelines
+# 🚀 QR Code Generator Project Commit Message Guidelines
 #
-# <type>: <short description>
+# 📝 Commit Message Format: <type>(<scope>): <description>
 #
-# Type can be one of the following:
-# - feat: A new feature
-# - fix: A bug fix
-# - docs: Documentation updates
-# - chore: Maintenance tasks (e.g., setting up or updating configuration)
-# - refactor: Code changes that neither fix a bug nor add a feature
-# - style: Code style changes (e.g., formatting, missing semi-colons)
-# - test: Adding or updating tests
-# - perf: Performance improvements
+# Example: feat(qr-generator): add vCard QR code support
+#          fix(ui): resolve mobile responsiveness issue
+#          docs(readme): update installation guide
 #
-# Example:
-# feat: add user authentication component
-# fix: resolve API request failure
+# 🏷️ Type (required)
+# - feat:     Add a new feature
+# - fix:      Fix a bug
+# - docs:     Update documentation (README, guides, etc.)
+# - style:    Code style changes (formatting, semicolons, etc., no logic changes)
+# - refactor: Code refactoring (neither fixes a bug nor adds a feature)
+# - test:     Add or update tests
+# - chore:    Build process or auxiliary tool changes (e.g., dependency updates)
+# - perf:     Performance improvements
+# - ci:       CI/CD configuration changes
+# - revert:   Revert a previous commit
 #
-# If applicable, describe why the change was made or how it addresses a specific issue.
-# Add any relevant details in the following lines.
+# 🎯 Scope (optional)
+# - qr-generator: QR code generation logic
+# - ui:          User interface components
+# - auth:        Authentication system
+# - database:    Database related
+# - api:         API endpoints
+# - hooks:       Custom hooks
+# - utils:       Utility functions
+# - types:       TypeScript type definitions
+# - config:      Configuration files
+# - deps:        Dependency management
+#
+# 📋 Description Guidelines
+# - Write in English (maintain consistency)
+# - Use present tense, imperative mood ("add" not "added" or "adds")
+# - Start with lowercase letter
+# - No period at the end
+# - Keep it concise within 50 characters
+#
+# 📚 Example Commit Messages
+# feat(qr-generator): add SMS QR code generation
+# fix(ui): resolve button alignment on mobile devices
+# docs(contributing): update development setup guide
+# style(components): apply prettier formatting
+# refactor(auth): simplify OAuth callback handling
+# test(qr-generator): add unit tests for Wi-Fi QR codes
+# chore(deps): update Next.js to v14.2.30
+# perf(database): optimize QR code history queries
+#
+# 🔗 Add related issues or PRs at the bottom when applicable
+# Examples:
+# Fixes #123
+# Closes #456
+# Related to #789
