@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { withAuthenticatedRLS } from "@/lib/rls-utils";
 import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // 검색 조건 구성
-    const where: Prisma.QrCodeWhereInput = {
-      userId: session.user.id,
-    };
+    const db = await withAuthenticatedRLS(session);
+
+    // 검색 조건 구성 (RLS로 자동 필터링되므로 userId는 제거)
+    const where: Prisma.QrCodeWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     // QR 코드 목록 조회
     const [qrCodes, total] = await Promise.all([
-      prisma.qrCode.findMany({
+      db.qrCode.findMany({
         where,
         orderBy,
         skip,
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
           updatedAt: true,
         },
       }),
-      prisma.qrCode.count({ where }),
+      db.qrCode.count({ where }),
     ]);
 
     // settings 문자열을 JSON으로 파싱

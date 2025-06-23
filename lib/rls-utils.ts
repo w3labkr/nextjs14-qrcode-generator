@@ -5,14 +5,12 @@ import { prisma } from "@/lib/prisma";
  */
 
 /**
- * 현재 사용자 ID를 설정하여 RLS 정책을 활성화합니다.
- * @param userId - 현재 사용자의 ID
- * @returns Prisma 클라이언트 인스턴스
+ * 사용자 ID 형식 검증 함수
+ * @param userId - 검증할 사용자 ID
  */
-export async function withRLS(userId: string) {
-  // SQL 인젝션을 방지하기 위해 userId 검증
+function validateUserId(userId: string): void {
   if (!userId || typeof userId !== "string") {
-    throw new Error("Invalid user ID");
+    throw new Error("Invalid user ID: must be a non-empty string");
   }
 
   // CUID 또는 UUID 형식 검증 (추가 보안)
@@ -23,19 +21,38 @@ export async function withRLS(userId: string) {
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
   if (!cuidRegex.test(userId) && !uuidRegex.test(userId)) {
-    throw new Error("Invalid user ID format");
+    throw new Error("Invalid user ID format: must be CUID or UUID");
   }
+}
 
-  // PostgreSQL 세션에 현재 사용자 ID 설정
-  await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
-  return prisma;
+/**
+ * 현재 사용자 ID를 설정하여 RLS 정책을 활성화합니다.
+ * @param userId - 현재 사용자의 ID
+ * @returns Prisma 클라이언트 인스턴스
+ */
+export async function withRLS(userId: string) {
+  validateUserId(userId);
+
+  try {
+    // PostgreSQL 세션에 현재 사용자 ID 설정
+    await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
+    return prisma;
+  } catch (error) {
+    console.error("Failed to set RLS context:", error);
+    throw new Error("Failed to initialize RLS context");
+  }
 }
 
 /**
  * RLS 설정을 초기화합니다.
  */
 export async function resetRLS() {
-  await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
+  try {
+    await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
+  } catch (error) {
+    console.error("Failed to reset RLS context:", error);
+    throw new Error("Failed to reset RLS context");
+  }
 }
 
 /**
@@ -48,27 +65,18 @@ export async function withRLSTransaction<T>(
   userId: string,
   callback: (tx: any) => Promise<T>,
 ): Promise<T> {
-  // SQL 인젝션을 방지하기 위해 userId 검증
-  if (!userId || typeof userId !== "string") {
-    throw new Error("Invalid user ID");
+  validateUserId(userId);
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // 트랜잭션 내에서 사용자 ID 설정
+      await tx.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
+      return await callback(tx);
+    });
+  } catch (error) {
+    console.error("RLS transaction failed:", error);
+    throw error;
   }
-
-  // CUID 또는 UUID 형식 검증 (추가 보안)
-  // CUID: 25자리 문자열 (예: c1234567890123456789012345)
-  // UUID: 36자리 문자열 (예: 12345678-1234-1234-1234-123456789012)
-  const cuidRegex = /^c[0-9a-z]{24}$/i;
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-  if (!cuidRegex.test(userId) && !uuidRegex.test(userId)) {
-    throw new Error("Invalid user ID format");
-  }
-
-  return await prisma.$transaction(async (tx) => {
-    // 트랜잭션 내에서 사용자 ID 설정
-    await tx.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
-    return await callback(tx);
-  });
 }
 
 /**
@@ -111,7 +119,43 @@ export async function testRLS(userId: string) {
  * 주의: 이 함수는 관리자 전용이며 신중하게 사용해야 합니다.
  */
 export async function withoutRLS() {
-  // RLS 정책을 우회하기 위해 설정 제거
-  await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
-  return prisma;
+  try {
+    // RLS 정책을 우회하기 위해 설정 제거
+    await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
+    return prisma;
+  } catch (error) {
+    console.error("Failed to reset RLS for admin access:", error);
+    throw new Error("Failed to initialize admin access");
+  }
+}
+
+/**
+ * 인증된 사용자를 위한 RLS 래퍼 함수
+ * NextAuth 세션에서 사용자 ID를 자동으로 추출하여 RLS를 적용합니다.
+ * @param session - NextAuth 세션 객체
+ * @returns RLS가 적용된 Prisma 클라이언트
+ */
+export async function withAuthenticatedRLS(session: any) {
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized: Valid session required");
+  }
+
+  return await withRLS(session.user.id);
+}
+
+/**
+ * 인증된 사용자를 위한 RLS 트랜잭션 래퍼 함수
+ * @param session - NextAuth 세션 객체
+ * @param callback - 실행할 트랜잭션 콜백
+ * @returns 트랜잭션 결과
+ */
+export async function withAuthenticatedRLSTransaction<T>(
+  session: any,
+  callback: (tx: any) => Promise<T>,
+): Promise<T> {
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized: Valid session required");
+  }
+
+  return await withRLSTransaction(session.user.id, callback);
 }

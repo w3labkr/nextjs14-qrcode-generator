@@ -10,8 +10,6 @@ export async function deleteAccount() {
       throw new Error("로그인이 필요합니다.");
     }
 
-    const userId = session.user.id;
-
     return await withAuthenticatedRLSTransaction(session, async (tx) => {
       // 사용자 정보 조회
       const user = await tx.user.findFirst({
@@ -39,6 +37,8 @@ export async function deleteAccount() {
 
       // 사용자 삭제
       await tx.user.delete({
+        where: { id: session.user!.id },
+      });
         where: { id: userId },
       });
 
@@ -50,12 +50,12 @@ export async function deleteAccount() {
         deletedSessions: deletedSessions.count,
         deletedAccounts: deletedAccounts.count,
       });
-
-      return {
-        success: true,
-        message: "계정과 모든 관련 데이터가 성공적으로 삭제되었습니다.",
-      };
     });
+
+    return {
+      success: true,
+      message: "계정과 모든 관련 데이터가 성공적으로 삭제되었습니다.",
+    };
   } catch (error) {
     console.error("계정 삭제 오류:", error);
     throw new Error(
@@ -90,12 +90,9 @@ export async function updateProfile(data: { name: string; email: string }) {
       return { success: false, error: "올바른 이메일 형식이 아닙니다." };
     }
 
-    // 이메일 중복 검사와 사용자 업데이트를 위해 관리자 권한 필요
-    const adminDb = await withoutRLS();
-
     // 이메일이 변경된 경우 중복 체크
     if (data.email !== session.user.email) {
-      const existingUser = await adminDb.user.findUnique({
+      const existingUser = await prisma.user.findUnique({
         where: { email: data.email },
       });
 
@@ -105,7 +102,7 @@ export async function updateProfile(data: { name: string; email: string }) {
     }
 
     // 사용자 존재 여부 확인
-    const existingUser = await adminDb.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -115,7 +112,7 @@ export async function updateProfile(data: { name: string; email: string }) {
     }
 
     // 사용자 정보 업데이트
-    const updatedUser = await adminDb.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         name: data.name.trim(),

@@ -142,17 +142,51 @@ console.log(testResult); // { qrCodesCount: 5, templatesCount: 3 }
 
 RLS가 올바르게 작동하는지 확인하려면:
 
+### 1. 자동 테스트 (권장)
+
+```typescript
+import { testRLS } from '@/lib/rls-utils';
+
+// 사용자 A로 테스트
+const resultA = await testRLS('user-a-id');
+console.log('User A can access:', resultA);
+
+// 사용자 B로 테스트
+const resultB = await testRLS('user-b-id');
+console.log('User B can access:', resultB);
+```
+
+### 2. 수동 테스트
+
+프로젝트 루트에서 다음 명령어를 실행하여 RLS 테스트를 수행할 수 있습니다:
+
+```bash
+# RLS 테스트 스크립트 실행
+psql -d your_database -f prisma/migrations/test_rls.sql
+```
+
+테스트 전에 `test_rls.sql` 파일에서 실제 사용자 ID로 교체해야 합니다:
+
+```sql
+-- 실제 사용자 ID로 교체
+SET app.current_user_id = 'your-actual-user-id';
+```
+
+### 3. 애플리케이션 테스트
+
 1. 서로 다른 사용자로 로그인
 2. 각 사용자의 데이터만 조회되는지 확인
 3. 다른 사용자의 데이터에 접근할 수 없는지 확인
 
-```typescript
-// 사용자 A로 테스트
-await testRLS('user-a-id');
+### 4. RLS 구현 검증
 
-// 사용자 B로 테스트
-await testRLS('user-b-id');
-```
+다음 사항들을 확인하세요:
+
+- ✅ 모든 서버 액션에서 `withRLS()` 또는 `withAuthenticatedRLS()` 사용
+- ✅ 트랜잭션에서 `withRLSTransaction()` 또는 `withAuthenticatedRLSTransaction()` 사용
+- ✅ 직접 `prisma` 접근 대신 RLS 유틸리티 함수 사용
+- ✅ 관리자 권한이 필요한 경우에만 `withoutRLS()` 사용
+- ✅ 사용자 ID 검증 로직 적용
 
 ## 문제 해결
 

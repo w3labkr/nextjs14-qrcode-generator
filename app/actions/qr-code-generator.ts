@@ -2,7 +2,7 @@
 
 import QRCode from "qrcode";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { withAuthenticatedRLSTransaction, withoutRLS } from "@/lib/rls-utils";
 import { QrCodeOptions, QrCodeGenerationOptions } from "@/types/qr-code-server";
 
 export async function generateQrCode(options: QrCodeOptions): Promise<string> {
@@ -123,38 +123,46 @@ export async function generateAndSaveQrCode(options: QrCodeGenerationOptions) {
     const session = await auth();
 
     if (session?.user?.id) {
-      // 사용자가 실제로 데이터베이스에 존재하는지 확인
-      const existingUser = await prisma.user.findUnique({
-        where: { id: session.user.id },
-      });
-
-      if (existingUser) {
-        const savedQrCode = await prisma.qrCode.create({
-          data: {
-            userId: session.user.id,
-            type: options.qrType,
-            title: options.title || null,
-            content: options.text,
-            settings: JSON.stringify({
-              type: options.type,
-              color: options.color,
-              width: options.width,
-              margin: options.margin,
-              logo: options.logo,
-              dotsOptions: options.dotsOptions,
-              cornersSquareOptions: options.cornersSquareOptions,
-              frameOptions: options.frameOptions,
-            }),
-          },
+      await withAuthenticatedRLSTransaction(session, async (tx) => {
+        // 사용자가 실제로 데이터베이스에 존재하는지 확인
+        const existingUser = await tx.user.findFirst({
+          where: { id: session.user!.id },
         });
 
-        return {
-          qrCodeDataUrl,
-          savedId: savedQrCode.id,
-        };
-      } else {
-        console.warn(`User with ID ${session.user.id} not found in database`);
-      }
+        if (existingUser) {
+          const savedQrCode = await tx.qrCode.create({
+            data: {
+              userId: session.user!.id,
+              type: options.qrType,
+              title: options.title || null,
+              content: options.text,
+              settings: JSON.stringify({
+                type: options.type,
+                color: options.color,
+                width: options.width,
+                margin: options.margin,
+                logo: options.logo,
+                dotsOptions: options.dotsOptions,
+                cornersSquareOptions: options.cornersSquareOptions,
+                frameOptions: options.frameOptions,
+              }),
+            },
+          });
+
+          return {
+            qrCodeDataUrl,
+            savedId: savedQrCode.id,
+          };
+        } else {
+          console.warn(
+            `User with ID ${session.user!.id} not found in database`,
+          );
+          return {
+            qrCodeDataUrl,
+            savedId: null,
+          };
+        }
+      });
     }
 
     return {

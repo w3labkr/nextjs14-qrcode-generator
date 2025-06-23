@@ -1,10 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import {
-  withAuthenticatedRLS,
-  withAuthenticatedRLSTransaction,
-} from "@/lib/rls-utils";
+import { withAuthenticatedRLS, withAuthenticatedRLSTransaction, withRLS, withRLSTransaction } from "@/lib/rls-utils";
 import { ImportData } from "@/types/qr-code-server";
 import { inferQrCodeType } from "@/lib/utils";
 
@@ -49,26 +46,23 @@ export async function exportUserData() {
   const exportData = {
     version: "1.0",
     exportedAt: new Date().toISOString(),
-    dataType: "all",
     user: {
-      id: session.user.id,
+      name: session.user.name,
       email: session.user.email,
     },
-    data: {
-      qrCodes: qrCodes.map((qr: any) => ({
-        ...qr,
-        settings: JSON.parse(qr.settings || "{}"),
-      })),
-      templates: templates.map((template: any) => ({
-        ...template,
-        settings: JSON.parse(template.settings || "{}"),
-      })),
-    },
-    statistics: {
+    qrCodes: qrCodes.map((qr) => ({
+      ...qr,
+      settings: JSON.parse(qr.settings),
+    })),
+    templates: templates.map((template) => ({
+      ...template,
+      settings: JSON.parse(template.settings),
+    })),
+    stats: {
       totalQrCodes: qrCodes.length,
-      favoriteQrCodes: qrCodes.filter((qr: any) => qr.isFavorite).length,
       totalTemplates: templates.length,
-      defaultTemplates: templates.filter((t: any) => t.isDefault).length,
+      favoriteQrCodes: qrCodes.filter((qr) => qr.isFavorite).length,
+      defaultTemplates: templates.filter((t) => t.isDefault).length,
     },
   };
 
@@ -104,18 +98,16 @@ export async function exportQrCodes() {
     exportedAt: new Date().toISOString(),
     dataType: "qrcodes",
     user: {
-      id: session.user.id,
+      name: session.user.name,
       email: session.user.email,
     },
-    data: {
-      qrCodes: qrCodes.map((qr: any) => ({
-        ...qr,
-        settings: JSON.parse(qr.settings || "{}"),
-      })),
-    },
-    statistics: {
+    qrCodes: qrCodes.map((qr) => ({
+      ...qr,
+      settings: JSON.parse(qr.settings),
+    })),
+    stats: {
       totalQrCodes: qrCodes.length,
-      favoriteQrCodes: qrCodes.filter((qr: any) => qr.isFavorite).length,
+      favoriteQrCodes: qrCodes.filter((qr) => qr.isFavorite).length,
     },
   };
 
@@ -149,18 +141,16 @@ export async function exportTemplates() {
     exportedAt: new Date().toISOString(),
     dataType: "templates",
     user: {
-      id: session.user.id,
+      name: session.user.name,
       email: session.user.email,
     },
-    data: {
-      templates: templates.map((template: any) => ({
-        ...template,
-        settings: JSON.parse(template.settings || "{}"),
-      })),
-    },
-    statistics: {
+    templates: templates.map((template) => ({
+      ...template,
+      settings: JSON.parse(template.settings),
+    })),
+    stats: {
       totalTemplates: templates.length,
-      defaultTemplates: templates.filter((t: any) => t.isDefault).length,
+      defaultTemplates: templates.filter((t) => t.isDefault).length,
     },
   };
 
@@ -179,7 +169,7 @@ export async function importUserData(data: ImportData) {
   return await withAuthenticatedRLSTransaction(session, async (tx) => {
     // 사용자가 실제로 데이터베이스에 존재하는지 확인
     const existingUser = await tx.user.findFirst({
-      where: { id: session.user!.id },
+      where: { id: session.user.id },
     });
 
     if (!existingUser) {
@@ -221,7 +211,7 @@ export async function importUserData(data: ImportData) {
 
           await tx.qrCode.create({
             data: {
-              userId: session.user!.id,
+              userId: session.user.id,
               type: qrType,
               title: qrCode.title || null,
               content: qrCode.content,
@@ -252,8 +242,9 @@ export async function importUserData(data: ImportData) {
           const isDefault = template.isDefault && !hasDefaultTemplate;
 
           if (isDefault && !replaceExisting) {
-            await tx.qrTemplate.updateMany({
+            await prisma.qrTemplate.updateMany({
               where: {
+                userId: session.user.id,
                 isDefault: true,
               },
               data: {
@@ -262,9 +253,9 @@ export async function importUserData(data: ImportData) {
             });
           }
 
-          await tx.qrTemplate.create({
+          await prisma.qrTemplate.create({
             data: {
-              userId: session.user!.id,
+              userId: session.user.id,
               name: template.name,
               settings:
                 typeof template.settings === "string"
@@ -296,7 +287,10 @@ export async function importUserData(data: ImportData) {
         templates: templates.length,
       },
     };
-  });
+  } catch (error) {
+    console.error("데이터 가져오기 오류:", error);
+    throw new Error("데이터 가져오기에 실패했습니다.");
+  }
 }
 
 export async function importQrCodes(qrCodes: any[], replaceExisting = false) {
@@ -306,60 +300,71 @@ export async function importQrCodes(qrCodes: any[], replaceExisting = false) {
     throw new Error("Unauthorized");
   }
 
-  return await withAuthenticatedRLSTransaction(session, async (tx) => {
+  try {
+    let importedQrCodes = 0;
+
     if (replaceExisting) {
-      await tx.qrCode.deleteMany({});
+      await prisma.qrCode.deleteMany({
+        where: { userId: session.user.id },
+      });
     }
 
-    let importedCount = 0;
+    if (qrCodes.length > 0) {
+      for (const qrCode of qrCodes) {
+        try {
+          if (!qrCode.content || typeof qrCode.content !== "string") {
+            console.warn("QR 코드 컨텐츠가 유효하지 않음:", qrCode);
+            continue;
+          }
 
-    for (const qrCode of qrCodes) {
-      try {
-        if (!qrCode.content || typeof qrCode.content !== "string") {
-          console.warn("QR 코드 컨텐츠가 유효하지 않음:", qrCode);
-          continue;
+          const validTypes = [
+            "URL",
+            "TEXT",
+            "WIFI",
+            "EMAIL",
+            "SMS",
+            "VCARD",
+            "LOCATION",
+          ];
+          let qrType = qrCode.type;
+
+          if (!qrType || !validTypes.includes(qrType.toUpperCase())) {
+            qrType = inferQrCodeType(qrCode.content);
+          }
+
+          await prisma.qrCode.create({
+            data: {
+              userId: session.user.id,
+              type: qrType,
+              title: qrCode.title || null,
+              content: qrCode.content,
+              settings:
+                typeof qrCode.settings === "string"
+                  ? qrCode.settings
+                  : JSON.stringify(qrCode.settings || {}),
+              isFavorite: Boolean(qrCode.isFavorite),
+            },
+          });
+          importedQrCodes++;
+        } catch (error) {
+          console.error("QR 코드 가져오기 오류:", error);
         }
-
-        const validTypes = [
-          "URL",
-          "TEXT",
-          "WIFI",
-          "EMAIL",
-          "SMS",
-          "VCARD",
-          "LOCATION",
-        ];
-        let qrType = qrCode.type;
-
-        if (!qrType || !validTypes.includes(qrType.toUpperCase())) {
-          qrType = inferQrCodeType(qrCode.content);
-        }
-
-        await tx.qrCode.create({
-          data: {
-            userId: session.user!.id,
-            type: qrType,
-            title: qrCode.title || null,
-            content: qrCode.content,
-            settings:
-              typeof qrCode.settings === "string"
-                ? qrCode.settings
-                : JSON.stringify(qrCode.settings || {}),
-            isFavorite: Boolean(qrCode.isFavorite),
-          },
-        });
-        importedCount++;
-      } catch (error) {
-        console.error("QR 코드 가져오기 오류:", error);
       }
     }
 
     return {
       success: true,
-      imported: importedCount,
-      total: qrCodes.length,
+      imported: {
+        qrCodes: importedQrCodes,
+      },
+      total: {
+        qrCodes: qrCodes.length,
+      },
     };
-  });
+  } catch (error) {
+    console.error("QR 코드 가져오기 오류:", error);
+    throw new Error("QR 코드 가져오기에 실패했습니다.");
+  }
 }
 
 export async function importTemplates(
@@ -372,60 +377,73 @@ export async function importTemplates(
     throw new Error("Unauthorized");
   }
 
-  return await withAuthenticatedRLSTransaction(session, async (tx) => {
+  try {
+    let importedTemplates = 0;
+
     if (replaceExisting) {
-      await tx.qrTemplate.deleteMany({});
+      await prisma.qrTemplate.deleteMany({
+        where: { userId: session.user.id },
+      });
     }
 
-    let importedCount = 0;
-    let hasDefaultTemplate = false;
+    if (templates.length > 0) {
+      let hasDefaultTemplate = false;
 
-    for (const template of templates) {
-      try {
-        if (!template.name || typeof template.name !== "string") {
-          console.warn("템플릿 이름이 유효하지 않음:", template);
-          continue;
-        }
+      for (const template of templates) {
+        try {
+          if (!template.name || typeof template.name !== "string") {
+            console.warn("템플릿 이름이 유효하지 않음:", template);
+            continue;
+          }
 
-        const isDefault = template.isDefault && !hasDefaultTemplate;
+          const isDefault = template.isDefault && !hasDefaultTemplate;
 
-        if (isDefault && !replaceExisting) {
-          await tx.qrTemplate.updateMany({
-            where: {
-              isDefault: true,
-            },
+          if (isDefault && !replaceExisting) {
+            await prisma.qrTemplate.updateMany({
+              where: {
+                userId: session.user.id,
+                isDefault: true,
+              },
+              data: {
+                isDefault: false,
+              },
+            });
+          }
+
+          await prisma.qrTemplate.create({
             data: {
-              isDefault: false,
+              userId: session.user.id,
+              name: template.name,
+              settings:
+                typeof template.settings === "string"
+                  ? template.settings
+                  : JSON.stringify(template.settings || {}),
+              isDefault,
             },
           });
+
+          if (isDefault) {
+            hasDefaultTemplate = true;
+          }
+
+          importedTemplates++;
+        } catch (error) {
+          console.error("템플릿 가져오기 오류:", error);
         }
-
-        await tx.qrTemplate.create({
-          data: {
-            userId: session.user!.id,
-            name: template.name,
-            settings:
-              typeof template.settings === "string"
-                ? template.settings
-                : JSON.stringify(template.settings || {}),
-            isDefault,
-          },
-        });
-
-        if (isDefault) {
-          hasDefaultTemplate = true;
-        }
-
-        importedCount++;
-      } catch (error) {
-        console.error("템플릿 가져오기 오류:", error);
       }
     }
 
     return {
       success: true,
-      imported: importedCount,
-      total: templates.length,
+      imported: {
+        templates: importedTemplates,
+      },
+      total: {
+        templates: templates.length,
+      },
     };
-  });
+  } catch (error) {
+    console.error("템플릿 가져오기 오류:", error);
+    throw new Error("템플릿 가져오기에 실패했습니다.");
+  }
 }
