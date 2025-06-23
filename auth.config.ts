@@ -3,6 +3,10 @@ import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 import { TOKEN_CONFIG } from "@/lib/constants";
+import {
+  validateAuthEnvironment,
+  logAuthEnvironment,
+} from "@/lib/env-validation";
 
 // 확장된 JWT 타입 정의
 interface ExtendedJWT extends JWT {
@@ -82,6 +86,20 @@ export default {
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
+  },
+  debug: process.env.NODE_ENV === "development",
+  events: {
+    async signIn({ user, account, profile }) {
+      // 환경 변수 검증 로그
+      if (process.env.NODE_ENV === "development") {
+        logAuthEnvironment();
+      }
+      console.log("로그인 시도:", {
+        provider: account?.provider,
+        userId: user.id,
+        email: user.email,
+      });
+    },
   },
   callbacks: {
     async jwt({ token, user, account, trigger, session }) {
