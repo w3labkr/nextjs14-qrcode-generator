@@ -52,15 +52,6 @@ async function refreshAccessToken(token: ExtendedJWT): Promise<ExtendedJWT> {
       };
     }
 
-    // 개발 모드의 경우 단순히 새로운 만료 시간 설정
-    if (token.sub === "dev-user") {
-      const now = Math.floor(Date.now() / 1000);
-      return {
-        ...token,
-        accessTokenExpires: now + 60 * 60, // 1시간 연장
-      };
-    }
-
     throw new Error("리프레시 토큰이 없습니다");
   } catch (error) {
     console.error("토큰 갱신 중 오류 발생:", error);
