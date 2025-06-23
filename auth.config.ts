@@ -1,7 +1,6 @@
 import { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
-import Credentials from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 
@@ -90,32 +89,6 @@ export default {
       apiKey: process.env.AUTH_RESEND_KEY,
       from: process.env.EMAIL_FROM,
     }),
-    // 개발 모드에서만 활성화되는 Credentials 프로바이더
-    ...(process.env.NODE_ENV === "development"
-      ? [
-          Credentials({
-            id: "dev-login",
-            name: "개발자 로그인",
-            credentials: {
-              email: { label: "Email", type: "email" },
-            },
-            async authorize(credentials) {
-              // 개발 모드에서만 허용
-              if (process.env.NODE_ENV !== "development") {
-                return null;
-              }
-
-              // 개발용 사용자 정보 반환
-              return {
-                id: "dev-user",
-                name: "개발자",
-                email: "dev@example.com",
-                image: null,
-              };
-            },
-          }),
-        ]
-      : []),
   ],
   pages: {
     signIn: "/auth/signin",
@@ -144,20 +117,6 @@ export default {
             email: user.email,
             image: user.image,
           },
-        };
-      }
-
-      // 개발자 로그인 처리
-      if (account?.provider === "dev-login") {
-        const now = Math.floor(Date.now() / 1000);
-        return {
-          ...extendedToken,
-          sub: "dev-user",
-          name: "개발자",
-          email: "dev@example.com",
-          picture: null,
-          accessTokenExpires: now + 60 * 60, // 1시간
-          refreshTokenExpires: now + 30 * 24 * 60 * 60, // 30일
         };
       }
 

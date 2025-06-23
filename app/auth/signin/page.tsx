@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,24 +14,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Mail, Loader2, Code } from "lucide-react";
+import { Mail, Loader2 } from "lucide-react";
 
 export default function SignIn() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [isDevLoading, setIsDevLoading] = useState(false);
-  const [isDevelopment, setIsDevelopment] = useState(false);
-
-  useEffect(() => {
-    // 클라이언트 사이드에서 개발 모드 감지
-    setIsDevelopment(
-      window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1" ||
-        window.location.hostname.includes("localhost"),
-    );
-  }, []);
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,45 +41,6 @@ export default function SignIn() {
       console.error("매직 링크 전송 실패:", error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDevLogin = async () => {
-    console.log("handleDevLogin 시작");
-    setIsDevLoading(true);
-
-    try {
-      console.log("NextAuth.js를 통한 개발 로그인 시도 중...");
-
-      const result = await signIn("dev-login", {
-        email: "dev@example.com",
-        redirect: false,
-        callbackUrl: "/dashboard",
-      });
-
-      console.log("개발 로그인 결과:", result);
-
-      if (result?.ok) {
-        console.log("로그인 성공, 대시보드로 리다이렉트");
-        window.location.href = "/dashboard";
-      } else if (result?.error) {
-        console.error("개발 로그인 실패:", result.error);
-        alert(`로그인에 실패했습니다: ${result.error}`);
-      } else {
-        console.error("알 수 없는 로그인 실패");
-        alert("로그인에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("개발 로그인 에러:", error);
-      if (error instanceof Error) {
-        console.error("에러 상세:", error.message, error.stack);
-      }
-      alert(
-        `로그인 처리 중 오류가 발생했습니다: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
-      );
-    } finally {
-      console.log("handleDevLogin 완료");
-      setIsDevLoading(false);
     }
   };
 
@@ -212,39 +162,6 @@ export default function SignIn() {
               <a href="/">로그인 없이 계속하기</a>
             </Button>
           </div>
-
-          {/* 개발 모드에서만 표시되는 임시 로그인 버튼 */}
-          {isDevelopment && (
-            <>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">개발 모드</span>
-                </div>
-              </div>
-
-              <Button
-                className="w-full"
-                variant="destructive"
-                onClick={handleDevLogin}
-                disabled={isDevLoading}
-              >
-                {isDevLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    임시 로그인 중...
-                  </>
-                ) : (
-                  <>
-                    <Code className="mr-2 h-4 w-4" />
-                    개발자 임시 로그인
-                  </>
-                )}
-              </Button>
-            </>
-          )}
         </CardContent>
       </Card>
     </div>
