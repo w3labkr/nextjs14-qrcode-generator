@@ -15,4 +15,7 @@ export const TOKEN_CONFIG = {
   REFRESH_TOKEN_EXPIRES_IN: 30 * 24 * 60 * 60,
   // 수동 갱신 버튼 표시 시점 (만료 15분 전)
   MANUAL_REFRESH_THRESHOLD: 900,
+  // 세션 만료 시간 설정
+  SESSION_MAX_AGE_DEFAULT: 24 * 60 * 60, // 1일 (기본)
+  SESSION_MAX_AGE_REMEMBER: 30 * 24 * 60 * 60, // 30일 (기억하기)
 } as const;

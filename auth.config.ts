@@ -93,13 +93,25 @@ export default {
         const expiresIn =
           account.expires_in || TOKEN_CONFIG.ACCESS_TOKEN_EXPIRES_IN;
         const accessTokenExpires = now + expiresIn;
-        const refreshTokenExpires = now + TOKEN_CONFIG.REFRESH_TOKEN_EXPIRES_IN;
 
         // 기본적으로 기억하기를 false로 설정
         // (클라이언트에서 로그인 후 세션 업데이트를 통해 설정)
         const rememberMe = false;
 
+        // 기억하기 설정에 따른 리프레시 토큰 만료 시간 계산
+        const refreshTokenExpires = rememberMe
+          ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
+          : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT;
+
         console.log("로그인 시 기억하기 설정:", rememberMe);
+        console.log(
+          "세션 만료 시간:",
+          new Date(
+            (rememberMe
+              ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
+              : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT) * 1000,
+          ),
+        );
 
         return {
           ...extendedToken,
@@ -125,7 +137,22 @@ export default {
 
         // rememberMe 값이 세션 업데이트에 포함된 경우 토큰에 반영
         if (typeof (session as any).rememberMe === "boolean") {
+          const prevRememberMe = extendedToken.rememberMe;
           extendedToken.rememberMe = (session as any).rememberMe;
+
+          // 기억하기 설정이 변경된 경우 리프레시 토큰 만료 시간 재계산
+          if (prevRememberMe !== extendedToken.rememberMe) {
+            const now = Math.floor(Date.now() / 1000);
+            extendedToken.refreshTokenExpires = extendedToken.rememberMe
+              ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
+              : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT;
+
+            console.log(
+              "기억하기 설정 변경으로 인한 세션 만료 시간 업데이트:",
+              new Date(extendedToken.refreshTokenExpires * 1000),
+            );
+          }
+
           console.log(
             "세션 업데이트로 rememberMe 설정:",
             extendedToken.rememberMe,

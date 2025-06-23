@@ -1,8 +1,9 @@
-const REMEMBER_ME_DURATION = 30 * 24 * 60 * 60; // 30일 (초)
+import { TOKEN_CONFIG } from "@/lib/constants";
 
 export const setRememberMeCookie = (remember: boolean) => {
   const value = remember ? "true" : "false";
-  const cookieString = `remember-me=${value}; path=/; max-age=${REMEMBER_ME_DURATION}; secure; samesite=strict`;
+  const maxAge = TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER;
+  const cookieString = `remember-me=${value}; path=/; max-age=${maxAge}; secure; samesite=strict`;
   document.cookie = cookieString;
 };
 

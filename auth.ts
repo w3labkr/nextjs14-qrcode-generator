@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { TOKEN_CONFIG } from "@/lib/constants";
 import authConfig from "./auth.config";
 
 export const {
@@ -12,11 +13,12 @@ export const {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days (리프레시 토큰 만료 시간)
-    updateAge: 24 * 60 * 60, // 24 hours (세션 업데이트 주기)
+    // 기본 세션 만료 시간 (기억하기 설정에 따라 동적으로 결정)
+    maxAge: TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER, // 최대 30일
+    updateAge: 24 * 60 * 60, // 24시간마다 세션 업데이트
   },
   jwt: {
-    maxAge: 60 * 60, // 1 hour (액세스 토큰 만료 시간)
+    maxAge: TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER, // JWT 토큰 최대 만료 시간
   },
   ...authConfig,
 });
