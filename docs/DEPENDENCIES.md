@@ -17,6 +17,7 @@
   - [qs](#qs)
   - [cookies-next](#cookies-next)
   - [QRCode](#qrcode)
+  - [Auth.js](#authjs)
   - [Turso](#turso)
   - [ESLint](#eslint)
   - [Prettier](#prettier)
@@ -201,24 +202,48 @@ npm i cookies-next@4
 npm install qrcode.react
 ```
 
+## Auth.js
+
+Prisma
+
+```shell
+npm install @prisma/client @auth/prisma-adapter
+npm install prisma --save-dev
+```
+
+```shell
+npx prisma migrate dev
+```
+
+```shell
+npx prisma generate
+```
+
 ## Turso
 
-Turso is a serverless database platform built on top of SQLite.
+Turso is a serverless database built on SQLite, designed for edge applications.
 
 ```shell
-npm install prisma @prisma/client @libsql/client
+#npm install @prisma/client @prisma/adapter-libsql
+#npm install prisma --save-dev
 ```
 
-Prism adapter for Turso
+Install the Turso client:
 
 ```shell
-npm install @libsql/client @prisma/adapter-libsql
+#npm install @libsql/client
 ```
 
-`.env`:
+Create a `prisma` directory and add a `schema.prisma` file:
 
-```txt
-DATABASE_URL="sqlite://./prisma/dev.db?authToken=<YOUR_TURSO_AUTH_TOKEN>&url=<YOUR_TURSO_DATABASE_URL>"
+```shell
+#npx prisma generate
+```
+
+Initialize Prisma in your project:
+
+```shell
+#npx prisma migrate dev --name init
 ```
 
 ## ESLint
