@@ -1,14 +1,14 @@
 interface QrCodeCsvData {
-  id: string;
-  content: string;
   type: string;
-  qrStyle: string;
+  title: string;
+  content: string;
+  settings: string;
+  isFavorite: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 interface TemplateCsvData {
-  id: string;
   name: string;
   settings: string;
   isDefault: boolean;
@@ -18,14 +18,15 @@ interface TemplateCsvData {
 
 export function convertQrCodesToCSV(qrCodes: any[]): string {
   if (!qrCodes || qrCodes.length === 0) {
-    return "id,content,type,qrStyle,createdAt,updatedAt\n";
+    return "type,title,content,settings,isFavorite,createdAt,updatedAt\n";
   }
 
   const headers = [
-    "id",
-    "content",
     "type",
-    "qrStyle",
+    "title",
+    "content",
+    "settings",
+    "isFavorite",
     "createdAt",
     "updatedAt",
   ];
@@ -33,12 +34,17 @@ export function convertQrCodesToCSV(qrCodes: any[]): string {
     headers.join(","),
     ...qrCodes.map((qr) => {
       const row = [
-        escapeCSVValue(qr.id || ""),
-        escapeCSVValue(qr.content || ""),
         escapeCSVValue(qr.type || ""),
-        escapeCSVValue(JSON.stringify(qr.qrStyle || {})),
-        escapeCSVValue(qr.createdAt || ""),
-        escapeCSVValue(qr.updatedAt || ""),
+        escapeCSVValue(qr.title || ""),
+        escapeCSVValue(qr.content || ""),
+        escapeCSVValue(JSON.stringify(qr.settings || {})),
+        escapeCSVValue(qr.isFavorite ? "true" : "false"),
+        escapeCSVValue(
+          qr.createdAt ? new Date(qr.createdAt).toISOString() : "",
+        ),
+        escapeCSVValue(
+          qr.updatedAt ? new Date(qr.updatedAt).toISOString() : "",
+        ),
       ];
       return row.join(",");
     }),
@@ -49,27 +55,23 @@ export function convertQrCodesToCSV(qrCodes: any[]): string {
 
 export function convertTemplatesToCSV(templates: any[]): string {
   if (!templates || templates.length === 0) {
-    return "id,name,settings,isDefault,createdAt,updatedAt\n";
+    return "name,settings,isDefault,createdAt,updatedAt\n";
   }
 
-  const headers = [
-    "id",
-    "name",
-    "settings",
-    "isDefault",
-    "createdAt",
-    "updatedAt",
-  ];
+  const headers = ["name", "settings", "isDefault", "createdAt", "updatedAt"];
   const csvContent = [
     headers.join(","),
     ...templates.map((template) => {
       const row = [
-        escapeCSVValue(template.id || ""),
         escapeCSVValue(template.name || ""),
-        escapeCSVValue(template.settings || ""),
+        escapeCSVValue(JSON.stringify(template.settings || {})),
         escapeCSVValue(template.isDefault ? "true" : "false"),
-        escapeCSVValue(template.createdAt || ""),
-        escapeCSVValue(template.updatedAt || ""),
+        escapeCSVValue(
+          template.createdAt ? new Date(template.createdAt).toISOString() : "",
+        ),
+        escapeCSVValue(
+          template.updatedAt ? new Date(template.updatedAt).toISOString() : "",
+        ),
       ];
       return row.join(",");
     }),
@@ -92,12 +94,16 @@ export function parseQrCodesFromCSV(csvContent: string): any[] {
     const qrCode: any = {};
     headers.forEach((header, index) => {
       const value = values[index];
-      if (header === "qrStyle") {
+      if (header === "settings") {
         try {
           qrCode[header] = JSON.parse(value);
         } catch {
           qrCode[header] = {};
         }
+      } else if (header === "isFavorite") {
+        qrCode[header] = value === "true";
+      } else if (header === "createdAt" || header === "updatedAt") {
+        qrCode[header] = value ? new Date(value) : null;
       } else {
         qrCode[header] = value;
       }
@@ -123,8 +129,16 @@ export function parseTemplatesFromCSV(csvContent: string): any[] {
     const template: any = {};
     headers.forEach((header, index) => {
       const value = values[index];
-      if (header === "isDefault") {
+      if (header === "settings") {
+        try {
+          template[header] = JSON.parse(value);
+        } catch {
+          template[header] = {};
+        }
+      } else if (header === "isDefault") {
         template[header] = value === "true";
+      } else if (header === "createdAt" || header === "updatedAt") {
+        template[header] = value ? new Date(value) : null;
       } else {
         template[header] = value;
       }

@@ -44,14 +44,24 @@ export default function ExportSection() {
       setIsExporting(true);
       const data = await exportUserData();
 
+      console.log("내보낼 데이터:", data);
+
       // QR 코드 CSV 파일
       const qrCsv = convertQrCodesToCSV(data.qrCodes);
-      const qrBlob = new Blob([qrCsv], { type: "text/csv" });
+      console.log("QR CSV 데이터:", qrCsv.substring(0, 200) + "...");
+
+      const qrBlob = new Blob(["\uFEFF" + qrCsv], {
+        type: "text/csv;charset=utf-8",
+      });
       const qrUrl = URL.createObjectURL(qrBlob);
 
       // 템플릿 CSV 파일
       const templateCsv = convertTemplatesToCSV(data.templates);
-      const templateBlob = new Blob([templateCsv], { type: "text/csv" });
+      console.log("템플릿 CSV 데이터:", templateCsv.substring(0, 200) + "...");
+
+      const templateBlob = new Blob(["\uFEFF" + templateCsv], {
+        type: "text/csv;charset=utf-8",
+      });
       const templateUrl = URL.createObjectURL(templateBlob);
 
       const date = new Date().toISOString().split("T")[0];
