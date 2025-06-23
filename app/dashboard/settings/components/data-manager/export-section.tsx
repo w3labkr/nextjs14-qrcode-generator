@@ -7,6 +7,29 @@ import { exportUserData } from "@/app/actions/data-management";
 import { convertQrCodesToCSV, convertTemplatesToCSV } from "@/lib/csv-utils";
 import { toast } from "sonner";
 
+// 안전한 파일 다운로드 함수
+const downloadFile = (blob: Blob, filename: string) => {
+  try {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.style.display = "none";
+
+    document.body.appendChild(link);
+    link.click();
+
+    // 짧은 지연 후 정리
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+  } catch (error) {
+    console.error("파일 다운로드 오류:", error);
+    throw new Error("파일 다운로드에 실패했습니다.");
+  }
+};
+
 export default function ExportSection() {
   const [isExportingJSON, setIsExportingJSON] = useState(false);
   const [isExportingCSV, setIsExportingCSV] = useState(false);
@@ -17,17 +40,13 @@ export default function ExportSection() {
       const data = await exportUserData();
 
       // JSON 파일로 다운로드
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
+      const jsonContent = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonContent], {
+        type: "application/json;charset=utf-8",
       });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `qr-data-export-${new Date().toISOString().split("T")[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+
+      const filename = `qr-data-export-${new Date().toISOString().split("T")[0]}.json`;
+      downloadFile(blob, filename);
 
       toast.success(
         `JSON 데이터를 성공적으로 내보냈습니다! (QR 코드: ${data.qrCodes.length}개, 템플릿: ${data.templates.length}개)`,
@@ -47,6 +66,8 @@ export default function ExportSection() {
 
       console.log("내보낼 데이터:", data);
 
+      const date = new Date().toISOString().split("T")[0];
+
       // QR 코드 CSV 파일
       const qrCsv = convertQrCodesToCSV(data.qrCodes);
       console.log("QR CSV 데이터:", qrCsv.substring(0, 200) + "...");
@@ -54,36 +75,21 @@ export default function ExportSection() {
       const qrBlob = new Blob(["\uFEFF" + qrCsv], {
         type: "text/csv;charset=utf-8",
       });
-      const qrUrl = URL.createObjectURL(qrBlob);
+      downloadFile(qrBlob, `qr-codes-${date}.csv`);
 
-      // 템플릿 CSV 파일
-      const templateCsv = convertTemplatesToCSV(data.templates);
-      console.log("템플릿 CSV 데이터:", templateCsv.substring(0, 200) + "...");
+      // 템플릿 CSV 파일 (짧은 지연 후 다운로드)
+      setTimeout(() => {
+        const templateCsv = convertTemplatesToCSV(data.templates);
+        console.log(
+          "템플릿 CSV 데이터:",
+          templateCsv.substring(0, 200) + "...",
+        );
 
-      const templateBlob = new Blob(["\uFEFF" + templateCsv], {
-        type: "text/csv;charset=utf-8",
-      });
-      const templateUrl = URL.createObjectURL(templateBlob);
-
-      const date = new Date().toISOString().split("T")[0];
-
-      // QR 코드 CSV 다운로드
-      const qrLink = document.createElement("a");
-      qrLink.href = qrUrl;
-      qrLink.download = `qr-codes-${date}.csv`;
-      document.body.appendChild(qrLink);
-      qrLink.click();
-      document.body.removeChild(qrLink);
-      URL.revokeObjectURL(qrUrl);
-
-      // 템플릿 CSV 다운로드
-      const templateLink = document.createElement("a");
-      templateLink.href = templateUrl;
-      templateLink.download = `templates-${date}.csv`;
-      document.body.appendChild(templateLink);
-      templateLink.click();
-      document.body.removeChild(templateLink);
-      URL.revokeObjectURL(templateUrl);
+        const templateBlob = new Blob(["\uFEFF" + templateCsv], {
+          type: "text/csv;charset=utf-8",
+        });
+        downloadFile(templateBlob, `templates-${date}.csv`);
+      }, 300);
 
       toast.success(
         `CSV 데이터를 성공적으로 내보냈습니다! (QR 코드: ${data.qrCodes.length}개, 템플릿: ${data.templates.length}개)`,
