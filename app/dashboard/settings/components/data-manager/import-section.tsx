@@ -4,7 +4,6 @@ import SectionHeader from "./section-header";
 import JSONImportButton from "./json-import-button";
 import CSVImportButton from "./csv-import-button";
 import AllDataJSONImportButton from "./all-data-json-import-button";
-import AllDataCSVImportButton from "./all-data-csv-import-button";
 import QrCodesJSONImportButton from "./qr-codes-json-import-button";
 import QrCodesCSVImportButton from "./qr-codes-csv-import-button";
 import TemplatesJSONImportButton from "./templates-json-import-button";
@@ -38,14 +37,9 @@ export default function ImportSection({
           <h4 className="text-sm font-medium text-muted-foreground">
             통합 가져오기
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <AllDataJSONImportButton
-              onImportComplete={handleSimpleImportComplete}
-            />
-            <AllDataCSVImportButton
-              onImportComplete={handleSimpleImportComplete}
-            />
-          </div>
+          <AllDataJSONImportButton
+            onImportComplete={handleSimpleImportComplete}
+          />
         </div>
 
         {/* 개별 가져오기 */}

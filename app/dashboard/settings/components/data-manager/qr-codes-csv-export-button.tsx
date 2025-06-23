@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { QrCode } from "lucide-react";
 import { exportUserData } from "@/app/actions/data-management";
 import { convertQrCodesToCSV } from "@/lib/csv-utils";
 import { downloadAsCSV } from "@/lib/download-utils";
@@ -68,7 +68,7 @@ export default function QrCodesCSVExportButton({
       variant="outline"
       className="w-full"
     >
-      <FileText className="h-4 w-4 mr-2" />
+      <QrCode className="h-4 w-4 mr-2" />
       {isExporting ? "내보내는 중..." : "QR 코드 CSV 내보내기"}
     </Button>
   );

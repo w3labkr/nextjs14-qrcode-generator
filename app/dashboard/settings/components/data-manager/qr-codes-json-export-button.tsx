@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { QrCode } from "lucide-react";
 import { exportUserData } from "@/app/actions/data-management";
 import { downloadAsJSON } from "@/lib/download-utils";
 
@@ -75,7 +75,7 @@ export default function QrCodesJSONExportButton({
       variant="outline"
       className="w-full"
     >
-      <Download className="h-4 w-4 mr-2" />
+      <QrCode className="h-4 w-4 mr-2" />
       {isExporting ? "내보내는 중..." : "QR 코드 JSON 내보내기"}
     </Button>
   );

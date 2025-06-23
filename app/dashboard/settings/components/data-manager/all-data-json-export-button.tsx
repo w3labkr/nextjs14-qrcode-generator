@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Database } from "lucide-react";
 import { exportUserData } from "@/app/actions/data-management";
 import { downloadAsJSON } from "@/lib/download-utils";
 
@@ -80,7 +80,7 @@ export default function AllDataJSONExportButton({
       variant="outline"
       className="w-full"
     >
-      <Download className="h-4 w-4 mr-2" />
+      <Database className="h-4 w-4 mr-2" />
       {isExporting ? "내보내는 중..." : "전체 데이터 JSON 내보내기"}
     </Button>
   );

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import { exportUserData } from "@/app/actions/data-management";
 import { downloadAsJSON } from "@/lib/download-utils";
 
@@ -75,7 +75,7 @@ export default function TemplatesJSONExportButton({
       variant="outline"
       className="w-full"
     >
-      <Download className="h-4 w-4 mr-2" />
+      <Bookmark className="h-4 w-4 mr-2" />
       {isExporting ? "내보내는 중..." : "템플릿 JSON 내보내기"}
     </Button>
   );
