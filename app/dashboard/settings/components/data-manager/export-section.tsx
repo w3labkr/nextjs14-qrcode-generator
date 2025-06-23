@@ -8,11 +8,12 @@ import { convertQrCodesToCSV, convertTemplatesToCSV } from "@/lib/csv-utils";
 import { toast } from "sonner";
 
 export default function ExportSection() {
-  const [isExporting, setIsExporting] = useState(false);
+  const [isExportingJSON, setIsExportingJSON] = useState(false);
+  const [isExportingCSV, setIsExportingCSV] = useState(false);
 
   const handleJSONExport = async () => {
     try {
-      setIsExporting(true);
+      setIsExportingJSON(true);
       const data = await exportUserData();
 
       // JSON 파일로 다운로드
@@ -35,13 +36,13 @@ export default function ExportSection() {
       console.error("JSON 내보내기 오류:", error);
       toast.error("JSON 데이터 내보내기에 실패했습니다.");
     } finally {
-      setIsExporting(false);
+      setIsExportingJSON(false);
     }
   };
 
   const handleCSVExport = async () => {
     try {
-      setIsExporting(true);
+      setIsExportingCSV(true);
       const data = await exportUserData();
 
       console.log("내보낼 데이터:", data);
@@ -91,7 +92,7 @@ export default function ExportSection() {
       console.error("CSV 내보내기 오류:", error);
       toast.error("CSV 데이터 내보내기에 실패했습니다.");
     } finally {
-      setIsExporting(false);
+      setIsExportingCSV(false);
     }
   };
 
@@ -107,21 +108,21 @@ export default function ExportSection() {
       <div className="flex flex-col gap-2">
         <Button
           onClick={handleJSONExport}
-          disabled={isExporting}
+          disabled={isExportingJSON || isExportingCSV}
           variant="outline"
           className="w-full"
         >
           <Download className="h-4 w-4 mr-2" />
-          {isExporting ? "내보내는 중..." : "JSON으로 내보내기"}
+          {isExportingJSON ? "내보내는 중..." : "JSON으로 내보내기"}
         </Button>
         <Button
           onClick={handleCSVExport}
-          disabled={isExporting}
+          disabled={isExportingJSON || isExportingCSV}
           variant="outline"
           className="w-full"
         >
           <FileText className="h-4 w-4 mr-2" />
-          {isExporting ? "내보내는 중..." : "CSV로 내보내기"}
+          {isExportingCSV ? "내보내는 중..." : "CSV로 내보내기"}
         </Button>
       </div>
     </div>
