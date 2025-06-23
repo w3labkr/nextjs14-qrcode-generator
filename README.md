@@ -168,6 +168,16 @@ cp .env.example .env.local
    AUTH_GOOGLE_SECRET="your-google-client-secret"
    ```
 
+**Supabase 데이터베이스 비활성화 방지 (Vercel 배포 시)**:
+
+Vercel Pro 플랜에서 크론잡을 사용하여 Supabase 프로젝트 비활성화를 방지할 수 있습니다:
+
+   ```bash
+   CRON_SECRET="your-secure-random-string-here"
+   ```
+
+자세한 설정 방법은 [docs/CRON_SETUP.md](./docs/CRON_SETUP.md)를 참조하세요.
+
 ### 4. 데이터베이스 설정
 
 Prisma를 사용하여 데이터베이스 스키마를 설정합니다:
@@ -226,6 +236,7 @@ npm start
 - **[📋 제품 요구사항 정의서 (PRD)](./docs/PRD.md)** - 프로젝트 비전, 기술 스택, 아키텍처 상세 설명
 - **[📦 의존성 패키지 목록](./docs/DEPENDENCIES.md)** - 70+ 패키지 의존성 정보 및 사용 목적
 - **[🗃️ RLS 설정 가이드](./docs/RLS_SETUP.md)** - Row Level Security 데이터베이스 보안 설정
+- **[⏰ 크론잡 설정 가이드](./docs/CRON_SETUP.md)** - Vercel 크론잡을 통한 Supabase 비활성화 방지
 - **[🔒 보안 정책](./SECURITY.md)** - 보안 취약점 보고 및 관련 정책
 - **[🤝 기여 가이드](./CONTRIBUTING.md)** - 오픈소스 기여 방법 및 개발 가이드라인
 
