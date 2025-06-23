@@ -165,6 +165,64 @@ export const downloadAsCSV = (csvContent: string, filename: string) => {
   }
 };
 
+// 다중 CSV 파일 다운로드 함수
+export const downloadMultipleCSV = async (
+  files: Array<{ content: string; filename: string }>,
+  delay: number = 500,
+) => {
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const { content, filename } = files[i];
+
+      // 각 파일 다운로드
+      downloadAsCSV(content, filename);
+
+      // 파일 간 지연시간 추가 (브라우저가 다운로드를 처리할 시간 제공)
+      if (i < files.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  } catch (error) {
+    console.error("다중 CSV 다운로드 오류:", error);
+    throw error;
+  }
+};
+
+// 단일 압축 파일로 다중 CSV 다운로드 (선택적 기능)
+export const downloadCSVAsZip = async (
+  files: Array<{ content: string; filename: string }>,
+  zipFilename?: string,
+) => {
+  try {
+    // JSZip이 설치되어 있다면 사용
+    if (typeof window !== "undefined" && (window as any).JSZip) {
+      const JSZip = (window as any).JSZip;
+      const zip = new JSZip();
+
+      // 각 CSV 파일을 ZIP에 추가
+      files.forEach(({ content, filename }) => {
+        zip.file(filename, "\uFEFF" + content);
+      });
+
+      // ZIP 파일 생성 및 다운로드
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const finalZipFilename =
+        zipFilename ||
+        `csv-export-${new Date().toISOString().split("T")[0]}.zip`;
+
+      downloadFileSecure(zipBlob, finalZipFilename);
+    } else {
+      // JSZip이 없으면 개별 파일로 다운로드
+      console.warn("JSZip not available, downloading files individually");
+      await downloadMultipleCSV(files);
+    }
+  } catch (error) {
+    console.error("ZIP 다운로드 오류:", error);
+    // 실패 시 개별 파일로 다운로드
+    await downloadMultipleCSV(files);
+  }
+};
+
 // SVG를 Canvas를 통해 PNG로 변환하는 함수
 const convertSvgToPng = async (
   svgDataUrl: string,
