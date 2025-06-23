@@ -25,7 +25,7 @@
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
 - **Authentication**: [Auth.js](https://authjs.dev/) (NextAuth v5) with Google OAuth
-- **Database**: [Prisma](https://prisma.io/) ORM with SQLite
+- **Database**: [Prisma](https://prisma.io/) ORM with [Supabase](https://supabase.com/) PostgreSQL
 - **QR Code Generation**: [qr-code-styling-node](https://www.npmjs.com/package/qr-code-styling-node), [qrcode](https://www.npmjs.com/package/qrcode)
 - **Deployment**: [Vercel](https://vercel.com/)
 
@@ -55,9 +55,19 @@ cp .env.example .env.local
 #### 필수 환경 변수:
 
 - `AUTH_SECRET`: Auth.js 세션 암호화용 비밀 키
-- `DATABASE_URL`: SQLite 데이터베이스 경로
+- `DATABASE_URL`: Supabase PostgreSQL 데이터베이스 연결 URL
 
-#### 선택적 환경 변수 (고급 기능 사용 시):
+#### Supabase 설정
+
+1. [Supabase](https://supabase.com/)에서 새 프로젝트를 생성합니다
+2. 프로젝트 설정에서 데이터베이스 URL을 복사합니다
+3. `.env.local` 파일에 `DATABASE_URL`을 설정합니다:
+
+   ```bash
+   DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT-REF].supabase.co:5432/postgres"
+   ```
+
+#### 선택적 환경 변수 (고급 기능 사용 시)
 
 **Google OAuth (소셜 로그인)**:
 
@@ -68,7 +78,7 @@ cp .env.example .env.local
 
 ```bash
 npx prisma generate
-npx prisma db push
+npx prisma migrate dev --name init
 ```
 
 ### 5. 개발 서버 실행

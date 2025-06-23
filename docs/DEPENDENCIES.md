@@ -18,7 +18,7 @@
   - [cookies-next](#cookies-next)
   - [QRCode](#qrcode)
   - [Auth.js](#authjs)
-  - [Turso](#turso)
+  - [Supabase & PostgreSQL](#supabase--postgresql)
   - [ESLint](#eslint)
   - [Prettier](#prettier)
   - [Troubleshooting](#troubleshooting)
@@ -219,31 +219,31 @@ npx prisma migrate dev
 npx prisma generate
 ```
 
-## Turso
+## Supabase & PostgreSQL
 
-Turso is a serverless database built on SQLite, designed for edge applications.
+Supabase is an open-source Firebase alternative with a PostgreSQL database.
 
 ```shell
-#npm install @prisma/client @prisma/adapter-libsql
-#npm install prisma --save-dev
+npm install @prisma/client
+npm install prisma --save-dev
 ```
 
-Install the Turso client:
+Install the PostgreSQL client for Node.js:
 
 ```shell
-#npm install @libsql/client
+npm install pg @types/pg
 ```
 
 Create a `prisma` directory and add a `schema.prisma` file:
 
 ```shell
-#npx prisma generate
+npx prisma generate
 ```
 
-Initialize Prisma in your project:
+Initialize Prisma with PostgreSQL:
 
 ```shell
-#npx prisma migrate dev --name init
+npx prisma migrate dev --name init
 ```
 
 ## ESLint
