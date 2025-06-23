@@ -4,6 +4,7 @@ import { JWT, DefaultJWT } from "next-auth/jwt";
 declare module "next-auth" {
   interface Session extends DefaultSession {
     accessTokenExpires?: number;
+    rememberMe?: boolean;
     error?: string;
   }
 
@@ -18,6 +19,7 @@ declare module "next-auth/jwt" {
     refreshToken?: string;
     accessTokenExpires?: number;
     refreshTokenExpires?: number;
+    rememberMe?: boolean;
     error?: string;
   }
 }

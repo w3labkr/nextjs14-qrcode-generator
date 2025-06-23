@@ -2,6 +2,7 @@ import { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
+import { TOKEN_CONFIG } from "@/lib/constants";
 
 // 확장된 JWT 타입 정의
 interface ExtendedJWT extends JWT {
@@ -9,12 +10,14 @@ interface ExtendedJWT extends JWT {
   refreshToken?: string;
   accessTokenExpires?: number;
   refreshTokenExpires?: number;
+  rememberMe?: boolean;
   error?: string;
 }
 
 // 확장된 Session 타입 정의
 interface ExtendedSession extends Session {
   accessTokenExpires?: number;
+  rememberMe?: boolean;
   error?: string;
 }
 
@@ -87,8 +90,13 @@ export default {
       // 초기 로그인 시 토큰 설정
       if (account && user) {
         const now = Math.floor(Date.now() / 1000);
-        const accessTokenExpires = now + 60 * 60; // 1시간
-        const refreshTokenExpires = now + 30 * 24 * 60 * 60; // 30일
+        const expiresIn =
+          account.expires_in || TOKEN_CONFIG.ACCESS_TOKEN_EXPIRES_IN;
+        const accessTokenExpires = now + expiresIn;
+        const refreshTokenExpires = now + TOKEN_CONFIG.REFRESH_TOKEN_EXPIRES_IN;
+
+        // 기본적으로 기억하기를 false로 설정 (필요시 클라이언트에서 업데이트)
+        const rememberMe = false;
 
         return {
           ...extendedToken,
@@ -96,6 +104,7 @@ export default {
           refreshToken: account.refresh_token,
           accessTokenExpires,
           refreshTokenExpires,
+          rememberMe,
           user: {
             id: user.id,
             name: user.name,
@@ -105,43 +114,66 @@ export default {
         };
       }
 
-      // 액세스 토큰이 아직 유효한 경우
+      // 세션 업데이트 시 사용자 정보 갱신
+      if (trigger === "update" && session) {
+        extendedToken.name = session.name || extendedToken.name;
+        extendedToken.email = session.email || extendedToken.email;
+        extendedToken.picture = session.image || extendedToken.picture;
+      }
+
       const now = Math.floor(Date.now() / 1000);
-      if (
-        extendedToken.accessTokenExpires &&
-        now < extendedToken.accessTokenExpires
-      ) {
-        // 세션 업데이트 시 토큰 갱신
-        if (trigger === "update" && session) {
-          extendedToken.name = session.name || extendedToken.name;
-          extendedToken.email = session.email || extendedToken.email;
+
+      // 기억하기가 설정되지 않은 경우 토큰 자동 갱신하지 않음
+      if (!extendedToken.rememberMe) {
+        // 액세스 토큰이 만료된 경우 에러 반환
+        if (
+          extendedToken.accessTokenExpires &&
+          now >= extendedToken.accessTokenExpires
+        ) {
+          console.log("기억하기 미설정 - 토큰 만료");
+          return {
+            ...extendedToken,
+            error: "AccessTokenExpired",
+          };
         }
         return extendedToken;
       }
 
-      // 액세스 토큰이 만료되었지만 리프레시 토큰이 유효한 경우
+      // 기억하기가 설정된 경우에만 자동 갱신 로직 실행
+      // 액세스 토큰이 설정된 시간 이상 유효한 경우 그대로 반환
       if (
-        extendedToken.refreshTokenExpires &&
-        now < extendedToken.refreshTokenExpires
+        extendedToken.accessTokenExpires &&
+        now <
+          extendedToken.accessTokenExpires -
+            TOKEN_CONFIG.REFRESH_THRESHOLD_SECONDS
       ) {
-        try {
-          const refreshedToken = await refreshAccessToken(extendedToken);
-          return refreshedToken;
-        } catch (error) {
-          console.error("토큰 갱신 실패:", error);
-          // 리프레시 실패 시 로그아웃 처리
-          return {
-            ...extendedToken,
-            error: "RefreshAccessTokenError",
-          };
-        }
+        return extendedToken;
       }
 
-      // 리프레시 토큰도 만료된 경우
-      return {
-        ...extendedToken,
-        error: "RefreshAccessTokenError",
-      };
+      // 리프레시 토큰이 만료된 경우
+      if (
+        !extendedToken.refreshTokenExpires ||
+        now >= extendedToken.refreshTokenExpires
+      ) {
+        console.log("리프레시 토큰 만료");
+        return {
+          ...extendedToken,
+          error: "RefreshAccessTokenError",
+        };
+      }
+
+      // 액세스 토큰 갱신 시도
+      try {
+        const refreshedToken = await refreshAccessToken(extendedToken);
+        console.log("토큰 갱신 성공");
+        return refreshedToken;
+      } catch (error) {
+        console.error("토큰 갱신 실패:", error);
+        return {
+          ...extendedToken,
+          error: "RefreshAccessTokenError",
+        };
+      }
     },
     async session({ session, token }) {
       const extendedToken = token as ExtendedJWT;
@@ -163,8 +195,9 @@ export default {
         extendedSession.user.image =
           extendedToken.picture || extendedSession.user.image;
 
-        // 토큰 만료 정보 추가
+        // 토큰 만료 정보 및 기억하기 설정 추가
         extendedSession.accessTokenExpires = extendedToken.accessTokenExpires;
+        extendedSession.rememberMe = extendedToken.rememberMe;
       }
       return extendedSession;
     },
