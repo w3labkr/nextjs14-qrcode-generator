@@ -31,7 +31,7 @@ export default function JSONExportButton({
 
       // 사용자에게 다운로드 시작 알림
       toast.success(
-        `JSON 데이터 다운로드가 시작되었습니다! (QR 코드: ${data.qrCodes.length}개, 템플릿: ${data.templates.length}개)`,
+        `JSON 데이터 다운로드가 시작되었습니다! (QR 코드: ${data.data.qrCodes.length}개, 템플릿: ${data.data.templates.length}개)`,
         {
           description: "파일이 다운로드 폴더에 저장됩니다.",
         },

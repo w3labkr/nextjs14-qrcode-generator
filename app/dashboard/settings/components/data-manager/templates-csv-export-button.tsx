@@ -26,14 +26,14 @@ export default function TemplatesCSVExportButton({
       const date = new Date().toISOString().split("T")[0];
 
       // 템플릿 CSV 파일 생성 및 다운로드
-      const templateCsv = convertTemplatesToCSV(data.templates);
+      const templateCsv = convertTemplatesToCSV(data.data.templates);
       console.log("템플릿 CSV 데이터:", templateCsv.substring(0, 200) + "...");
 
       downloadAsCSV(templateCsv, `templates-${date}.csv`);
 
       // 성공 메시지
       toast.success(
-        `템플릿 CSV 다운로드가 시작되었습니다! (${data.templates.length}개)`,
+        `템플릿 CSV 다운로드가 시작되었습니다! (${data.data.templates.length}개)`,
         {
           description: "템플릿 데이터가 CSV 파일로 다운로드됩니다.",
         },

@@ -135,13 +135,32 @@ export default function JSONImportButton({
       if (result && result.success) {
         const importStats: ImportStats = {
           imported: {
-            qrCodes: "qrCodes" in result.imported ? result.imported.qrCodes : 0,
+            qrCodes:
+              typeof result.imported === "object" &&
+              result.imported &&
+              "qrCodes" in result.imported
+                ? result.imported.qrCodes
+                : 0,
             templates:
-              "templates" in result.imported ? result.imported.templates : 0,
+              typeof result.imported === "object" &&
+              result.imported &&
+              "templates" in result.imported
+                ? result.imported.templates
+                : 0,
           },
           total: {
-            qrCodes: "qrCodes" in result.total ? result.total.qrCodes : 0,
-            templates: "templates" in result.total ? result.total.templates : 0,
+            qrCodes:
+              typeof result.total === "object" &&
+              result.total &&
+              "qrCodes" in result.total
+                ? result.total.qrCodes
+                : 0,
+            templates:
+              typeof result.total === "object" &&
+              result.total &&
+              "templates" in result.total
+                ? result.total.templates
+                : 0,
           },
         };
 

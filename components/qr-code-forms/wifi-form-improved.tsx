@@ -41,9 +41,9 @@ import { useState } from "react";
 
 const wifiSchema = z.object({
   ssid: z.string().min(1, "네트워크 이름(SSID)을 입력해주세요"),
-  password: z.string().default(""),
-  encryption: z.string().default("WPA"),
-  isHidden: z.boolean().default(false),
+  password: z.string(),
+  encryption: z.string(),
+  isHidden: z.boolean(),
 });
 
 type WifiFormData = z.infer<typeof wifiSchema>;

@@ -26,14 +26,14 @@ export default function QrCodesCSVExportButton({
       const date = new Date().toISOString().split("T")[0];
 
       // QR 코드 CSV 파일 생성 및 다운로드
-      const qrCsv = convertQrCodesToCSV(data.qrCodes);
+      const qrCsv = convertQrCodesToCSV(data.data.qrCodes);
       console.log("QR CSV 데이터:", qrCsv.substring(0, 200) + "...");
 
       downloadAsCSV(qrCsv, `qr-codes-${date}.csv`);
 
       // 성공 메시지
       toast.success(
-        `QR 코드 CSV 다운로드가 시작되었습니다! (${data.qrCodes.length}개)`,
+        `QR 코드 CSV 다운로드가 시작되었습니다! (${data.data.qrCodes.length}개)`,
         {
           description: "QR 코드 데이터가 CSV 파일로 다운로드됩니다.",
         },

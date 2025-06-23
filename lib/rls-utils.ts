@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import type { PrismaClient } from "@prisma/client";
+import type { Session } from "next-auth";
 
 /**
  * RLS(Row Level Security)를 위한 유틸리티 함수들
@@ -158,4 +160,94 @@ export async function withAuthenticatedRLSTransaction<T>(
   }
 
   return await withRLSTransaction(session.user.id, callback);
+}
+
+/**
+ * RLS 컨텍스트 상태를 확인하는 함수
+ * @returns 현재 설정된 사용자 ID
+ */
+export async function getCurrentRLSContext(): Promise<string | null> {
+  try {
+    const result = await prisma.$queryRaw<Array<{ current_setting: string }>>`
+      SELECT current_setting('app.current_user_id', true) as current_setting
+    `;
+    return result[0]?.current_setting || null;
+  } catch (error) {
+    console.error("Failed to get RLS context:", error);
+    return null;
+  }
+}
+
+/**
+ * RLS 정책 상태를 확인하는 함수
+ * @returns RLS 정책 정보
+ */
+export async function checkRLSStatus() {
+  try {
+    const result = await prisma.$queryRaw<
+      Array<{
+        schemaname: string;
+        tablename: string;
+        rowsecurity: boolean;
+        policy_count: number;
+      }>
+    >`
+      SELECT
+        schemaname,
+        tablename,
+        rowsecurity,
+        (SELECT count(*) FROM pg_policies WHERE schemaname = n.nspname AND tablename = c.relname) as policy_count
+      FROM pg_class c
+      JOIN pg_namespace n ON c.relnamespace = n.oid
+      WHERE c.relname IN ('qr_codes', 'qr_templates', 'users', 'accounts', 'sessions')
+      AND n.nspname = 'public'
+      ORDER BY tablename
+    `;
+
+    return {
+      success: true,
+      tables: result,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Failed to check RLS status:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      timestamp: new Date().toISOString(),
+    };
+  }
+}
+
+/**
+ * RLS 성능 모니터링을 위한 쿼리 실행 시간 측정
+ * @param userId - 사용자 ID
+ * @param queryFn - 실행할 쿼리 함수
+ * @returns 쿼리 결과와 실행 시간
+ */
+export async function measureRLSPerformance<T>(
+  userId: string,
+  queryFn: (db: PrismaClient) => Promise<T>,
+): Promise<{ result: T; executionTime: number }> {
+  const startTime = Date.now();
+
+  try {
+    const db = await withRLS(userId);
+    const result = await queryFn(db);
+    const executionTime = Date.now() - startTime;
+
+    console.log(`RLS Query executed in ${executionTime}ms for user ${userId}`);
+
+    return {
+      result,
+      executionTime,
+    };
+  } catch (error) {
+    const executionTime = Date.now() - startTime;
+    console.error(
+      `RLS Query failed after ${executionTime}ms for user ${userId}:`,
+      error,
+    );
+    throw error;
+  }
 }

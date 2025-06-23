@@ -26,10 +26,10 @@ export default function TemplatesJSONExportButton({
 
       // 템플릿 데이터만 추출
       const templatesData = {
-        templates: data.templates,
+        templates: data.data.templates,
         exportDate: new Date().toISOString(),
         dataType: "templates",
-        count: data.templates.length,
+        count: data.data.templates.length,
       };
 
       // 파일명 생성
@@ -40,7 +40,7 @@ export default function TemplatesJSONExportButton({
 
       // 사용자에게 다운로드 시작 알림
       toast.success(
-        `템플릿 JSON 다운로드가 시작되었습니다! (${data.templates.length}개)`,
+        `템플릿 JSON 다운로드가 시작되었습니다! (${data.data.templates.length}개)`,
         {
           description: "템플릿 데이터가 JSON 파일로 다운로드됩니다.",
         },

@@ -26,10 +26,10 @@ export default function QrCodesJSONExportButton({
 
       // QR 코드 데이터만 추출
       const qrCodesData = {
-        qrCodes: data.qrCodes,
+        qrCodes: data.data.qrCodes,
         exportDate: new Date().toISOString(),
         dataType: "qr-codes",
-        count: data.qrCodes.length,
+        count: data.data.qrCodes.length,
       };
 
       // 파일명 생성
@@ -40,7 +40,7 @@ export default function QrCodesJSONExportButton({
 
       // 사용자에게 다운로드 시작 알림
       toast.success(
-        `QR 코드 JSON 다운로드가 시작되었습니다! (${data.qrCodes.length}개)`,
+        `QR 코드 JSON 다운로드가 시작되었습니다! (${data.data.qrCodes.length}개)`,
         {
           description: "QR 코드 데이터가 JSON 파일로 다운로드됩니다.",
         },

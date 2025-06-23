@@ -29,8 +29,8 @@ export default function CSVExportButton({
       const date = new Date().toISOString().split("T")[0];
 
       // CSV 파일들 생성
-      const qrCsv = convertQrCodesToCSV(data.qrCodes);
-      const templateCsv = convertTemplatesToCSV(data.templates);
+      const qrCsv = convertQrCodesToCSV(data.data.qrCodes);
+      const templateCsv = convertTemplatesToCSV(data.data.templates);
 
       console.log("QR CSV 데이터:", qrCsv.substring(0, 200) + "...");
       console.log("템플릿 CSV 데이터:", templateCsv.substring(0, 200) + "...");
@@ -43,7 +43,7 @@ export default function CSVExportButton({
 
       // 성공 메시지
       toast.success(
-        `CSV 데이터 다운로드가 시작되었습니다! (QR 코드: ${data.qrCodes.length}개, 템플릿: ${data.templates.length}개)`,
+        `CSV 데이터 다운로드가 시작되었습니다! (QR 코드: ${data.data.qrCodes.length}개, 템플릿: ${data.data.templates.length}개)`,
         {
           description: "2개의 CSV 파일이 다운로드 폴더에 저장됩니다.",
         },

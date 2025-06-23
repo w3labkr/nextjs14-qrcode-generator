@@ -183,7 +183,26 @@ npx prisma migrate dev --name init
 npx prisma studio
 ```
 
-### 5. 개발 서버 실행
+### 5. Row Level Security (RLS) 설정
+
+보안 강화를 위해 RLS를 활성화하는 것을 강력히 권장합니다:
+
+```bash
+# 자동 설정 스크립트 실행 (권장)
+./scripts/setup-rls.sh
+
+# 또는 수동으로 RLS 활성화
+psql "$DATABASE_URL" -f prisma/migrations/enable_rls.sql
+
+# RLS 테스트 실행
+psql "$DATABASE_URL" -f prisma/migrations/test_rls.sql
+```
+
+RLS 상태는 개발 환경에서 `/dashboard/admin/rls-status` 페이지에서 확인할 수 있습니다.
+
+자세한 RLS 설정 방법은 [docs/RLS_SETUP.md](./docs/RLS_SETUP.md)를 참조하세요.
+
+### 6. 개발 서버 실행
 
 ```bash
 npm run dev
@@ -191,7 +210,7 @@ npm run dev
 yarn dev
 ```
 
-### 6. 프로덕션 빌드
+### 7. 프로덕션 빌드
 
 ```bash
 npm run build
