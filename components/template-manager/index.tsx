@@ -30,21 +30,24 @@ export default function TemplateManager({
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
-  const [hasShownError, setHasShownError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadTemplates = async (showErrorToast = true) => {
     try {
       setLoading(true);
+      setError(null);
       const templatesData = await getUserTemplates();
       setTemplates(templatesData);
-      // 성공하면 에러 상태 리셋
-      setHasShownError(false);
     } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "템플릿을 불러오는데 실패했습니다.";
       console.error("템플릿 로드 오류:", error);
-      // 중복 에러 메시지 방지: 이미 에러를 표시했거나 showErrorToast가 false면 토스트 표시 안함
-      if (showErrorToast && !hasShownError) {
-        toast.error("템플릿을 불러오는데 실패했습니다.");
-        setHasShownError(true);
+      setError(errorMessage);
+
+      if (showErrorToast) {
+        toast.error(errorMessage);
       }
     } finally {
       setLoading(false);
@@ -74,6 +77,30 @@ export default function TemplateManager({
         </CardHeader>
         <CardContent>
           <LoadingSkeleton />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>템플릿 관리</CardTitle>
+          <CardDescription>
+            자주 사용하는 설정을 템플릿으로 저장하고 재사용하세요.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => loadTemplates(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              다시 시도
+            </button>
+          </div>
         </CardContent>
       </Card>
     );

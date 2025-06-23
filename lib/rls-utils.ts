@@ -15,10 +15,14 @@ export async function withRLS(userId: string) {
     throw new Error("Invalid user ID");
   }
 
-  // UUID 형식 검증 (추가 보안)
+  // CUID 또는 UUID 형식 검증 (추가 보안)
+  // CUID: 25자리 문자열 (예: c1234567890123456789012345)
+  // UUID: 36자리 문자열 (예: 12345678-1234-1234-1234-123456789012)
+  const cuidRegex = /^c[0-9a-z]{24}$/i;
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(userId)) {
+
+  if (!cuidRegex.test(userId) && !uuidRegex.test(userId)) {
     throw new Error("Invalid user ID format");
   }
 
@@ -49,10 +53,14 @@ export async function withRLSTransaction<T>(
     throw new Error("Invalid user ID");
   }
 
-  // UUID 형식 검증 (추가 보안)
+  // CUID 또는 UUID 형식 검증 (추가 보안)
+  // CUID: 25자리 문자열 (예: c1234567890123456789012345)
+  // UUID: 36자리 문자열 (예: 12345678-1234-1234-1234-123456789012)
+  const cuidRegex = /^c[0-9a-z]{24}$/i;
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(userId)) {
+
+  if (!cuidRegex.test(userId) && !uuidRegex.test(userId)) {
     throw new Error("Invalid user ID format");
   }
 
