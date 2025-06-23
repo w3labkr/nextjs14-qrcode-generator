@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -11,6 +14,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useQrFormStore } from "@/hooks/use-qr-form-store";
+
+const emailSchema = z.object({
+  email: z
+    .string()
+    .email("올바른 이메일 주소를 입력해주세요")
+    .min(1, "이메일 주소를 입력해주세요"),
+  subject: z.string().optional(),
+  body: z.string().optional(),
+});
+
+type EmailFormData = z.infer<typeof emailSchema>;
 
 interface EmailFormProps {
   onChange: (emailString: string) => void;
@@ -18,13 +41,19 @@ interface EmailFormProps {
 }
 
 export function EmailForm({ onChange, initialValue }: EmailFormProps) {
-  const [email, setEmail] = useState("");
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+  const { formData, updateFormData } = useQrFormStore();
 
-  // 이메일 문자열에서 개별 필드로 파싱하는 함수
+  const form = useForm<EmailFormData>({
+    resolver: zodResolver(emailSchema),
+    defaultValues: {
+      email: formData.email.email,
+      subject: formData.email.subject,
+      body: formData.email.body,
+    },
+    mode: "onChange",
+  });
+
   const parseEmailString = (emailStr: string) => {
-    // mailto:example@email.com?subject=Subject&body=Body
     const mailtoMatch = emailStr.match(/^mailto:([^?]+)/);
     if (!mailtoMatch) return null;
 
@@ -36,92 +65,47 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
     return { email, subject, body };
   };
 
-  // 초기값 설정
   useEffect(() => {
     if (initialValue && initialValue.startsWith("mailto:")) {
       const parsed = parseEmailString(initialValue);
       if (parsed) {
-        setEmail(parsed.email);
-        setSubject(parsed.subject);
-        setBody(parsed.body);
+        form.reset(parsed);
+        updateFormData("email", parsed);
       }
     }
-  }, [initialValue]);
+  }, [initialValue, form, updateFormData]);
 
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
+  const generateEmailString = (data: EmailFormData): string => {
+    if (!data.email) return "";
 
-    if (!value) {
-      onChange("");
-      return;
-    }
-
-    let emailString = `mailto:${value}`;
+    let emailString = `mailto:${data.email}`;
     const params: string[] = [];
 
-    if (subject) {
-      params.push(`subject=${encodeURIComponent(subject)}`);
-    }
-    if (body) {
-      params.push(`body=${encodeURIComponent(body)}`);
-    }
+    if (data.subject)
+      params.push(`subject=${encodeURIComponent(data.subject)}`);
+    if (data.body) params.push(`body=${encodeURIComponent(data.body)}`);
 
     if (params.length > 0) {
       emailString += `?${params.join("&")}`;
     }
 
+    return emailString;
+  };
+
+  const handleFormChange = (data: EmailFormData) => {
+    updateFormData("email", data);
+    const emailString = generateEmailString(data);
     onChange(emailString);
   };
 
-  const handleSubjectChange = (value: string) => {
-    setSubject(value);
-
-    if (!email) {
-      onChange("");
-      return;
-    }
-
-    let emailString = `mailto:${email}`;
-    const params: string[] = [];
-
-    if (value) {
-      params.push(`subject=${encodeURIComponent(value)}`);
-    }
-    if (body) {
-      params.push(`body=${encodeURIComponent(body)}`);
-    }
-
-    if (params.length > 0) {
-      emailString += `?${params.join("&")}`;
-    }
-
-    onChange(emailString);
-  };
-
-  const handleBodyChange = (value: string) => {
-    setBody(value);
-
-    if (!email) {
-      onChange("");
-      return;
-    }
-
-    let emailString = `mailto:${email}`;
-    const params: string[] = [];
-
-    if (subject) {
-      params.push(`subject=${encodeURIComponent(subject)}`);
-    }
-    if (value) {
-      params.push(`body=${encodeURIComponent(value)}`);
-    }
-
-    if (params.length > 0) {
-      emailString += `?${params.join("&")}`;
-    }
-
-    onChange(emailString);
-  };
+  useEffect(() => {
+    const subscription = form.watch((data) => {
+      if (data.email) {
+        handleFormChange(data as EmailFormData);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch, onChange]);
 
   return (
     <Card>
@@ -132,37 +116,60 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
           코드를 생성하세요.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">이메일 주소 *</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => handleEmailChange(e.target.value)}
-            placeholder="example@example.com"
-            required
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="subject">제목 (선택사항)</Label>
-          <Input
-            id="subject"
-            value={subject}
-            onChange={(e) => handleSubjectChange(e.target.value)}
-            placeholder="이메일 제목을 입력하세요"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="body">내용 (선택사항)</Label>
-          <Textarea
-            id="body"
-            value={body}
-            onChange={(e) => handleBodyChange(e.target.value)}
-            placeholder="이메일 내용을 입력하세요"
-            rows={4}
-          />
-        </div>
+      <CardContent>
+        <Form {...form}>
+          <div className="grid grid-cols-1 gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>이메일 주소 *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="example@example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>제목 (선택사항)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="이메일 제목을 입력하세요" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="body"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>내용 (선택사항)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="이메일 내용을 입력하세요"
+                      rows={4}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </Form>
       </CardContent>
     </Card>
   );
