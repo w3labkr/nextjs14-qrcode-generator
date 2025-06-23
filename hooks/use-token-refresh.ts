@@ -72,11 +72,20 @@ export function useTokenRefresh() {
       return;
     }
 
-    // 세션이 로드되고 토큰 만료 시간이 있는 경우 갱신 스케줄링
+    // 기억하기 미설정 시 토큰 만료되면 자동 로그아웃
+    if (extendedSession?.error === "AccessTokenExpired") {
+      console.warn("기억하기 미설정으로 인한 토큰 만료 - 자동 로그아웃");
+      signOut({ callbackUrl: "/auth/signin" });
+      return;
+    }
+
+    // 세션이 로드되고 토큰 만료 시간이 있는 경우에만 갱신 스케줄링
+    // 기억하기가 설정된 경우에만 자동 갱신
     if (
       status === "authenticated" &&
       extendedSession?.accessTokenExpires &&
-      !extendedSession.error
+      !extendedSession.error &&
+      extendedSession.rememberMe
     ) {
       scheduleTokenRefresh(extendedSession.accessTokenExpires);
     }

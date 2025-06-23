@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTokenRefresh } from "@/hooks/use-token-refresh";
+import { useRememberMe } from "@/hooks/use-remember-me";
 import { TOKEN_CONFIG } from "@/lib/constants";
 
 interface AuthProviderProps {
@@ -12,6 +13,7 @@ interface AuthProviderProps {
 
 function TokenRefreshProvider({ children }: { children: React.ReactNode }) {
   useTokenRefresh();
+  useRememberMe(); // rememberMe 값 설정
   return <>{children}</>;
 }
 

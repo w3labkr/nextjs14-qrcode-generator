@@ -95,8 +95,11 @@ export default {
         const accessTokenExpires = now + expiresIn;
         const refreshTokenExpires = now + TOKEN_CONFIG.REFRESH_TOKEN_EXPIRES_IN;
 
-        // 기본적으로 기억하기를 true로 설정 (필요시 클라이언트에서 업데이트)
-        const rememberMe = true;
+        // 기본적으로 기억하기를 false로 설정
+        // (클라이언트에서 로그인 후 세션 업데이트를 통해 설정)
+        const rememberMe = false;
+
+        console.log("로그인 시 기억하기 설정:", rememberMe);
 
         return {
           ...extendedToken,
@@ -119,6 +122,15 @@ export default {
         extendedToken.name = session.name || extendedToken.name;
         extendedToken.email = session.email || extendedToken.email;
         extendedToken.picture = session.image || extendedToken.picture;
+
+        // rememberMe 값이 세션 업데이트에 포함된 경우 토큰에 반영
+        if (typeof (session as any).rememberMe === "boolean") {
+          extendedToken.rememberMe = (session as any).rememberMe;
+          console.log(
+            "세션 업데이트로 rememberMe 설정:",
+            extendedToken.rememberMe,
+          );
+        }
       }
 
       const now = Math.floor(Date.now() / 1000);
