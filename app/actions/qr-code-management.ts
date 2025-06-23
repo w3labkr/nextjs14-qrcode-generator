@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { withRLS, withRLSTransaction } from "@/lib/rls-utils";
 import { ensureUserExists } from "@/lib/utils";
 import {
   QrCodeGenerationOptions,
@@ -16,24 +17,18 @@ export async function getUserQrCodes(page = 1, limit = 10) {
     throw new Error("Unauthorized");
   }
 
+  const db = await withRLS(session.user.id);
   const skip = (page - 1) * limit;
 
   const [qrCodes, totalCount] = await Promise.all([
-    prisma.qrCode.findMany({
-      where: {
-        userId: session.user.id,
-      },
+    db.qrCode.findMany({
       orderBy: {
         createdAt: "desc",
       },
       skip,
       take: limit,
     }),
-    prisma.qrCode.count({
-      where: {
-        userId: session.user.id,
-      },
-    }),
+    db.qrCode.count(),
   ]);
 
   return {
@@ -51,27 +46,28 @@ export async function toggleQrCodeFavorite(qrCodeId: string) {
     throw new Error("Unauthorized");
   }
 
-  const qrCode = await prisma.qrCode.findFirst({
-    where: {
-      id: qrCodeId,
-      userId: session.user.id,
-    },
+  return await withRLSTransaction(session.user.id, async (tx) => {
+    const qrCode = await tx.qrCode.findFirst({
+      where: {
+        id: qrCodeId,
+      },
+    });
+
+    if (!qrCode) {
+      throw new Error("QR Code not found");
+    }
+
+    const updatedQrCode = await tx.qrCode.update({
+      where: {
+        id: qrCodeId,
+      },
+      data: {
+        isFavorite: !qrCode.isFavorite,
+      },
+    });
+
+    return updatedQrCode;
   });
-
-  if (!qrCode) {
-    throw new Error("QR Code not found");
-  }
-
-  const updatedQrCode = await prisma.qrCode.update({
-    where: {
-      id: qrCodeId,
-    },
-    data: {
-      isFavorite: !qrCode.isFavorite,
-    },
-  });
-
-  return updatedQrCode;
 }
 
 export async function deleteQrCode(qrCodeId: string) {
@@ -81,24 +77,25 @@ export async function deleteQrCode(qrCodeId: string) {
     throw new Error("Unauthorized");
   }
 
-  const qrCode = await prisma.qrCode.findFirst({
-    where: {
-      id: qrCodeId,
-      userId: session.user.id,
-    },
+  return await withRLSTransaction(session.user.id, async (tx) => {
+    const qrCode = await tx.qrCode.findFirst({
+      where: {
+        id: qrCodeId,
+      },
+    });
+
+    if (!qrCode) {
+      throw new Error("QR Code not found");
+    }
+
+    await tx.qrCode.delete({
+      where: {
+        id: qrCodeId,
+      },
+    });
+
+    return { success: true };
   });
-
-  if (!qrCode) {
-    throw new Error("QR Code not found");
-  }
-
-  await prisma.qrCode.delete({
-    where: {
-      id: qrCodeId,
-    },
-  });
-
-  return { success: true };
 }
 
 export async function updateQrCode(

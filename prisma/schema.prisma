@@ -108,3 +108,46 @@ model QrTemplate {
   @@index([userId])
   @@map("qr_templates")
 }
+
+// RLS (Row Level Security) 설정
+// 이 SQL은 Prisma migrate 후 수동으로 실행해야 합니다.
+
+// 1. QrCode 테이블 RLS 활성화
+// ALTER TABLE qr_codes ENABLE ROW LEVEL SECURITY;
+
+// 2. QrCode 접근 정책 생성 (사용자는 자신의 QR 코드만 접근 가능)
+// CREATE POLICY qr_codes_user_policy ON qr_codes
+//   USING (user_id = current_setting('app.current_user_id')::text);
+
+// 3. QrTemplate 테이블 RLS 활성화
+// ALTER TABLE qr_templates ENABLE ROW LEVEL SECURITY;
+
+// 4. QrTemplate 접근 정책 생성 (사용자는 자신의 템플릿만 접근 가능)
+// CREATE POLICY qr_templates_user_policy ON qr_templates
+//   USING (user_id = current_setting('app.current_user_id')::text);
+
+// 5. User 테이블 RLS 활성화 (필요시)
+// ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+// 6. User 접근 정책 생성 (사용자는 자신의 정보만 접근 가능)
+// CREATE POLICY users_self_policy ON users
+//   USING (id = current_setting('app.current_user_id')::text);
+
+// 7. Account 테이블 RLS 활성화
+// ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
+
+// 8. Account 접근 정책 생성 (사용자는 자신의 계정만 접근 가능)
+// CREATE POLICY accounts_user_policy ON accounts
+//   USING (user_id = current_setting('app.current_user_id')::text);
+
+// 9. Session 테이블 RLS 활성화
+// ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+
+// 10. Session 접근 정책 생성 (사용자는 자신의 세션만 접근 가능)
+// CREATE POLICY sessions_user_policy ON sessions
+//   USING (user_id = current_setting('app.current_user_id')::text);
+
+// RLS 사용 시 주의사항:
+// - 애플리케이션에서 DB 연결 시 current_setting('app.current_user_id')를 설정해야 함
+// - 예: SET app.current_user_id = 'user_id_value';
+// - Prisma Client에서는 $executeRaw나 $queryRaw로 설정 가능

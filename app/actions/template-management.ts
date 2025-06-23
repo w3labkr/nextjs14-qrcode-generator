@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { withRLS, withRLSTransaction } from "@/lib/rls-utils";
 import { ensureUserExists } from "@/lib/utils";
 import { TemplateData, TemplateUpdateData } from "@/types/qr-code-server";
 
@@ -12,10 +13,9 @@ export async function getUserTemplates() {
     throw new Error("Unauthorized");
   }
 
-  const templates = await prisma.qrTemplate.findMany({
-    where: {
-      userId: session.user.id,
-    },
+  const db = await withRLS(session.user.id);
+
+  const templates = await db.qrTemplate.findMany({
     orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }],
   });
 
@@ -30,29 +30,31 @@ export async function saveTemplate(data: TemplateData) {
   }
 
   const { name, settings, isDefault = false } = data;
+  const userId = session.user.id;
 
-  if (isDefault) {
-    await prisma.qrTemplate.updateMany({
-      where: {
-        userId: session.user.id,
-        isDefault: true,
-      },
+  return await withRLSTransaction(userId, async (tx) => {
+    if (isDefault) {
+      await tx.qrTemplate.updateMany({
+        where: {
+          isDefault: true,
+        },
+        data: {
+          isDefault: false,
+        },
+      });
+    }
+
+    const template = await tx.qrTemplate.create({
       data: {
-        isDefault: false,
+        userId,
+        name,
+        settings: JSON.stringify(settings),
+        isDefault,
       },
     });
-  }
 
-  const template = await prisma.qrTemplate.create({
-    data: {
-      userId: session.user.id,
-      name,
-      settings: JSON.stringify(settings),
-      isDefault,
-    },
+    return template;
   });
-
-  return template;
 }
 
 export async function updateTemplate(
@@ -65,43 +67,45 @@ export async function updateTemplate(
     throw new Error("Unauthorized");
   }
 
-  const template = await prisma.qrTemplate.findFirst({
-    where: {
-      id: templateId,
-      userId: session.user.id,
-    },
-  });
+  const userId = session.user.id;
 
-  if (!template) {
-    throw new Error("Template not found");
-  }
-
-  const { name, settings, isDefault } = data;
-
-  if (isDefault) {
-    await prisma.qrTemplate.updateMany({
+  return await withRLSTransaction(userId, async (tx) => {
+    const template = await tx.qrTemplate.findFirst({
       where: {
-        userId: session.user.id,
-        isDefault: true,
-      },
-      data: {
-        isDefault: false,
+        id: templateId,
       },
     });
-  }
 
-  const updatedTemplate = await prisma.qrTemplate.update({
-    where: {
-      id: templateId,
-    },
-    data: {
-      ...(name && { name }),
-      ...(settings && { settings: JSON.stringify(settings) }),
-      ...(isDefault !== undefined && { isDefault }),
-    },
+    if (!template) {
+      throw new Error("Template not found");
+    }
+
+    const { name, settings, isDefault } = data;
+
+    if (isDefault) {
+      await tx.qrTemplate.updateMany({
+        where: {
+          isDefault: true,
+        },
+        data: {
+          isDefault: false,
+        },
+      });
+    }
+
+    const updatedTemplate = await tx.qrTemplate.update({
+      where: {
+        id: templateId,
+      },
+      data: {
+        ...(name && { name }),
+        ...(settings && { settings: JSON.stringify(settings) }),
+        ...(isDefault !== undefined && { isDefault }),
+      },
+    });
+
+    return updatedTemplate;
   });
-
-  return updatedTemplate;
 }
 
 export async function deleteTemplate(templateId: string) {
@@ -111,24 +115,27 @@ export async function deleteTemplate(templateId: string) {
     throw new Error("Unauthorized");
   }
 
-  const template = await prisma.qrTemplate.findFirst({
-    where: {
-      id: templateId,
-      userId: session.user.id,
-    },
+  const userId = session.user.id;
+
+  return await withRLSTransaction(userId, async (tx) => {
+    const template = await tx.qrTemplate.findFirst({
+      where: {
+        id: templateId,
+      },
+    });
+
+    if (!template) {
+      throw new Error("Template not found");
+    }
+
+    await tx.qrTemplate.delete({
+      where: {
+        id: templateId,
+      },
+    });
+
+    return { success: true };
   });
-
-  if (!template) {
-    throw new Error("Template not found");
-  }
-
-  await prisma.qrTemplate.delete({
-    where: {
-      id: templateId,
-    },
-  });
-
-  return { success: true };
 }
 
 export async function getDefaultTemplate() {
@@ -138,9 +145,10 @@ export async function getDefaultTemplate() {
     return null;
   }
 
-  const defaultTemplate = await prisma.qrTemplate.findFirst({
+  const db = await withRLS(session.user.id);
+
+  const defaultTemplate = await db.qrTemplate.findFirst({
     where: {
-      userId: session.user.id,
       isDefault: true,
     },
   });
