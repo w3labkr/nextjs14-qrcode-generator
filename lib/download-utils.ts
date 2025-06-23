@@ -58,6 +58,113 @@ const downloadFile = (blob: Blob, filename: string) => {
   window.URL.revokeObjectURL(url);
 };
 
+// 안전한 파일 다운로드 함수 (개선된 버전)
+export const downloadFileSecure = (blob: Blob, filename: string) => {
+  try {
+    // 브라우저 호환성 체크
+    if (typeof window === "undefined") {
+      throw new Error("서버 사이드에서는 파일 다운로드를 지원하지 않습니다.");
+    }
+
+    // URL 생성
+    const url = URL.createObjectURL(blob);
+
+    // 여러 방법으로 다운로드 시도
+    const tryDownload = () => {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.style.display = "none";
+      link.style.visibility = "hidden";
+
+      // DOM에 추가
+      document.body.appendChild(link);
+
+      // 클릭 이벤트 강제 실행
+      if (link.click) {
+        link.click();
+      } else {
+        // 구형 브라우저 호환성
+        const event = new MouseEvent("click", {
+          view: window,
+          bubbles: true,
+          cancelable: true,
+        });
+        link.dispatchEvent(event);
+      }
+
+      // 정리 작업
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+      }, 1000);
+    };
+
+    // 즉시 실행
+    tryDownload();
+
+    // 백업 방법: navigator.msSaveBlob (IE 지원)
+    if ((navigator as any).msSaveBlob) {
+      (navigator as any).msSaveBlob(blob, filename);
+    }
+  } catch (error) {
+    console.error("파일 다운로드 오류:", error);
+    throw new Error("파일 다운로드에 실패했습니다.");
+  }
+};
+
+// JSON 데이터 내보내기 함수
+export const downloadAsJSON = (data: any, filename?: string) => {
+  try {
+    const jsonContent = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonContent], {
+      type: "application/json;charset=utf-8",
+    });
+
+    const defaultFilename = `qr-data-export-${new Date().toISOString().split("T")[0]}.json`;
+    const finalFilename = filename || defaultFilename;
+
+    // 먼저 기본 방법 시도
+    try {
+      downloadFileSecure(blob, finalFilename);
+    } catch (error) {
+      console.warn("Primary download method failed, trying fallback:", error);
+      // 실패 시 대안 방법 시도
+      if (!fallbackDownload(blob, finalFilename)) {
+        throw new Error("모든 다운로드 방법이 실패했습니다.");
+      }
+    }
+  } catch (error) {
+    console.error("JSON 다운로드 오류:", error);
+    throw error;
+  }
+};
+
+// CSV 데이터 내보내기 함수
+export const downloadAsCSV = (csvContent: string, filename: string) => {
+  try {
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8",
+    });
+
+    // 먼저 기본 방법 시도
+    try {
+      downloadFileSecure(blob, filename);
+    } catch (error) {
+      console.warn("Primary download method failed, trying fallback:", error);
+      // 실패 시 대안 방법 시도
+      if (!fallbackDownload(blob, filename)) {
+        throw new Error("모든 다운로드 방법이 실패했습니다.");
+      }
+    }
+  } catch (error) {
+    console.error("CSV 다운로드 오류:", error);
+    throw error;
+  }
+};
+
 // SVG를 Canvas를 통해 PNG로 변환하는 함수
 const convertSvgToPng = async (
   svgDataUrl: string,
@@ -245,5 +352,40 @@ export const downloadQrCode = async (
     }
 
     return { success: false, error: "다운로드에 실패했습니다." };
+  }
+};
+
+// 대안적인 다운로드 방법 (FileSaver.js 스타일)
+const fallbackDownload = (blob: Blob, filename: string) => {
+  try {
+    // Chrome, Firefox, Safari 등에서 작동하는 방법
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = filename;
+
+    // 사용자 상호작용 컨텍스트에서 실행
+    document.body.appendChild(a);
+
+    // 클릭 이벤트를 신뢰할 수 있는 이벤트로 만들기
+    const clickEvent = new MouseEvent("click", {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    a.dispatchEvent(clickEvent);
+
+    // 정리
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+
+    return true;
+  } catch (error) {
+    console.warn("Fallback download failed:", error);
+    return false;
   }
 };
