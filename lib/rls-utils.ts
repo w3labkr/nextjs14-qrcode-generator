@@ -46,6 +46,33 @@ export async function withRLS(userId: string) {
 }
 
 /**
+ * 현재 사용자 ID와 이메일을 모두 설정하여 RLS 정책을 활성화합니다.
+ * @param userId - 현재 사용자의 ID
+ * @param userEmail - 현재 사용자의 이메일 (verification_tokens 테이블용)
+ * @returns Prisma 클라이언트 인스턴스
+ */
+export async function withRLSFull(userId: string, userEmail?: string) {
+  validateUserId(userId);
+
+  try {
+    // PostgreSQL 세션에 현재 사용자 ID 설정
+    await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
+
+    // 이메일이 제공된 경우 설정 (verification_tokens 테이블용)
+    if (userEmail) {
+      await prisma.$executeRawUnsafe(
+        `SET app.current_user_email = '${userEmail}'`,
+      );
+    }
+
+    return prisma;
+  } catch (error) {
+    console.error("Failed to set RLS context:", error);
+    throw new Error("Failed to initialize RLS context");
+  }
+}
+
+/**
  * RLS 설정을 초기화합니다.
  */
 export async function resetRLS() {

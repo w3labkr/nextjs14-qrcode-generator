@@ -3,19 +3,20 @@
 
 -- 1. RLS 활성화 상태 확인
 SELECT
-  schemaname,
-  tablename,
-  rowsecurity,
+  n.nspname as schemaname,
+  c.relname as tablename,
+  c.relrowsecurity as rowsecurity,
   (SELECT count(*) FROM pg_policies WHERE schemaname = n.nspname AND tablename = c.relname) as policy_count
 FROM pg_class c
 JOIN pg_namespace n ON c.relnamespace = n.oid
-WHERE c.relname IN ('qr_codes', 'qr_templates', 'users', 'accounts', 'sessions')
-AND n.nspname = 'public';
+WHERE c.relname IN ('qr_codes', 'qr_templates', 'users', 'accounts', 'sessions', 'verification_tokens')
+AND n.nspname = 'public'
+ORDER BY c.relname;
 
 -- 2. 정책 목록 확인
 SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
 FROM pg_policies
-WHERE tablename IN ('qr_codes', 'qr_templates', 'users', 'accounts', 'sessions')
+WHERE tablename IN ('qr_codes', 'qr_templates', 'users', 'accounts', 'sessions', 'verification_tokens')
 ORDER BY tablename, policyname;
 
 -- 3. 테스트용 사용자 ID 설정 (실제 사용자 ID로 교체)
