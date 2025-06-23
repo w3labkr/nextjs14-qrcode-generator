@@ -37,11 +37,18 @@ nextjs14-qrcode-generator/
 │   └── qrcode/                  # QR 코드 생성 메인 페이지
 │       └── page.tsx
 ├── components/                   # 재사용 가능한 컴포넌트
-│   ├── ui/                      # Shadcn UI 컴포넌트 (45개+)
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   ├── dialog.tsx
-│   │   └── ... (기타 UI 컴포넌트)
+│   ├── ui/                      # Shadcn UI 컴포넌트 (47개)
+│   │   ├── accordion.tsx        # 아코디언 컴포넌트
+│   │   ├── address-search.tsx   # 주소 검색 컴포넌트 (한국 주소 API)
+│   │   ├── alert-dialog.tsx     # 알림 대화상자
+│   │   ├── button.tsx           # 버튼 컴포넌트
+│   │   ├── card.tsx             # 카드 컴포넌트
+│   │   ├── dialog.tsx           # 대화상자
+│   │   ├── drawer.tsx           # 모바일 drawer
+│   │   ├── input-otp.tsx        # OTP 입력 컴포넌트
+│   │   ├── resizable.tsx        # 크기 조절 가능한 패널
+│   │   ├── sidebar.tsx          # 사이드바 컴포넌트
+│   │   └── ... (기타 40개 UI 컴포넌트)
 │   ├── qr-code-forms/           # QR 코드 유형별 폼
 │   │   ├── url-form.tsx
 │   │   ├── text-form.tsx
@@ -58,19 +65,33 @@ nextjs14-qrcode-generator/
 │   │   ├── save-template-dialog.tsx
 │   │   ├── edit-template-dialog.tsx
 │   │   └── loading-skeleton.tsx
+│   ├── auth-provider.tsx        # 인증 제공자
+│   ├── github-badge.tsx         # GitHub 배지
+│   ├── new-qr-code-button.tsx   # 새 QR 코드 버튼
+│   ├── page-header.tsx          # 페이지 헤더
 │   ├── qr-code-preview-card.tsx # QR 코드 미리보기
+│   ├── qr-code-preview-with-frame.tsx # 프레임 포함 미리보기
 │   ├── qr-code-settings-panel.tsx # 설정 패널
-│   └── user-nav.tsx             # 사용자 네비게이션
+│   ├── qr-code-tabs.tsx         # QR 코드 탭
+│   ├── tailwind-indicator.tsx   # Tailwind 개발 인디케이터
+│   ├── token-status-indicator.tsx # 토큰 상태 인디케이터
+│   ├── user-nav.tsx             # 사용자 네비게이션
+│   └── user-profile.tsx         # 사용자 프로필
 ├── hooks/                       # 커스텀 훅 & 상태 관리
 │   ├── use-qr-code-generation.ts # QR 코드 생성 훅
+│   ├── use-qr-code-generator.ts # QR 코드 생성기 훅
 │   ├── use-qr-code-settings.ts  # QR 코드 설정 훅
+│   ├── use-qr-code-utils.ts     # QR 코드 유틸리티 훅
 │   ├── use-template.ts          # 템플릿 관리 훅
 │   ├── use-mobile.tsx           # 모바일 감지 훅
-│   └── use-edit-mode.ts         # 편집 모드 훅
+│   ├── use-edit-mode.ts         # 편집 모드 훅
+│   └── use-token-refresh.ts     # 토큰 갱신 훅
 ├── lib/                         # 유틸리티 & 설정
 │   ├── prisma.ts               # Prisma 클라이언트
 │   ├── utils.ts                # 공통 유틸리티
 │   ├── constants.ts            # 상수 정의
+│   ├── auth-utils.ts           # 인증 관련 유틸리티
+│   ├── csv-utils.ts            # CSV 처리 유틸리티
 │   ├── download-utils.ts       # 다운로드 유틸리티
 │   ├── qr-download-utils.ts    # QR 다운로드 전용
 │   ├── svg-converter.ts        # SVG 변환
@@ -118,15 +139,19 @@ nextjs14-qrcode-generator/
 
 **QR 코드 생성:**
 * `qr-code-styling@^1.9.2` - 고급 QR 코드 스타일링
+* `qr-code-styling-node@^1.5.0` - Node.js 서버 사이드 QR 코드 스타일링
 * `qrcode@^1.5.4` - 기본 QR 코드 생성
 * `qrcode.react@^4.2.0` - React QR 코드 컴포넌트
 * `canvas@^3.1.0` - 서버사이드 캔버스 렌더링
 
-**UI 컴포넌트 (Radix UI 기반 45개+):**
-* `@radix-ui/react-*` - 다양한 UI 프리미티브
+**UI 컴포넌트 (Radix UI 기반 47개):**
+* `@radix-ui/react-*` - 27개의 다양한 UI 프리미티브 (accordion, alert-dialog, avatar, checkbox, dialog, dropdown-menu, hover-card, label, menubar, navigation-menu, popover, progress, radio-group, scroll-area, select, separator, slider, slot, switch, tabs, toggle, tooltip 등)
 * `lucide-react@^0.515.0` - 아이콘 라이브러리
 * `tailwindcss@^3.4.1` - CSS 프레임워크
 * `tailwind-merge@^3.3.1` - 클래스 병합 유틸리티
+* `tailwindcss-animate@^1.0.7` - CSS 애니메이션
+* `class-variance-authority@^0.7.1` - 컴포넌트 변형 관리
+* `clsx@^2.1.1` - 조건부 클래스 이름
 
 **상태 관리 & 폼:**
 * `zustand@^5.0.5` - 전역 상태 관리
@@ -134,11 +159,36 @@ nextjs14-qrcode-generator/
 * `@hookform/resolvers@^5.1.1` - 폼 검증 리졸버
 * `zod@^3.25.64` - 스키마 검증
 * `@tanstack/react-query@^5.80.7` - 서버 상태 관리
+* `@tanstack/react-table@^8.21.3` - 데이터 테이블 관리
+
+**UI/UX 라이브러리:**
+* `sonner@^2.0.5` - 토스트 알림
+* `react-day-picker@^9.7.0` - 날짜 선택기
+* `embla-carousel-react@^8.6.0` - 캐러셀 컴포넌트
+* `recharts@^2.15.3` - 차트 및 데이터 시각화
+* `react-resizable-panels@^3.0.3` - 크기 조절 가능한 패널
+* `vaul@^1.1.2` - 모바일 drawer 컴포넌트
+* `cmdk@^1.1.1` - 명령 팔레트
+* `input-otp@^1.4.2` - OTP 입력 컴포넌트
+
+**유틸리티 & 서비스:**
+* `axios@^1.10.0` - HTTP 클라이언트
+* `qs@^6.14.0` - 쿼리 스트링 파싱
+* `cookies-next@^4.3.0` - 쿠키 관리
+* `jsdom@^26.1.0` - 서버사이드 DOM 조작
+* `jose@^6.0.11` - JWT 처리
+* `date-fns@^4.1.0` - 날짜 유틸리티
+* `dayjs@^1.11.13` - 경량 날짜 라이브러리
+* `react-daum-postcode@^3.2.0` - 한국 주소 검색 API
 
 **개발 도구:**
-* `eslint@^8.57.1` - 코드 린팅
+* `eslint@^8.57.1` - 코드 린팅 
 * `prettier@^3.5.3` - 코드 포매팅
 * `@typescript-eslint/*` - TypeScript ESLint
+* `eslint-plugin-*` - 다양한 ESLint 플러그인 (import, react, tailwindcss 등)
+* `prettier-plugin-*` - Prettier 플러그인 (prisma, tailwindcss)
+* `ts-node@^10.9.2` - TypeScript 실행
+* `tsx@^4.20.3` - TypeScript 실행 도구
 
 ### **3.5. 개발자 경험 (DX) 개선**
 
@@ -150,7 +200,11 @@ nextjs14-qrcode-generator/
 * **핫 리로딩**: Next.js Turbopack을 활용한 빠른 개발 서버
 * **타입 안전성**: TypeScript와 Prisma의 완전한 타입 추론 지원
 * **코드 품질**: ESLint, Prettier를 통한 일관된 코드 스타일 유지
-* **컴포넌트 기반 구조**: 재사용 가능한 45개 이상의 UI 컴포넌트누구나 즉시 사용할 수 있는 강력하고 아름다운 정적 QR 코드 생성 도구를 제공하는 동시에, 로그인한 사용자에게는 QR 코드 히스토리 관리와 고급 기능을 제공하여 정보 공유의 장벽을 낮춥니다.
+* **컴포넌트 기반 구조**: 47개의 재사용 가능한 UI 컴포넌트
+* **모듈식 아키텍처**: 명확한 디렉토리 구조와 관심사 분리
+* **Git 워크플로우**: `.gitmessage.txt` 기반 일관된 커밋 메시지
+* **환경 설정**: `.editorconfig`, `.prettier.json` 등 개발 환경 표준화
+* **자동화**: `pre-commit.sh` 훅을 통한 코드 품질 자동 검증누구나 즉시 사용할 수 있는 강력하고 아름다운 정적 QR 코드 생성 도구를 제공하는 동시에, 로그인한 사용자에게는 QR 코드 히스토리 관리와 고급 기능을 제공하여 정보 공유의 장벽을 낮춥니다.
 * **핵심 목표**:
     * 다양한 유형의 정적 QR 코드를 즉시 생성하는 기능을 제공합니다.
     * 색상, 로고, 모양 등 광범위한 사용자 정의 옵션을 통해 사용자가 브랜드 아이덴티티를 반영할 수 있도록 지원합니다.
@@ -527,13 +581,16 @@ model QrTemplate {
 
 **✅ 완료된 주요 마일스톤**:
 
-* **코드베이스 규모**: 100+ 파일, 70+ npm 패키지
-* **컴포넌트 시스템**: 45개 이상의 재사용 가능한 UI 컴포넌트
+* **코드베이스 규모**: 170+ 파일, 99개 npm 패키지
+* **컴포넌트 시스템**: 47개의 재사용 가능한 UI 컴포넌트
 * **QR 코드 유형**: 7가지 유형 완전 지원 (URL, TEXT, WIFI, EMAIL, SMS, VCARD, LOCATION)
 * **사용자 인증**: NextAuth.js v5 기반 Google OAuth 완전 구현
 * **데이터베이스**: Supabase PostgreSQL + Prisma ORM 완전 연동
 * **보안**: Row Level Security (RLS) 전체 테이블 적용
 * **반응형 UI**: 모바일 퍼스트 디자인 완료
+* **개발 도구**: TypeScript, ESLint, Prettier 완전 적용
+* **UI 라이브러리**: 27개 Radix UI 프리미티브 기반 shadcn/ui 통합
+* **상태 관리**: Zustand + React Query + React Hook Form 완전 구현
 
 ### **6.2. 현재 프로덕션 준비 상태**
 
@@ -555,3 +612,22 @@ model QrTemplate {
 * **국제화**: 다국어 지원 인프라 구축
 * **캐싱 전략**: Redis 도입을 통한 고성능 캐싱
 * **이미지 최적화**: Next.js Image 컴포넌트 활용 확대
+
+---
+
+## **7. 프로젝트 버전 및 업데이트 이력**
+
+### **7.1. 현재 버전 정보**
+
+* **프로젝트 버전**: v1.2.104 (2025년 6월 기준)
+* **Next.js**: 14.2.30
+* **Node.js 요구사항**: `.nvmrc` 파일 기반 버전 관리
+* **패키지 관리**: npm 기반 의존성 관리
+
+### **7.2. 주요 업데이트 포인트**
+
+* **개발 환경 표준화**: 에디터 설정, 코드 포매팅, 린트 규칙 완비
+* **보안 강화**: Row Level Security (RLS) 전면 적용
+* **성능 최적화**: Turbopack 개발 서버, 코드 분할 최적화
+* **개발자 경험**: GitHub Copilot 지침, 커밋 메시지 템플릿 제공
+* **문서화**: 상세한 PRD, 의존성 문서, RLS 설정 가이드 완비

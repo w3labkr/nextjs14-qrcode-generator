@@ -37,12 +37,12 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 
 ### Database
 
-* **Prisma**: Use Prisma as the ORM with SQLite for development.
-* **LibSQL**: Production database uses `@libsql/client` for cloud deployment.
+* **Prisma**: Use Prisma as the ORM with PostgreSQL.
+* **Supabase**: Production database uses Supabase PostgreSQL with Row Level Security (RLS).
 
 ### QR Code Generation
 
-* **Libraries**: Use `qr-code-styling` for advanced QR code customization, `qrcode` for basic generation, and `qrcode.react` for React components.
+* **Libraries**: Use `qr-code-styling` for advanced QR code customization, `qr-code-styling-node` for server-side styling, `qrcode` for basic generation, and `qrcode.react` for React components.
 * **Canvas**: Use `canvas` library for server-side QR code rendering.
 
 ### shadcn/ui
@@ -74,6 +74,11 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * **Date Picker**: Use `react-day-picker` with `date-fns` for date handling.
 * **Charts**: Use `recharts` for data visualization.
 * **Icons**: Use `lucide-react` for icons.
+* **Carousel**: Use `embla-carousel-react` for carousel components.
+* **Panels**: Use `react-resizable-panels` for resizable layout panels.
+* **Drawer**: Use `vaul` for mobile drawer components.
+* **Command**: Use `cmdk` for command palette interfaces.
+* **OTP**: Use `input-otp` for OTP input components.
 
 ### Utilities
 
@@ -81,6 +86,9 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * **Query String**: Use `qs` for query string parsing.
 * **Cookies**: Use `cookies-next` for cookie management.
 * **DOM Manipulation**: Use `jsdom` for server-side DOM operations.
+* **JWT**: Use `jose` for JWT token handling.
+* **Date Libraries**: Use `date-fns` for date manipulation and `dayjs` for lightweight date operations.
+* **Address Search**: Use `react-daum-postcode` for Korean address search functionality.
 
 ## Directory Structure
 
@@ -91,20 +99,23 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * `dashboard/`: Protected dashboard pages and features.
   * `qrcode/`: QR code generation main page.
 * `components/`: Contains reusable components.
-  * `ui/`: Contains shadcn/ui components.
+  * `ui/`: Contains shadcn/ui components (47 components).
   * `qr-code-forms/`: Form components for different QR code types.
   * `qr-code-frames/`: QR code frame selection components.
   * `template-manager/`: Template management components.
 * `lib/`: Contains utility functions and constants.
   * Database connection, download utilities, QR code utilities, etc.
 * `hooks/`: Contains custom hooks and Zustand stores.
-  * Custom hooks for QR code generation, online status, mobile detection, etc.
+  * Custom hooks for QR code generation, mobile detection, token refresh, etc.
 * `types/`: Contains TypeScript type definitions.
   * Type definitions for QR codes, data management, environment, etc.
 * `public/`: Contains static assets.
   * PWA manifest, service worker, fonts, etc.
 * `prisma/`: Contains database schema and migrations.
 * `docs/`: Contains project documentation.
+  * PRD.md (Product Requirements Document)
+  * DEPENDENCIES.md (Dependencies documentation)
+  * RLS_SETUP.md (Row Level Security setup guide)
 * `test/`: Contains test files (currently empty).
 
 ## Specific Task Guidelines
@@ -114,3 +125,14 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 ## Feedback and Improvement
 
 If Copilot's suggestions do not meet expectations, actively modify and provide feedback to help Copilot provide better suggestions in the future.
+
+## Project Current Status
+
+* **Version**: v1.2.104 (as of June 2025)
+* **File Count**: 170+ TypeScript/JavaScript files
+* **Package Count**: 99 npm packages
+* **UI Components**: 47 shadcn/ui components
+* **QR Code Types**: 7 supported types (URL, TEXT, WIFI, EMAIL, SMS, VCARD, LOCATION)
+* **Authentication**: NextAuth.js v5 with Google OAuth
+* **Database**: Supabase PostgreSQL with Prisma ORM
+* **Security**: Row Level Security (RLS) implemented
