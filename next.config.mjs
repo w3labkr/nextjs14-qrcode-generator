@@ -1,7 +1,3 @@
-import withPWA from "next-pwa";
-
-const isDev = process.env.NODE_ENV === "development";
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -11,12 +7,4 @@ const nextConfig = {
   },
 };
 
-const pwaConfig = {
-  dest: "public",
-  register: true,
-  skipWaiting: true,
-  disable: isDev,
-  buildExcludes: [/middleware-manifest\.json$/],
-};
-
-export default withPWA(pwaConfig)(nextConfig);
+export default nextConfig;

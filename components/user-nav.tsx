@@ -21,7 +21,6 @@ import {
   UserCog,
 } from "lucide-react";
 import Link from "next/link";
-import { InstallPrompt } from "@/components/install-prompt";
 import { UserProfile } from "@/components/user-profile";
 
 export function UserNav() {
@@ -34,7 +33,6 @@ export function UserNav() {
   if (!session) {
     return (
       <div className="flex gap-2">
-        <InstallPrompt />
         <Button
           onClick={() => signIn()}
           size="icon"

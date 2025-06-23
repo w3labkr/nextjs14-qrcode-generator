@@ -1,6 +1,6 @@
 {
   "name": "nextjs14-qrcode-generator",
-  "version": "1.2.74",
+  "version": "1.2.75",
   "private": true,
   "browserslist": [
     "defaults and fully supports es6-module",
@@ -12,7 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "clean:files": "rm -rf node_modules && rm -rf .next && rm package-lock.json",
+    "clean:files": "rm -rf node_modules && rm -rf .next && rm -f package-lock.json",
     "clean:cache": "npm cache clean --force && npm cache verify",
     "clean": "npm run clean:files && npm run clean:cache",
     "upgrade:latest": "npm run clean && npx npm-check-updates -u && npm install",
@@ -69,7 +69,6 @@
     "lucide-react": "^0.515.0",
     "next": "14.2.30",
     "next-auth": "^5.0.0-beta.28",
-    "next-pwa": "^5.6.0",
     "next-themes": "^0.4.6",
     "prisma": "^6.10.1",
     "qr-code-styling": "^1.9.2",

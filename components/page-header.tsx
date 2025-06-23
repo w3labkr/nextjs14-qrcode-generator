@@ -1,8 +1,6 @@
 "use client";
 
 import { UserNav } from "@/components/user-nav";
-import { OfflineIndicator } from "@/components/offline-indicator";
-import { InstallPromptBanner } from "@/components/install-prompt";
 
 interface PageHeaderProps {
   isEditMode: boolean;
@@ -38,10 +36,6 @@ export function PageHeader({ isEditMode }: PageHeaderProps) {
             ? "기존 QR 코드의 내용과 설정을 수정하고 업데이트하세요."
             : "URL, 텍스트, Wi-Fi 등 원하는 콘텐츠를 QR 코드로 즉시 만들어보세요. 다양한 옵션으로 자유롭게 커스터마이징할 수 있습니다."}
         </p>
-
-        {/* PWA 관련 알림들 */}
-        <OfflineIndicator />
-        <InstallPromptBanner />
       </div>
     </div>
   );

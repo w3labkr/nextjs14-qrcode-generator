@@ -9,12 +9,6 @@ export const metadata: Metadata = {
   title: "오픈소스 QR 코드 생성기",
   description:
     "회원가입이나 로그인 없이 누구나 즉시 사용할 수 있는 강력하고 아름다운 정적 QR 코드 생성 도구입니다.",
-  manifest: "/manifest.webmanifest",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "QR Generator",
-  },
   formatDetection: {
     telephone: false,
   },
@@ -39,12 +33,6 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <meta name="theme-color" content="#000000" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="QR Generator" />
-        <link rel="apple-touch-icon" href="/favicon.ico" />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"

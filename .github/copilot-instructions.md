@@ -23,7 +23,6 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * **App Router**: Utilize the App Router for routing, layouts, and server components.
 * **Server Actions**: Use Server Actions for mutations and data fetching on the server side.
 * **API Routes**: For client-side data fetching, use API Routes.
-* **PWA**: This project uses `next-pwa` for Progressive Web App functionality.
 
 ### React
 
@@ -90,7 +89,6 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * `api/`: API routes for client-side data fetching.
   * `auth/`: Authentication-related pages (signin, error, verify-request).
   * `dashboard/`: Protected dashboard pages and features.
-  * `offline/`: Offline mode page.
   * `qrcode/`: QR code generation main page.
 * `components/`: Contains reusable components.
   * `ui/`: Contains shadcn/ui components.

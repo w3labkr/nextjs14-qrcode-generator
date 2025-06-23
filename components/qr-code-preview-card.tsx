@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { QrCodePreviewWithFrame } from "@/components/qr-code-preview-with-frame";
 import { useSession } from "next-auth/react";
-import { useOnlineStatus } from "@/hooks/use-online-status";
 import { downloadQrCode } from "@/lib/qr-download-utils";
 import type { QrCodePreviewCardProps } from "@/types/qr-code";
 
@@ -38,7 +37,6 @@ export function QrCodePreviewCard({
   currentSettings,
 }: QrCodePreviewCardProps) {
   const { data: session } = useSession();
-  const isOnline = useOnlineStatus();
   const isLoggedIn = !!session?.user;
 
   const handleDownload = async () => {
@@ -133,14 +131,8 @@ export function QrCodePreviewCard({
           </Button>
         </div>
 
-        {!isOnline && (
-          <p className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
-            오프라인 상태: 기본 다운로드만 가능합니다
-          </p>
-        )}
-
         {/* 로그인 사용자 전용 고해상도 다운로드 */}
-        {isLoggedIn && qrCode && isOnline && (
+        {isLoggedIn && qrCode && (
           <div className="w-full space-y-2">
             <div className="flex items-center gap-2 text-sm text-green-600">
               <span className="text-lg">✨</span>
