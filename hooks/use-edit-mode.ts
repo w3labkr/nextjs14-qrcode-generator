@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import type { EditModeState } from "@/types/qr-code";
 import type { QrCodeOptions } from "@/app/actions/qr-code";
+import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 interface UseEditModeProps {
   setQrData: (data: string) => void;
@@ -22,6 +23,7 @@ export function useEditMode({
   const [editingQrCodeId, setEditingQrCodeId] = useState<string | null>(null);
   const [loadedQrCodeId, setLoadedQrCodeId] = useState<string | null>(null);
   const toastShownRef = useRef<Set<string>>(new Set());
+  const { loadFromQrContent } = useQrFormStore();
 
   const loadQrCodeForEdit = useCallback(
     async (qrCodeId: string) => {
@@ -36,6 +38,10 @@ export function useEditMode({
           const qrCodeData = await response.json();
 
           setQrData(qrCodeData.content);
+          setActiveTab(qrCodeData.type);
+
+          // QR 코드 content를 파싱하여 폼 데이터로 로드
+          loadFromQrContent(qrCodeData.content, qrCodeData.type);
 
           if (qrCodeData.settings) {
             const settings =

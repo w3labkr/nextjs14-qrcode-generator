@@ -72,6 +72,13 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
     }
   }, [initialValue, address, formData.location.address, updateFormData]);
 
+  // Store의 formData가 변경될 때 로컬 state 업데이트
+  useEffect(() => {
+    if (formData.location.address !== address) {
+      setAddress(formData.location.address);
+    }
+  }, [formData.location.address, address]);
+
   useEffect(() => {
     if (address) {
       const encodedAddress = encodeURIComponent(address);

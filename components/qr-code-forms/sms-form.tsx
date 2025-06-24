@@ -73,6 +73,20 @@ export function SmsForm({ onChange, initialValue }: SmsFormProps) {
     }
   }, [initialValue, form, updateFormData]);
 
+  // Store의 formData가 변경될 때 폼 값 업데이트
+  useEffect(() => {
+    const currentValues = form.getValues();
+    if (
+      formData.sms.phoneNumber !== currentValues.phoneNumber ||
+      formData.sms.message !== currentValues.message
+    ) {
+      form.reset({
+        phoneNumber: formData.sms.phoneNumber,
+        message: formData.sms.message,
+      });
+    }
+  }, [formData.sms, form]);
+
   const generateSmsString = (data: SmsFormData): string => {
     if (!data.phoneNumber) return "";
 

@@ -80,6 +80,22 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
     }
   }, [initialValue, form, updateFormData]);
 
+  // Store의 formData가 변경될 때 폼 값 업데이트
+  useEffect(() => {
+    const currentValues = form.getValues();
+    if (
+      formData.email.email !== currentValues.email ||
+      formData.email.subject !== currentValues.subject ||
+      formData.email.body !== currentValues.body
+    ) {
+      form.reset({
+        email: formData.email.email,
+        subject: formData.email.subject,
+        body: formData.email.body,
+      });
+    }
+  }, [formData.email, form]);
+
   const generateEmailString = (data: EmailFormData): string => {
     if (!data.email) return "";
 

@@ -170,6 +170,11 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
     }
   }, [initialValue, parseVCardString, storeData.vcard, updateFormData]);
 
+  // Store의 formData가 변경될 때 로컬 state 업데이트
+  useEffect(() => {
+    setFormData(storeData.vcard);
+  }, [storeData.vcard]);
+
   useEffect(() => {
     const vcardString = generateVCardString(formData);
     onChange();

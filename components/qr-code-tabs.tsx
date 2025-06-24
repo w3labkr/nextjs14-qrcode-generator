@@ -24,7 +24,7 @@ export function QrCodeTabs({
   activeTab,
   onTabChange,
 }: QrCodeTabsProps) {
-  const { getQrContent, setActiveTab } = useQrFormStore();
+  const { getQrContent, setActiveTab, formData } = useQrFormStore();
 
   // 탭이 변경될 때마다 해당 탭의 QR 데이터를 업데이트
   useEffect(() => {
@@ -89,10 +89,10 @@ export function QrCodeTabs({
         </TabsList>
       </div>
       <TabsContent value="url">
-        <UrlForm value="" onChange={handleFormDataChange} />
+        <UrlForm value={formData.url} onChange={handleFormDataChange} />
       </TabsContent>
       <TabsContent value="text">
-        <TextForm value="" onChange={handleFormDataChange} />
+        <TextForm value={formData.text} onChange={handleFormDataChange} />
       </TabsContent>
       <TabsContent value="wifi">
         <WifiForm onWifiDataChange={handleFormDataChange} />

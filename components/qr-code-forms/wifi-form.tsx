@@ -97,6 +97,14 @@ export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
     }
   }, [initialValue, formData.wifi, updateFormData]);
 
+  // Store의 formData가 변경될 때 로컬 state 업데이트
+  useEffect(() => {
+    setSsid(formData.wifi.ssid);
+    setPassword(formData.wifi.password);
+    setEncryption(formData.wifi.encryption);
+    setIsHidden(formData.wifi.isHidden);
+  }, [formData.wifi]);
+
   const generateWifiString = () => {
     if (!ssid.trim()) {
       setWifiString("");

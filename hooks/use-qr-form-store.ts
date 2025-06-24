@@ -46,6 +46,7 @@ interface QrFormStore {
   setActiveTab: (tab: string) => void;
   resetFormData: (type?: keyof QrFormData) => void;
   getQrContent: () => string;
+  loadFromQrContent: (content: string, type: string) => void;
 }
 
 const initialFormData: QrFormData = {
@@ -202,6 +203,159 @@ export const useQrFormStore = create<QrFormStore>()(
           }
           default:
             return "";
+        }
+      },
+
+      loadFromQrContent: (content, type) => {
+        set({ activeTab: type });
+
+        switch (type) {
+          case "url":
+            set((state) => ({
+              formData: {
+                ...state.formData,
+                url: content,
+              },
+            }));
+            break;
+
+          case "text":
+            set((state) => ({
+              formData: {
+                ...state.formData,
+                text: content,
+              },
+            }));
+            break;
+
+          case "email":
+            if (content.startsWith("mailto:")) {
+              const emailPart = content.substring(7);
+              const [email, queryString] = emailPart.split("?");
+              const params = new URLSearchParams(queryString || "");
+
+              set((state) => ({
+                formData: {
+                  ...state.formData,
+                  email: {
+                    email: decodeURIComponent(email),
+                    subject: decodeURIComponent(params.get("subject") || ""),
+                    body: decodeURIComponent(params.get("body") || ""),
+                  },
+                },
+              }));
+            }
+            break;
+
+          case "sms":
+            if (content.startsWith("sms:")) {
+              const smsPart = content.substring(4);
+              const [phoneNumber, queryString] = smsPart.split("?");
+              const params = new URLSearchParams(queryString || "");
+
+              set((state) => ({
+                formData: {
+                  ...state.formData,
+                  sms: {
+                    phoneNumber: phoneNumber,
+                    message: decodeURIComponent(params.get("body") || ""),
+                  },
+                },
+              }));
+            }
+            break;
+
+          case "wifi":
+            if (content.startsWith("WIFI:")) {
+              const wifiString = content.substring(5);
+              const params: { [key: string]: string } = {};
+
+              // WIFI 문자열 파싱
+              const parts = wifiString.split(";");
+              parts.forEach((part) => {
+                if (part.includes(":")) {
+                  const [key, value] = part.split(":", 2);
+                  params[key] = value;
+                }
+              });
+
+              set((state) => ({
+                formData: {
+                  ...state.formData,
+                  wifi: {
+                    ssid: params.S?.replace(/\\(.)/g, "$1") || "",
+                    password: params.P?.replace(/\\(.)/g, "$1") || "",
+                    encryption: params.T || "WPA",
+                    isHidden: params.H === "true",
+                  },
+                },
+              }));
+            }
+            break;
+
+          case "vcard":
+            if (content.startsWith("BEGIN:VCARD")) {
+              const lines = content.split("\n");
+              const vcardData: any = {};
+
+              lines.forEach((line) => {
+                if (line.startsWith("FN:")) {
+                  const fullName = line.substring(3);
+                  const [firstName, ...lastNameParts] = fullName.split(" ");
+                  vcardData.firstName = firstName || "";
+                  vcardData.lastName = lastNameParts.join(" ") || "";
+                } else if (line.startsWith("ORG:")) {
+                  vcardData.organization = line.substring(4);
+                } else if (line.startsWith("TITLE:")) {
+                  vcardData.title = line.substring(6);
+                } else if (line.startsWith("TEL:")) {
+                  vcardData.phone = line.substring(4);
+                } else if (line.startsWith("EMAIL:")) {
+                  vcardData.email = line.substring(6);
+                } else if (line.startsWith("URL:")) {
+                  vcardData.website = line.substring(4);
+                } else if (line.startsWith("ADR:")) {
+                  const addressParts = line.substring(4).split(";");
+                  vcardData.address = addressParts[2] || "";
+                }
+              });
+
+              set((state) => ({
+                formData: {
+                  ...state.formData,
+                  vcard: {
+                    firstName: vcardData.firstName || "",
+                    lastName: vcardData.lastName || "",
+                    organization: vcardData.organization || "",
+                    title: vcardData.title || "",
+                    phone: vcardData.phone || "",
+                    email: vcardData.email || "",
+                    website: vcardData.website || "",
+                    address: vcardData.address || "",
+                  },
+                },
+              }));
+            }
+            break;
+
+          case "location":
+            if (content.includes("maps.google.com")) {
+              const url = new URL(content);
+              const query = url.searchParams.get("q");
+
+              set((state) => ({
+                formData: {
+                  ...state.formData,
+                  location: {
+                    address: query ? decodeURIComponent(query) : "",
+                  },
+                },
+              }));
+            }
+            break;
+
+          default:
+            break;
         }
       },
     }),
