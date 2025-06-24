@@ -2,7 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTokenRefresh } from "@/hooks/use-token-refresh";
 import { useRememberMe } from "@/hooks/use-remember-me";
 import { TOKEN_CONFIG } from "@/lib/constants";
@@ -12,8 +12,19 @@ interface AuthProviderProps {
 }
 
 function TokenRefreshProvider({ children }: { children: React.ReactNode }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   useTokenRefresh();
-  useRememberMe(); // rememberMe 값 설정
+  useRememberMe();
+
+  if (!isMounted) {
+    return <>{children}</>;
+  }
+
   return <>{children}</>;
 }
 

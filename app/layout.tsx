@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { AuthProvider } from "@/components/auth-provider";
+import { ClientOnly } from "@/components/client-only";
+import { LoadingSpinner } from "@/components/loading-spinner";
 
 export const metadata: Metadata = {
   title: "오픈소스 QR 코드 생성기",
@@ -39,9 +41,13 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <AuthProvider>{children}</AuthProvider>
-        <Toaster richColors closeButton />
-        <TailwindIndicator />
+        <div id="root">
+          <ClientOnly fallback={<LoadingSpinner />}>
+            <AuthProvider>{children}</AuthProvider>
+          </ClientOnly>
+          <Toaster richColors closeButton />
+          <TailwindIndicator />
+        </div>
       </body>
     </html>
   );

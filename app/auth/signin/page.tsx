@@ -1,12 +1,10 @@
 import { Suspense } from "react";
-import {
-  SignInCard,
-  SignInLoadingFallback,
-} from "@/app/auth/signin/components";
+import { SignInCard } from "@/app/auth/signin/components";
+import { LoadingSpinner } from "@/components/loading-spinner";
 
 export default function SignIn() {
   return (
-    <Suspense fallback={<SignInLoadingFallback />}>
+    <Suspense fallback={<LoadingSpinner />}>
       <SignInCard />
     </Suspense>
   );

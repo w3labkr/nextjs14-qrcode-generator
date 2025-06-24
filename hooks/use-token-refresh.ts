@@ -17,7 +17,7 @@ export function useTokenRefresh() {
   const isRefreshingRef = useRef(false);
 
   const refreshToken = useCallback(async () => {
-    if (isRefreshingRef.current) return;
+    if (typeof window === "undefined" || isRefreshingRef.current) return;
 
     isRefreshingRef.current = true;
     console.log("토큰 자동 갱신 시작...");
@@ -35,6 +35,8 @@ export function useTokenRefresh() {
 
   const scheduleTokenRefresh = useCallback(
     (expiresAt: number) => {
+      if (typeof window === "undefined") return;
+
       // 기존 타이머 클리어
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
@@ -65,6 +67,8 @@ export function useTokenRefresh() {
   );
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     // 토큰 에러가 있는 경우 자동 로그아웃
     if (extendedSession?.error === "RefreshAccessTokenError") {
       console.warn("토큰 갱신 실패로 인한 자동 로그아웃");

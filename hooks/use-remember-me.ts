@@ -9,6 +9,8 @@ export function useRememberMe() {
   const hasUpdated = useRef(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     // 로그인 직후 한 번만 실행
     if (
       session?.user &&
