@@ -10,22 +10,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Heart,
-  MoreVertical,
-  Download,
-  Trash2,
-  Star,
-  QrCode,
-  Edit2,
-} from "lucide-react";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Heart, Download, Trash2, QrCode, Edit2 } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const QR_CODE_TYPES = {
   URL: { label: "웹사이트", color: "bg-blue-100 text-blue-800" },
@@ -106,65 +99,43 @@ export function QrCodeCard({
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-2 mb-2">
-              <Badge
-                variant="secondary"
-                className={
-                  QR_CODE_TYPES[qrCode.type as keyof typeof QR_CODE_TYPES]
-                    ?.color
-                }
-              >
-                {QR_CODE_TYPES[qrCode.type as keyof typeof QR_CODE_TYPES]
-                  ?.label || qrCode.type}
-              </Badge>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <Badge
+                  variant="secondary"
+                  className={
+                    QR_CODE_TYPES[qrCode.type as keyof typeof QR_CODE_TYPES]
+                      ?.color
+                  }
+                >
+                  {QR_CODE_TYPES[qrCode.type as keyof typeof QR_CODE_TYPES]
+                    ?.label || qrCode.type}
+                </Badge>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-auto h-auto p-0 hover:bg-transparent"
+                  onClick={() => onToggleFavorite(qrCode.id)}
+                >
+                  <Heart
+                    className={cn("!size-5 stroke-red-500", {
+                      "text-red-500 fill-current": qrCode.isFavorite,
+                      "text-gray-400": !qrCode.isFavorite,
+                    })}
+                  />
+                </Button>
+              </div>
             </div>
             <CardTitle className="text-base line-clamp-2">
               {qrCode.title || "제목 없음"}
             </CardTitle>
             <CardDescription className="text-sm">
-              {format(new Date(qrCode.createdAt), "yyyy년 M월 d일", {
+              {format(new Date(qrCode.createdAt), "yyyy년 M월 d일 HH:mm:ss", {
                 locale: ko,
               })}
             </CardDescription>
-          </div>
-          <div className="flex items-start space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onToggleFavorite(qrCode.id)}
-            >
-              <Heart
-                className={`h-4 w-4 ${
-                  qrCode.isFavorite
-                    ? "text-red-500 fill-current"
-                    : "text-gray-400"
-                }`}
-              />
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onDownload(qrCode)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  다운로드
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(qrCode)}>
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  편집
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-red-600"
-                  onClick={() => onDelete(qrCode.id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  삭제
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
       </CardHeader>
@@ -175,9 +146,54 @@ export function QrCodeCard({
             style={{ color: getQrCodeColor(qrCode.settings) }}
           />
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
           {getContentPreview(qrCode.content, qrCode.type)}
         </p>
+
+        {/* 액션 버튼들 */}
+        <TooltipProvider>
+          <div className="flex items-center justify-between pt-2 border-t">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDownload(qrCode)}
+                  className="flex-1 mr-2"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>다운로드</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(qrCode)}
+                  className="flex-1 mr-2"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>편집</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDelete(qrCode.id)}
+                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>삭제</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </CardContent>
     </Card>
   );
