@@ -76,7 +76,7 @@ export default function TemplatesJSONExportButton({
       className="w-full"
     >
       <Bookmark className="h-4 w-4 mr-2" />
-      {isExporting ? "내보내는 중..." : "템플릿 JSON 내보내기"}
+      {isExporting ? "내보내는 중..." : "템플릿 내보내기 (JSON)"}
     </Button>
   );
 }

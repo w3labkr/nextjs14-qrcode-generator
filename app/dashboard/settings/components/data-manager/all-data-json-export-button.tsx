@@ -81,7 +81,7 @@ export default function AllDataJSONExportButton({
       className="w-full"
     >
       <Database className="h-4 w-4 mr-2" />
-      {isExporting ? "내보내는 중..." : "전체 데이터 JSON 내보내기"}
+      {isExporting ? "내보내는 중..." : "전체 데이터 내보내기 (JSON)"}
     </Button>
   );
 }

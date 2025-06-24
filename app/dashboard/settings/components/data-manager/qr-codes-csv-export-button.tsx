@@ -69,7 +69,7 @@ export default function QrCodesCSVExportButton({
       className="w-full"
     >
       <QrCode className="h-4 w-4 mr-2" />
-      {isExporting ? "내보내는 중..." : "QR 코드 CSV 내보내기"}
+      {isExporting ? "내보내는 중..." : "QR 코드 내보내기 (CSV)"}
     </Button>
   );
 }

@@ -106,7 +106,7 @@ export default function TemplatesJSONImportButton({
         className="w-full"
       >
         <Bookmark className="h-4 w-4 mr-2" />
-        {isImporting ? "가져오는 중..." : "템플릿 JSON"}
+        {isImporting ? "가져오는 중..." : "템플릿 가져오기 (JSON)"}
       </Button>
     </>
   );

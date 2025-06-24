@@ -98,7 +98,7 @@ export default function TemplatesCSVImportButton({
         className="w-full"
       >
         <Bookmark className="h-4 w-4 mr-2" />
-        {isImporting ? "가져오는 중..." : "템플릿 CSV"}
+        {isImporting ? "가져오는 중..." : "템플릿 가져오기 (CSV)"}
       </Button>
     </>
   );

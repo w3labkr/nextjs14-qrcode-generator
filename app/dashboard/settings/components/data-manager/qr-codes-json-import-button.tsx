@@ -106,7 +106,7 @@ export default function QrCodesJSONImportButton({
         className="w-full"
       >
         <QrCode className="h-4 w-4 mr-2" />
-        {isImporting ? "가져오는 중..." : "QR 코드 JSON"}
+        {isImporting ? "가져오는 중..." : "QR 코드 가져오기 (JSON)"}
       </Button>
     </>
   );

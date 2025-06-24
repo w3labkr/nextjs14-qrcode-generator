@@ -98,7 +98,7 @@ export default function QrCodesCSVImportButton({
         className="w-full"
       >
         <QrCode className="h-4 w-4 mr-2" />
-        {isImporting ? "가져오는 중..." : "QR 코드 CSV"}
+        {isImporting ? "가져오는 중..." : "QR 코드 가져오기 (CSV)"}
       </Button>
     </>
   );

@@ -76,7 +76,7 @@ export default function QrCodesJSONExportButton({
       className="w-full"
     >
       <QrCode className="h-4 w-4 mr-2" />
-      {isExporting ? "내보내는 중..." : "QR 코드 JSON 내보내기"}
+      {isExporting ? "내보내는 중..." : "QR 코드 내보내기 (JSON)"}
     </Button>
   );
 }

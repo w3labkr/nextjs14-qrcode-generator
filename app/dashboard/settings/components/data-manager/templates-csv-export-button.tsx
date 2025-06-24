@@ -69,7 +69,7 @@ export default function TemplatesCSVExportButton({
       className="w-full"
     >
       <Bookmark className="h-4 w-4 mr-2" />
-      {isExporting ? "내보내는 중..." : "템플릿 CSV 내보내기"}
+      {isExporting ? "내보내는 중..." : "템플릿 내보내기 (CSV)"}
     </Button>
   );
 }
