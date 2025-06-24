@@ -147,7 +147,7 @@ export default function QrCodeHistoryPage() {
   };
 
   const handleEdit = (qrCode: QrCodeData) => {
-    const editUrl = `/?edit=${qrCode.id}&type=${qrCode.type.toLowerCase()}`;
+    const editUrl = `/qrcode?edit=${qrCode.id}&type=${qrCode.type.toLowerCase()}`;
     window.location.href = editUrl;
   };
 
