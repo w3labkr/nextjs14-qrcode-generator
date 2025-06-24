@@ -14,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Save } from "lucide-react";
 import { saveTemplate } from "@/app/actions/qr-code";
 import { QrCodeOptions } from "@/app/actions/qr-code";
 import { toast } from "sonner";
@@ -59,9 +58,8 @@ export default function SaveTemplateDialog({
   return (
     <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Save className="h-4 w-4 mr-2" />
-          현재 설정 저장
+        <Button size="sm" className="ml-2">
+          저장
         </Button>
       </DialogTrigger>
       <DialogContent>
