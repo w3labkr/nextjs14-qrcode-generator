@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import { useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { debounce } from "lodash";
+
 import { GithubBadge } from "@/components/github-badge";
 import { PageHeader } from "@/components/page-header";
 import { QrCodeTabs } from "@/components/qr-code-tabs";

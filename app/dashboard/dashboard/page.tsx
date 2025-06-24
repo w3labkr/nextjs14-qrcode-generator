@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { getUserQrCodes, getQrCodeStats } from "@/app/actions/qr-code";
 import { toast } from "sonner";
+
+import { getUserQrCodes, getQrCodeStats } from "@/app/actions/qr-code";
 import { StatsCards } from "./components/stats-cards";
 import { RecentQrCodes } from "./components/recent-qr-codes";
 import { TypeStats } from "./components/type-stats";

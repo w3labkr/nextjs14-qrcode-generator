@@ -1,15 +1,15 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getAuthStatus } from "@/lib/auth-helpers";
 
-interface AuthLayoutProps {
+export default async function SignInLayout({
+  children,
+}: {
   children: ReactNode;
-}
+}) {
+  const { session, isAuthenticated } = await getAuthStatus();
 
-export default async function SignInLayout({ children }: AuthLayoutProps) {
-  const session = await auth();
-
-  if (session?.user) {
+  if (isAuthenticated) {
     redirect("/dashboard");
   }
 

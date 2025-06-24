@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getAuthStatus } from "@/lib/auth-helpers";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const { session, isAuthenticated } = await getAuthStatus();
 
-  if (!session?.user) {
+  if (!isAuthenticated) {
     redirect("/auth/signin");
   }
 

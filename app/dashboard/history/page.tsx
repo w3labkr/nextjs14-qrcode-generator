@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import Link from "next/link";
+
 import { SearchAndFilters } from "./components/search-and-filters";
 import { QrCodeGrid } from "./components/qr-code-grid";
 import { Pagination } from "./components/pagination";
@@ -150,30 +149,6 @@ export default function QrCodeHistoryPage() {
     const editUrl = `/qrcode?edit=${qrCode.id}&type=${qrCode.type.toLowerCase()}`;
     window.location.href = editUrl;
   };
-
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (status === "unauthenticated") {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">로그인이 필요합니다</h1>
-          <p className="text-muted-foreground mb-6">
-            QR 코드 히스토리를 보려면 로그인해주세요.
-          </p>
-          <Link href="/auth/signin">
-            <Button>로그인하기</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
