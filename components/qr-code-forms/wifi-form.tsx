@@ -25,6 +25,7 @@ import {
   validateWifiQrString,
   diagnoseWifiQrIssues,
 } from "@/lib/wifi-qr-validator";
+import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 interface WifiFormProps {
   onWifiDataChange: (data: string) => void;
@@ -32,6 +33,8 @@ interface WifiFormProps {
 }
 
 export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
+  const { formData, updateFormData } = useQrFormStore();
+
   const [ssid, setSsid] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -60,23 +63,43 @@ export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
     return null;
   };
 
-  // 초기값 설정
+  // 초기값 설정 및 스토어 동기화
   useEffect(() => {
-    if (initialValue && initialValue.startsWith("WIFI:")) {
+    // 스토어에서 저장된 데이터 우선 확인
+    if (formData.wifi.ssid || formData.wifi.password) {
+      setSsid(formData.wifi.ssid);
+      setPassword(formData.wifi.password);
+      setEncryption(formData.wifi.encryption);
+      setIsHidden(formData.wifi.isHidden);
+    } else if (initialValue && initialValue.startsWith("WIFI:")) {
       const parsed = parseWifiString(initialValue);
       if (parsed) {
         setSsid(parsed.ssid);
         setPassword(parsed.password);
         setEncryption(parsed.encryption);
         setIsHidden(parsed.hidden);
+        // 스토어에도 저장
+        updateFormData("wifi", {
+          ssid: parsed.ssid,
+          password: parsed.password,
+          encryption: parsed.encryption,
+          isHidden: parsed.hidden,
+        });
       }
+    } else if (!initialValue) {
+      // initialValue가 비어있으면 폼 초기화
+      setSsid("");
+      setPassword("");
+      setEncryption("WPA");
+      setIsHidden(false);
     }
-  }, [initialValue]);
+  }, [initialValue, formData.wifi, updateFormData]);
 
   const generateWifiString = () => {
     if (!ssid.trim()) {
       setWifiString("");
       onWifiDataChange("");
+      updateFormData("wifi", { ssid: "", password: "", encryption, isHidden });
       return;
     }
 
@@ -86,6 +109,9 @@ export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
 
     const newWifiString = `WIFI:T:${encryption};S:${escapedSsid};P:${escapedPassword};H:${hiddenFlag};;`;
     setWifiString(newWifiString);
+
+    // 스토어에 데이터 저장
+    updateFormData("wifi", { ssid, password, encryption, isHidden });
 
     // 검증 수행
     const validation = validateWifiQrString(newWifiString);

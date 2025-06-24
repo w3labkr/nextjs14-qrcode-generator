@@ -73,6 +73,10 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
         form.reset(parsed);
         updateFormData("email", parsed);
       }
+    } else if (!initialValue) {
+      // initialValue가 비어있으면 폼 초기화
+      form.reset({ email: "", subject: "", body: "" });
+      updateFormData("email", { email: "", subject: "", body: "" });
     }
   }, [initialValue, form, updateFormData]);
 

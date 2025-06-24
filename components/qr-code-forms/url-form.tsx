@@ -21,7 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { GITHUB_REPO_URL } from "@/lib/constants";
 import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 const urlSchema = z.object({
@@ -41,7 +40,7 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
   const form = useForm<UrlFormData>({
     resolver: zodResolver(urlSchema),
     defaultValues: {
-      url: value || formData.url || GITHUB_REPO_URL,
+      url: value || formData.url || "",
     },
     mode: "onChange",
   });
@@ -63,14 +62,22 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
     };
   }, [debouncedOnChange]);
 
+  // value prop이 변경될 때 폼 값 업데이트
   useEffect(() => {
-    if (!value && !formData.url) {
-      const defaultUrl = GITHUB_REPO_URL;
-      form.setValue("url", defaultUrl);
-      updateFormData("url", defaultUrl);
-      onChange(defaultUrl);
+    if (value !== undefined && value !== form.getValues("url")) {
+      form.setValue("url", value);
+      if (value) {
+        updateFormData("url", value);
+      }
     }
-  }, [value, formData.url, form, updateFormData, onChange]);
+  }, [value, form, updateFormData]);
+
+  // 스토어의 데이터로 폼 초기화
+  useEffect(() => {
+    if (formData.url && formData.url !== form.getValues("url")) {
+      form.setValue("url", formData.url);
+    }
+  }, [formData.url, form]);
 
   useEffect(() => {
     const subscription = form.watch((data) => {

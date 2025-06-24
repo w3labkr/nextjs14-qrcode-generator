@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { AddressSearch } from "@/components/ui/address-search";
 import { Search } from "lucide-react";
+import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 interface LocationFormProps {
   onChange: (locationString: string) => void;
@@ -21,6 +22,7 @@ interface LocationFormProps {
 }
 
 export function LocationForm({ onChange, initialValue }: LocationFormProps) {
+  const { formData, updateFormData } = useQrFormStore();
   const [address, setAddress] = useState("");
   const onChangeRef = useRef(onChange);
 
@@ -45,31 +47,42 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
     };
   }, [debouncedOnChange]);
 
+  // 초기값 설정 및 스토어 동기화
   useEffect(() => {
-    if (initialValue && !address) {
+    // 스토어에서 저장된 데이터 우선 확인
+    if (formData.location.address && !address) {
+      setAddress(formData.location.address);
+    } else if (initialValue && !address) {
       if (initialValue.includes("maps.google.com")) {
         try {
           const url = new URL(initialValue);
           const q = url.searchParams.get("q");
           if (q && decodeURIComponent(q) !== address) {
-            setAddress(decodeURIComponent(q));
+            const decodedAddress = decodeURIComponent(q);
+            setAddress(decodedAddress);
+            updateFormData("location", { address: decodedAddress });
           }
         } catch {
           // URL 파싱 실패 시 무시
         }
       }
+    } else if (!initialValue && address && !formData.location.address) {
+      // initialValue가 비어있으면 폼 초기화
+      setAddress("");
     }
-  }, [initialValue, address]);
+  }, [initialValue, address, formData.location.address, updateFormData]);
 
   useEffect(() => {
     if (address) {
       const encodedAddress = encodeURIComponent(address);
       const mapsUrl = `https://maps.google.com/?q=${encodedAddress}`;
+      updateFormData("location", { address });
       debouncedOnChange(mapsUrl);
     } else {
+      updateFormData("location", { address: "" });
       debouncedOnChange("");
     }
-  }, [address, debouncedOnChange]);
+  }, [address, debouncedOnChange, updateFormData]);
 
   const handleAddressChange = useCallback((addr: string) => {
     setAddress(addr);

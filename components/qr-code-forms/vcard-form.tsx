@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 interface VCardData {
   firstName: string;
@@ -29,6 +30,8 @@ interface VCardFormProps {
 }
 
 export function VCardForm({ onChange, initialValue }: VCardFormProps) {
+  const { formData: storeData, updateFormData } = useQrFormStore();
+
   const [formData, setFormData] = useState<VCardData>({
     firstName: "",
     lastName: "",
@@ -125,18 +128,47 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
     return vcard.join("\n");
   }, []);
 
-  const updateField = useCallback((field: keyof VCardData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  }, []);
+  const updateField = useCallback(
+    (field: keyof VCardData, value: string) => {
+      setFormData((prev) => {
+        const newData = { ...prev, [field]: value };
+        updateFormData("vcard", newData);
+        return newData;
+      });
+    },
+    [updateFormData],
+  );
 
+  // 초기값 설정 및 스토어 동기화
   useEffect(() => {
-    if (initialValue && initialValue.startsWith("BEGIN:VCARD")) {
+    // 스토어에서 저장된 데이터 우선 확인
+    const hasStoreData = Object.values(storeData.vcard).some(
+      (val) => val !== "",
+    );
+
+    if (hasStoreData) {
+      setFormData(storeData.vcard);
+    } else if (initialValue && initialValue.startsWith("BEGIN:VCARD")) {
       const parsed = parseVCardString(initialValue);
       if (parsed) {
         setFormData(parsed);
+        updateFormData("vcard", parsed);
       }
+    } else if (!initialValue) {
+      // initialValue가 비어있으면 폼 초기화
+      const emptyData = {
+        firstName: "",
+        lastName: "",
+        organization: "",
+        title: "",
+        phone: "",
+        email: "",
+        website: "",
+        address: "",
+      };
+      setFormData(emptyData);
     }
-  }, [initialValue, parseVCardString]);
+  }, [initialValue, parseVCardString, storeData.vcard, updateFormData]);
 
   useEffect(() => {
     const vcardString = generateVCardString(formData);

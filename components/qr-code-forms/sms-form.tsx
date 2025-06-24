@@ -66,6 +66,10 @@ export function SmsForm({ onChange, initialValue }: SmsFormProps) {
         form.reset(parsed);
         updateFormData("sms", parsed);
       }
+    } else if (!initialValue) {
+      // initialValue가 비어있으면 폼 초기화
+      form.reset({ phoneNumber: "", message: "" });
+      updateFormData("sms", { phoneNumber: "", message: "" });
     }
   }, [initialValue, form, updateFormData]);
 

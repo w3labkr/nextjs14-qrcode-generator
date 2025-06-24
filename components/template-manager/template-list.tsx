@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { QrCodeOptions } from "@/app/actions/qr-code";
 import { toast } from "sonner";
 import { Template } from "@/types/data-manager";
