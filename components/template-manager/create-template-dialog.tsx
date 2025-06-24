@@ -18,21 +18,21 @@ import { Label } from "@/components/ui/label";
 import { saveTemplate } from "@/app/actions/qr-code";
 import { QrCodeOptions } from "@/app/actions/qr-code";
 
-interface SaveTemplateDialogProps {
+interface CreateTemplateDialogProps {
   currentSettings: QrCodeOptions;
   onSaveComplete: () => void;
 }
 
-export default function SaveTemplateDialog({
+export default function CreateTemplateDialog({
   currentSettings,
   onSaveComplete,
-}: SaveTemplateDialogProps) {
+}: CreateTemplateDialogProps) {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
-      toast.error("템플릿 이름을 입력해주세요.");
+      toast.error("템플릿 이름을 입력해 주세요.");
       return;
     }
 
@@ -42,13 +42,13 @@ export default function SaveTemplateDialog({
         settings: currentSettings,
       });
 
-      toast.success("템플릿이 저장되었습니다!");
+      toast.success("템플릿이 추가되었습니다!");
       setTemplateName("");
       setSaveDialogOpen(false);
       onSaveComplete();
     } catch (error) {
       console.error("템플릿 저장 오류:", error);
-      toast.error("템플릿 저장에 실패했습니다.");
+      toast.error("템플릿 추가에 실패했습니다.");
     }
   };
 
@@ -56,14 +56,14 @@ export default function SaveTemplateDialog({
     <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
       <DialogTrigger asChild>
         <Button size="sm" className="ml-2">
-          저장
+          추가
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>템플릿 저장</DialogTitle>
+          <DialogTitle>템플릿 추가</DialogTitle>
           <DialogDescription>
-            현재 QR 코드 설정을 템플릿으로 저장합니다.
+            현재 QR 코드 설정을 템플릿으로 추가합니다.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -81,7 +81,7 @@ export default function SaveTemplateDialog({
           <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
             취소
           </Button>
-          <Button onClick={handleSaveTemplate}>저장</Button>
+          <Button onClick={handleSaveTemplate}>추가</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

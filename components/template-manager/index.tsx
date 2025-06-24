@@ -12,7 +12,7 @@ import { getUserTemplates } from "@/app/actions/qr-code";
 import { QrCodeOptions } from "@/app/actions/qr-code";
 import { toast } from "sonner";
 import { Template } from "@/types/data-manager";
-import SaveTemplateDialog from "./save-template-dialog";
+import CreateTemplateDialog from "./create-template-dialog";
 import EditTemplateDialog from "./edit-template-dialog";
 import TemplateList from "./template-list";
 import LoadingSkeleton from "./loading-skeleton";
@@ -139,7 +139,7 @@ export default function TemplateManager({
               자주 사용하는 설정을 템플릿으로 저장하고 재사용하세요.
             </CardDescription>
           </div>
-          <SaveTemplateDialog
+          <CreateTemplateDialog
             currentSettings={currentSettings}
             onSaveComplete={() => loadTemplates(true)}
           />
