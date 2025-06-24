@@ -88,7 +88,10 @@ export function useQrCodeGeneration({
               savedId: editingQrCodeId,
             };
             toast.success("QR 코드가 성공적으로 업데이트되었습니다!");
-            exitEditMode();
+            // 업데이트 완료 후 히스토리로 돌아가기
+            setTimeout(() => {
+              exitEditMode();
+            }, 1000);
           } else {
             toast.error(
               updateResult.error || "QR 코드 업데이트에 실패했습니다.",

@@ -71,13 +71,24 @@ export function useEditMode({
   );
 
   const exitEditMode = useCallback(() => {
+    const editingId = editingQrCodeId;
     setIsEditMode(false);
     setEditingQrCodeId(null);
     setLoadedQrCodeId(null);
     // 편집 모드 종료 시 토스트 기록도 초기화
     toastShownRef.current.clear();
-    window.history.replaceState({}, "", "/");
-  }, []);
+
+    // 히스토리 페이지로 돌아가면서 편집된 QR 코드를 표시
+    if (editingId) {
+      window.location.href = `/dashboard/history?returnFrom=${editingId}`;
+    } else {
+      // 현재 페이지에서 URL 파라미터만 제거
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.delete("edit");
+      currentUrl.searchParams.delete("type");
+      window.history.replaceState({}, "", currentUrl.toString());
+    }
+  }, [editingQrCodeId]);
 
   useEffect(() => {
     const editId = searchParams.get("edit");

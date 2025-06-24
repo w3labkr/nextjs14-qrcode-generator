@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { SearchAndFilters } from "./components/search-and-filters";
@@ -29,6 +30,9 @@ interface PaginationData {
 
 export default function QrCodeHistoryPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editingQrCodeId = searchParams.get("returnFrom");
   const [qrCodes, setQrCodes] = useState<QrCodeData[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
@@ -91,6 +95,19 @@ export default function QrCodeHistoryPage() {
     sortOrder,
   ]);
 
+  // returnFrom 파라미터가 있을 때 URL에서 제거
+  useEffect(() => {
+    if (editingQrCodeId) {
+      const timer = setTimeout(() => {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete("returnFrom");
+        window.history.replaceState({}, "", currentUrl.toString());
+      }, 3000); // 3초 후 파라미터 제거
+
+      return () => clearTimeout(timer);
+    }
+  }, [editingQrCodeId]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPagination((prev) => ({ ...prev, page: 1 }));
@@ -147,7 +164,7 @@ export default function QrCodeHistoryPage() {
 
   const handleEdit = (qrCode: QrCodeData) => {
     const editUrl = `/qrcode?edit=${qrCode.id}&type=${qrCode.type.toLowerCase()}`;
-    window.location.href = editUrl;
+    router.push(editUrl);
   };
 
   return (
@@ -178,6 +195,7 @@ export default function QrCodeHistoryPage() {
           setQrCodeToDelete(id);
           setDeleteDialogOpen(true);
         }}
+        editingQrCodeId={editingQrCodeId}
       />
 
       <Pagination pagination={pagination} onPageChange={handlePageChange} />

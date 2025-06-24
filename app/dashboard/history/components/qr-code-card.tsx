@@ -47,6 +47,7 @@ interface QrCodeCardProps {
   onEdit: (qrCode: QrCodeData) => void;
   onDelete: (id: string) => void;
   onDownload: (qrCode: QrCodeData) => void;
+  isEditing?: boolean;
 }
 
 export function QrCodeCard({
@@ -55,6 +56,7 @@ export function QrCodeCard({
   onEdit,
   onDelete,
   onDownload,
+  isEditing = false,
 }: QrCodeCardProps) {
   const getContentPreview = (content: string, type: string) => {
     if (type === "WIFI") {
@@ -95,7 +97,16 @@ export function QrCodeCard({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow">
+    <Card
+      className={cn("group hover:shadow-lg transition-shadow relative", {
+        "ring-2 ring-blue-500 ring-offset-2": isEditing,
+      })}
+    >
+      {isEditing && (
+        <div className="absolute -top-2 -right-2 z-10">
+          <Badge className="bg-blue-500 text-white">편집 중</Badge>
+        </div>
+      )}
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
