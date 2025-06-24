@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Star, StarOff } from "lucide-react";
+import { Star, StarOff } from "lucide-react";
 import { deleteTemplate, updateTemplate } from "@/app/actions/qr-code";
 import { QrCodeOptions } from "@/app/actions/qr-code";
 import { toast } from "sonner";
