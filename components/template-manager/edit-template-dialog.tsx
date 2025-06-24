@@ -9,6 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,21 +18,17 @@ import { toast } from "sonner";
 import { Template } from "@/types/data-manager";
 
 interface EditTemplateDialogProps {
-  template: Template | null;
-  isOpen: boolean;
-  onClose: () => void;
+  template: Template;
   onUpdateComplete: () => void;
 }
 
 export default function EditTemplateDialog({
   template,
-  isOpen,
-  onClose,
   onUpdateComplete,
 }: EditTemplateDialogProps) {
-  const [templateName, setTemplateName] = useState(template?.name || "");
+  const [isOpen, setIsOpen] = useState(false);
+  const [templateName, setTemplateName] = useState(template.name);
 
-  // 템플릿이 변경될 때 상태 업데이트
   useEffect(() => {
     if (template) {
       setTemplateName(template.name);
@@ -39,7 +36,7 @@ export default function EditTemplateDialog({
   }, [template]);
 
   const handleUpdateTemplate = async () => {
-    if (!template || !templateName.trim()) {
+    if (!templateName.trim()) {
       toast.error("템플릿 이름을 입력해주세요.");
       return;
     }
@@ -50,7 +47,7 @@ export default function EditTemplateDialog({
       });
 
       toast.success("템플릿이 업데이트되었습니다!");
-      onClose();
+      setIsOpen(false);
       onUpdateComplete();
     } catch (error) {
       console.error("템플릿 업데이트 오류:", error);
@@ -58,12 +55,19 @@ export default function EditTemplateDialog({
     }
   };
 
-  const handleClose = () => {
-    onClose();
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          수정
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>템플릿 수정</DialogTitle>
@@ -85,7 +89,7 @@ export default function EditTemplateDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant="outline" onClick={() => setIsOpen(false)}>
             취소
           </Button>
           <Button onClick={handleUpdateTemplate}>저장</Button>

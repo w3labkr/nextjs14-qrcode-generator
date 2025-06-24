@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,34 +11,28 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { deleteTemplate } from "@/app/actions/qr-code";
 import { toast } from "sonner";
 
 interface DeleteTemplateDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  templateId: string | null;
+  templateId: string;
   onTemplateDeleted: () => void;
 }
 
 export default function DeleteTemplateDialog({
-  open,
-  onOpenChange,
   templateId,
   onTemplateDeleted,
 }: DeleteTemplateDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteTemplate = async () => {
-    if (!templateId) return;
-
     setIsDeleting(true);
     try {
       await deleteTemplate(templateId);
       toast.success("템플릿이 삭제되었습니다!");
       onTemplateDeleted();
-      onOpenChange(false);
     } catch (error) {
       console.error("템플릿 삭제 오류:", error);
       toast.error("템플릿 삭제에 실패했습니다.");
@@ -47,7 +42,19 @@ export default function DeleteTemplateDialog({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-red-500"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          삭제
+        </Button>
+      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>템플릿 삭제</AlertDialogTitle>

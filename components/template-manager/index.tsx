@@ -13,7 +13,6 @@ import { QrCodeOptions } from "@/app/actions/qr-code";
 import { toast } from "sonner";
 import { Template } from "@/types/data-manager";
 import CreateTemplateDialog from "./create-template-dialog";
-import EditTemplateDialog from "./edit-template-dialog";
 import TemplateList from "./template-list";
 import LoadingSkeleton from "./loading-skeleton";
 
@@ -30,8 +29,6 @@ export default function TemplateManager({
 }: TemplateManagerProps) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(
     propActiveTemplateId || null,
@@ -76,16 +73,6 @@ export default function TemplateManager({
     // 초기 로드시에는 에러 토스트를 표시하지 않음
     loadTemplates(false);
   }, []);
-
-  const openEditDialog = (template: Template) => {
-    setEditingTemplate(template);
-    setEditDialogOpen(true);
-  };
-
-  const closeEditDialog = () => {
-    setEditDialogOpen(false);
-    setEditingTemplate(null);
-  };
 
   const handleLoadTemplate = (settings: QrCodeOptions, templateId: string) => {
     onLoadTemplate(settings, templateId);
@@ -149,19 +136,11 @@ export default function TemplateManager({
         <TemplateList
           templates={templates}
           onLoadTemplate={handleLoadTemplate}
-          onEditTemplate={openEditDialog}
           onTemplateUpdate={() => loadTemplates(true)}
           activeTemplateId={activeTemplateId || undefined}
           currentSettings={currentSettings}
         />
       </CardContent>
-
-      <EditTemplateDialog
-        template={editingTemplate}
-        isOpen={editDialogOpen}
-        onClose={closeEditDialog}
-        onUpdateComplete={() => loadTemplates(true)}
-      />
     </Card>
   );
 }
