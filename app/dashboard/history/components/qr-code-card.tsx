@@ -58,11 +58,19 @@ export function QrCodeCard({
   onDownload,
   isEditing = false,
 }: QrCodeCardProps) {
+  // 안전한 데이터 검증
+  if (!qrCode || !qrCode.id) {
+    console.warn("Invalid qrCode data:", qrCode);
+    return null;
+  }
+
   const getContentPreview = (content: string, type: string) => {
+    if (!content || typeof content !== "string") return "내용 없음";
+
     if (type === "WIFI") {
       try {
         const wifiData = JSON.parse(content);
-        return `SSID: ${wifiData.ssid}`;
+        return `SSID: ${wifiData.ssid || "알 수 없음"}`;
       } catch {
         return content.substring(0, 50) + "...";
       }
@@ -143,9 +151,20 @@ export function QrCodeCard({
               {qrCode.title || "제목 없음"}
             </CardTitle>
             <CardDescription className="text-sm">
-              {format(new Date(qrCode.createdAt), "yyyy년 M월 d일 HH:mm:ss", {
-                locale: ko,
-              })}
+              {(() => {
+                try {
+                  return format(
+                    new Date(qrCode.createdAt),
+                    "yyyy년 M월 d일 HH:mm:ss",
+                    {
+                      locale: ko,
+                    },
+                  );
+                } catch (error) {
+                  console.warn("Date formatting error:", error);
+                  return "날짜 정보 없음";
+                }
+              })()}
             </CardDescription>
           </div>
         </div>

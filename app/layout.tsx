@@ -46,7 +46,7 @@ export default function RootLayout({
             <AuthProvider>{children}</AuthProvider>
           </ClientOnly>
           <Toaster richColors closeButton />
-          <TailwindIndicator />
+          {/* <TailwindIndicator /> */}
         </div>
       </body>
     </html>

@@ -57,7 +57,7 @@ export default function QrCodeHistoryPage() {
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
-        search: searchTerm,
+        search: searchTerm.trim(),
         type: selectedType,
         favorite: showFavorites.toString(),
         sortBy,
@@ -65,17 +65,32 @@ export default function QrCodeHistoryPage() {
       });
 
       const response = await fetch(`/api/qrcodes?${params}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
 
-      if (response.ok) {
+      if (data.qrCodes && Array.isArray(data.qrCodes)) {
         setQrCodes(data.qrCodes);
-        setPagination(data.pagination);
+        setPagination(
+          data.pagination || {
+            total: 0,
+            page: 1,
+            limit: 12,
+            pages: 0,
+          },
+        );
       } else {
-        toast.error(data.error || "QR 코드 목록을 불러오는데 실패했습니다.");
+        console.warn("Invalid data structure received:", data);
+        toast.error("잘못된 데이터 형식입니다.");
       }
     } catch (error) {
       console.error("QR 코드 목록 조회 실패:", error);
       toast.error("QR 코드 목록을 불러오는데 실패했습니다.");
+      // 에러 발생시 빈 배열로 초기화
+      setQrCodes([]);
     } finally {
       setLoading(false);
     }
@@ -85,15 +100,19 @@ export default function QrCodeHistoryPage() {
     if (status === "authenticated") {
       fetchQrCodes();
     }
-  }, [
-    status,
-    pagination.page,
-    searchTerm,
-    selectedType,
-    showFavorites,
-    sortBy,
-    sortOrder,
-  ]);
+  }, [status, pagination.page, selectedType, showFavorites, sortBy, sortOrder]);
+
+  // 검색어 변경시 디바운스 처리
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    const timeoutId = setTimeout(() => {
+      setPagination((prev) => ({ ...prev, page: 1 }));
+      fetchQrCodes();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   // returnFrom 파라미터가 있을 때 URL에서 제거
   useEffect(() => {
@@ -110,10 +129,15 @@ export default function QrCodeHistoryPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPagination((prev) => ({ ...prev, page: 1 }));
+    // 검색은 이미 useEffect에서 디바운스 처리되므로 여기서는 아무것도 하지 않음
   };
 
   const toggleFavorite = async (qrCodeId: string) => {
+    if (!qrCodeId || typeof qrCodeId !== "string") {
+      console.warn("Invalid qrCodeId:", qrCodeId);
+      return;
+    }
+
     try {
       const response = await fetch(`/api/qrcodes/${qrCodeId}/favorite`, {
         method: "POST",
@@ -137,6 +161,11 @@ export default function QrCodeHistoryPage() {
   };
 
   const deleteQrCode = async (qrCodeId: string) => {
+    if (!qrCodeId || typeof qrCodeId !== "string") {
+      console.warn("Invalid qrCodeId:", qrCodeId);
+      return;
+    }
+
     try {
       const response = await fetch(`/api/qrcodes/${qrCodeId}`, {
         method: "DELETE",
@@ -163,6 +192,12 @@ export default function QrCodeHistoryPage() {
   };
 
   const handleEdit = (qrCode: QrCodeData) => {
+    if (!qrCode || !qrCode.id || !qrCode.type) {
+      console.warn("Invalid qrCode data for edit:", qrCode);
+      toast.error("잘못된 QR 코드 정보입니다.");
+      return;
+    }
+
     const editUrl = `/qrcode?edit=${qrCode.id}&type=${qrCode.type.toLowerCase()}`;
     router.push(editUrl);
   };

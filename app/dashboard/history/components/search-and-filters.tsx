@@ -59,8 +59,15 @@ export function SearchAndFilters({
               <Input
                 placeholder="제목이나 내용으로 검색..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // 안전한 문자열 처리
+                  if (typeof value === "string") {
+                    setSearchTerm(value);
+                  }
+                }}
                 className="pl-10"
+                autoComplete="off"
               />
             </div>
           </form>
