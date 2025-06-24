@@ -24,6 +24,9 @@ export async function getUserTemplates() {
     const db = await withRLS(session.user.id);
 
     const templates = await db.qrTemplate.findMany({
+      where: {
+        userId: session.user.id, // 현재 사용자의 템플릿만 조회
+      },
       orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }],
     });
 
@@ -48,6 +51,7 @@ export async function saveTemplate(data: TemplateData) {
     if (isDefault) {
       await tx.qrTemplate.updateMany({
         where: {
+          userId: userId, // 현재 사용자의 템플릿만 업데이트
           isDefault: true,
         },
         data: {
@@ -85,6 +89,7 @@ export async function updateTemplate(
     const template = await tx.qrTemplate.findFirst({
       where: {
         id: templateId,
+        userId: userId, // 현재 사용자의 템플릿만 조회
       },
     });
 
@@ -97,6 +102,7 @@ export async function updateTemplate(
     if (isDefault) {
       await tx.qrTemplate.updateMany({
         where: {
+          userId: userId, // 현재 사용자의 템플릿만 업데이트
           isDefault: true,
         },
         data: {
@@ -108,6 +114,7 @@ export async function updateTemplate(
     const updatedTemplate = await tx.qrTemplate.update({
       where: {
         id: templateId,
+        userId: userId, // 현재 사용자의 템플릿만 수정
       },
       data: {
         ...(name && { name }),
@@ -133,6 +140,7 @@ export async function deleteTemplate(templateId: string) {
     const template = await tx.qrTemplate.findFirst({
       where: {
         id: templateId,
+        userId: userId, // 현재 사용자의 템플릿만 조회
       },
     });
 
@@ -143,6 +151,7 @@ export async function deleteTemplate(templateId: string) {
     await tx.qrTemplate.delete({
       where: {
         id: templateId,
+        userId: userId, // 현재 사용자의 템플릿만 삭제
       },
     });
 
@@ -161,6 +170,7 @@ export async function getDefaultTemplate() {
 
   const defaultTemplate = await db.qrTemplate.findFirst({
     where: {
+      userId: session.user.id, // 현재 사용자의 템플릿만 조회
       isDefault: true,
     },
   });

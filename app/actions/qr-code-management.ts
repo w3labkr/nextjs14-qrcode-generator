@@ -22,13 +22,20 @@ export async function getUserQrCodes(page = 1, limit = 10) {
 
   const [qrCodes, totalCount] = await Promise.all([
     db.qrCode.findMany({
+      where: {
+        userId: session.user.id, // 현재 사용자의 QR 코드만 조회
+      },
       orderBy: {
         createdAt: "desc",
       },
       skip,
       take: limit,
     }),
-    db.qrCode.count(),
+    db.qrCode.count({
+      where: {
+        userId: session.user.id, // 현재 사용자의 QR 코드만 카운트
+      },
+    }),
   ]);
 
   return {
@@ -46,10 +53,13 @@ export async function toggleQrCodeFavorite(qrCodeId: string) {
     throw new Error("Unauthorized");
   }
 
-  return await withRLSTransaction(session.user.id, async (tx) => {
+  const userId = session.user.id; // 타입 안전성을 위해 미리 추출
+
+  return await withRLSTransaction(userId, async (tx) => {
     const qrCode = await tx.qrCode.findFirst({
       where: {
         id: qrCodeId,
+        userId: userId, // 현재 사용자의 QR 코드만 조회
       },
     });
 
@@ -60,6 +70,7 @@ export async function toggleQrCodeFavorite(qrCodeId: string) {
     const updatedQrCode = await tx.qrCode.update({
       where: {
         id: qrCodeId,
+        userId: userId, // 현재 사용자의 QR 코드만 수정
       },
       data: {
         isFavorite: !qrCode.isFavorite,
@@ -77,10 +88,13 @@ export async function deleteQrCode(qrCodeId: string) {
     throw new Error("Unauthorized");
   }
 
-  return await withRLSTransaction(session.user.id, async (tx) => {
+  const userId = session.user.id; // 타입 안전성을 위해 미리 추출
+
+  return await withRLSTransaction(userId, async (tx) => {
     const qrCode = await tx.qrCode.findFirst({
       where: {
         id: qrCodeId,
+        userId: userId, // 현재 사용자의 QR 코드만 조회
       },
     });
 
@@ -91,6 +105,7 @@ export async function deleteQrCode(qrCodeId: string) {
     await tx.qrCode.delete({
       where: {
         id: qrCodeId,
+        userId: userId, // 현재 사용자의 QR 코드만 삭제
       },
     });
 
@@ -125,6 +140,7 @@ export async function updateQrCode(
     const updatedQrCode = await prisma.qrCode.update({
       where: {
         id: qrCodeId,
+        userId: session.user.id, // 현재 사용자의 QR 코드만 수정
       },
       data: {
         type: options.qrType,

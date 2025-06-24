@@ -22,10 +22,13 @@ export async function POST(
       );
     }
 
+    const userId = session.user.id; // 타입 안전성을 위해 미리 추출
+
     return await withAuthenticatedRLSTransaction(session, async (tx) => {
       const qrCode = await tx.qrCode.findFirst({
         where: {
           id: params.id,
+          userId: userId, // 현재 사용자의 QR 코드만 조회
         },
       });
 
@@ -37,7 +40,10 @@ export async function POST(
       }
 
       const updatedQrCode = await tx.qrCode.update({
-        where: { id: params.id },
+        where: {
+          id: params.id,
+          userId: userId, // 현재 사용자의 QR 코드만 수정
+        },
         data: {
           isFavorite: !qrCode.isFavorite,
           updatedAt: new Date(),

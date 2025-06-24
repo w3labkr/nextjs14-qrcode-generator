@@ -29,8 +29,10 @@ export async function GET(request: NextRequest) {
 
     const db = await withAuthenticatedRLS(session);
 
-    // 검색 조건 구성 (RLS로 자동 필터링되므로 userId는 제거)
-    const where: Prisma.QrCodeWhereInput = {};
+    // 검색 조건 구성 - 명시적으로 userId 필터 추가
+    const where: Prisma.QrCodeWhereInput = {
+      userId: session.user.id, // 현재 사용자의 QR 코드만 조회
+    };
 
     if (search) {
       where.OR = [

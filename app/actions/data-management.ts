@@ -19,6 +19,9 @@ export async function exportUserData() {
 
   const [qrCodes, templates] = await Promise.all([
     db.qrCode.findMany({
+      where: {
+        userId: session.user.id, // 현재 사용자의 QR 코드만 조회
+      },
       select: {
         type: true,
         title: true,
@@ -33,6 +36,9 @@ export async function exportUserData() {
       },
     }),
     db.qrTemplate.findMany({
+      where: {
+        userId: session.user.id, // 현재 사용자의 템플릿만 조회
+      },
       select: {
         name: true,
         settings: true,
