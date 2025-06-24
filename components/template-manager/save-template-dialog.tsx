@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { saveTemplate } from "@/app/actions/qr-code";
 import { QrCodeOptions } from "@/app/actions/qr-code";
 
@@ -30,7 +29,6 @@ export default function SaveTemplateDialog({
 }: SaveTemplateDialogProps) {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
-  const [isDefault, setIsDefault] = useState(false);
 
   const handleSaveTemplate = async () => {
     if (!templateName.trim()) {
@@ -42,12 +40,10 @@ export default function SaveTemplateDialog({
       await saveTemplate({
         name: templateName,
         settings: currentSettings,
-        isDefault,
       });
 
       toast.success("템플릿이 저장되었습니다!");
       setTemplateName("");
-      setIsDefault(false);
       setSaveDialogOpen(false);
       onSaveComplete();
     } catch (error) {
@@ -79,14 +75,6 @@ export default function SaveTemplateDialog({
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder="예: 회사 로고 템플릿"
             />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="default-template"
-              checked={isDefault}
-              onCheckedChange={setIsDefault}
-            />
-            <Label htmlFor="default-template">기본 템플릿으로 설정</Label>
           </div>
         </div>
         <DialogFooter>

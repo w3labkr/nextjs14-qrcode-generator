@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { updateTemplate } from "@/app/actions/qr-code";
 import { toast } from "sonner";
 import { Template } from "@/types/data-manager";
@@ -31,13 +30,11 @@ export default function EditTemplateDialog({
   onUpdateComplete,
 }: EditTemplateDialogProps) {
   const [templateName, setTemplateName] = useState(template?.name || "");
-  const [isDefault, setIsDefault] = useState(template?.isDefault || false);
 
   // 템플릿이 변경될 때 상태 업데이트
   useEffect(() => {
     if (template) {
       setTemplateName(template.name);
-      setIsDefault(template.isDefault);
     }
   }, [template]);
 
@@ -50,7 +47,6 @@ export default function EditTemplateDialog({
     try {
       await updateTemplate(template.id, {
         name: templateName,
-        isDefault,
       });
 
       toast.success("템플릿이 업데이트되었습니다!");
@@ -85,16 +81,6 @@ export default function EditTemplateDialog({
                 onChange={(e) => setTemplateName(e.target.value)}
                 placeholder="템플릿 이름을 입력하세요"
               />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="edit-default-template"
-                checked={isDefault}
-                onCheckedChange={setIsDefault}
-              />
-              <Label htmlFor="edit-default-template">
-                기본 템플릿으로 설정
-              </Label>
             </div>
           </div>
         </div>
