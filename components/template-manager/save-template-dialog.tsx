@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { saveTemplate } from "@/app/actions/qr-code";
 import { QrCodeOptions } from "@/app/actions/qr-code";
-import { toast } from "sonner";
 
 interface SaveTemplateDialogProps {
   currentSettings: QrCodeOptions;
