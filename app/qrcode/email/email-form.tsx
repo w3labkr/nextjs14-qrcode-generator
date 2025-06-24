@@ -7,7 +7,6 @@ import * as z from "zod";
 import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -23,7 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 const emailSchema = z.object({
   email: z
@@ -37,66 +35,22 @@ const emailSchema = z.object({
 type EmailFormData = z.infer<typeof emailSchema>;
 
 interface EmailFormProps {
-  onChange: () => void;
-  initialValue?: string;
+  onChange: (data: string) => void;
 }
 
-export function EmailForm({ onChange, initialValue }: EmailFormProps) {
-  const { formData, updateFormData } = useQrFormStore();
-
+export function EmailForm({ onChange }: EmailFormProps) {
   const form = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
     defaultValues: {
-      email: formData.email.email,
-      subject: formData.email.subject,
-      body: formData.email.body,
+      email: "",
+      subject: "",
+      body: "",
     },
     mode: "onChange",
   });
 
-  const parseEmailString = (emailStr: string) => {
-    const mailtoMatch = emailStr.match(/^mailto:([^?]+)/);
-    if (!mailtoMatch) return null;
-
-    const email = mailtoMatch[1];
-    const url = new URL(emailStr);
-    const subject = url.searchParams.get("subject") || "";
-    const body = url.searchParams.get("body") || "";
-
-    return { email, subject, body };
-  };
-
-  useEffect(() => {
-    if (initialValue && initialValue.startsWith("mailto:")) {
-      const parsed = parseEmailString(initialValue);
-      if (parsed) {
-        form.reset(parsed);
-        updateFormData("email", parsed);
-      }
-    } else if (!initialValue) {
-      // initialValue가 비어있으면 폼 초기화
-      form.reset({ email: "", subject: "", body: "" });
-      updateFormData("email", { email: "", subject: "", body: "" });
-    }
-  }, [initialValue, form, updateFormData]);
-
-  // Store의 formData가 변경될 때 폼 값 업데이트
-  useEffect(() => {
-    const currentValues = form.getValues();
-    if (
-      formData.email.email !== currentValues.email ||
-      formData.email.subject !== currentValues.subject ||
-      formData.email.body !== currentValues.body
-    ) {
-      form.reset({
-        email: formData.email.email,
-        subject: formData.email.subject,
-        body: formData.email.body,
-      });
-    }
-  }, [formData.email, form]);
-
-  const generateEmailString = (data: EmailFormData): string => {
+  // QR 콘텐츠 생성 함수
+  const generateEmailContent = (data: EmailFormData) => {
     if (!data.email) return "";
 
     let emailString = `mailto:${data.email}`;
@@ -113,49 +67,46 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
     return emailString;
   };
 
-  const handleFormChange = (data: EmailFormData) => {
-    updateFormData("email", data);
-    const emailString = generateEmailString(data);
-    onChange();
-  };
-
   // debounce된 onChange 함수 생성
-  const debouncedHandleFormChange = useMemo(
-    () => debounce(handleFormChange, 300),
-    [updateFormData, onChange],
+  const debouncedOnChange = useMemo(
+    () =>
+      debounce((data: EmailFormData) => {
+        const content = generateEmailContent(data);
+        onChange(content);
+      }, 300),
+    [onChange],
   );
 
   // 컴포넌트 언마운트 시 debounce 취소
   useEffect(() => {
     return () => {
-      debouncedHandleFormChange.cancel();
+      debouncedOnChange.cancel();
     };
-  }, [debouncedHandleFormChange]);
+  }, [debouncedOnChange]);
 
   useEffect(() => {
     const subscription = form.watch((data) => {
-      if (data.email) {
-        debouncedHandleFormChange(data as EmailFormData);
+      if (data.email && form.formState.isValid) {
+        debouncedOnChange(data as EmailFormData);
       }
     });
     return () => {
       subscription.unsubscribe();
-      debouncedHandleFormChange.cancel();
+      debouncedOnChange.cancel();
     };
-  }, [form.watch, debouncedHandleFormChange]);
+  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>이메일</CardTitle>
         <CardDescription>
-          이메일 주소와 제목, 내용을 설정하여 이메일 앱을 자동으로 실행하는 QR
-          코드를 생성하세요.
+          이메일 주소와 제목, 내용을 입력하세요.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-4">
             <FormField
               control={form.control}
               name="email"
@@ -165,7 +116,7 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="example@example.com"
+                      placeholder="example@domain.com"
                       {...field}
                     />
                   </FormControl>
@@ -173,31 +124,29 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="subject"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>제목 (선택사항)</FormLabel>
+                  <FormLabel>제목</FormLabel>
                   <FormControl>
-                    <Input placeholder="이메일 제목을 입력하세요" {...field} />
+                    <Input placeholder="이메일 제목 (선택)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="body"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>내용 (선택사항)</FormLabel>
+                  <FormLabel>내용</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="이메일 내용을 입력하세요"
-                      rows={4}
+                      placeholder="이메일 내용 (선택)"
+                      className="min-h-[100px]"
                       {...field}
                     />
                   </FormControl>

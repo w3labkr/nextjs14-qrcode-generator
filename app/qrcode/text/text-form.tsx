@@ -21,7 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 const textSchema = z.object({
   text: z.string().min(1, "텍스트를 입력해주세요"),
@@ -31,16 +30,14 @@ type TextFormData = z.infer<typeof textSchema>;
 
 interface TextFormProps {
   value: string;
-  onChange: () => void;
+  onChange: (text: string) => void;
 }
 
 export function TextForm({ value, onChange }: TextFormProps) {
-  const { formData, updateFormData } = useQrFormStore();
-
   const form = useForm<TextFormData>({
     resolver: zodResolver(textSchema),
     defaultValues: {
-      text: formData.text,
+      text: value || "",
     },
     mode: "onChange",
   });
@@ -49,10 +46,9 @@ export function TextForm({ value, onChange }: TextFormProps) {
   const debouncedOnChange = useMemo(
     () =>
       debounce((text: string) => {
-        updateFormData("text", text);
-        onChange();
+        onChange(text);
       }, 300),
-    [updateFormData, onChange],
+    [onChange],
   );
 
   // 컴포넌트 언마운트 시 debounce 취소
@@ -62,16 +58,16 @@ export function TextForm({ value, onChange }: TextFormProps) {
     };
   }, [debouncedOnChange]);
 
-  // 스토어의 텍스트 데이터가 변경될 때 폼 값 업데이트
+  // value prop이 변경될 때 폼 값 업데이트
   useEffect(() => {
-    if (formData.text !== form.getValues("text")) {
-      form.setValue("text", formData.text);
+    if (value !== form.getValues("text")) {
+      form.setValue("text", value);
     }
-  }, [formData.text, form]);
+  }, [value, form]);
 
   useEffect(() => {
     const subscription = form.watch((data) => {
-      if (data.text !== undefined) {
+      if (data.text !== undefined && form.formState.isValid) {
         debouncedOnChange(data.text);
       }
     });
@@ -79,7 +75,7 @@ export function TextForm({ value, onChange }: TextFormProps) {
       subscription.unsubscribe();
       debouncedOnChange.cancel();
     };
-  }, [form.watch, debouncedOnChange]);
+  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>

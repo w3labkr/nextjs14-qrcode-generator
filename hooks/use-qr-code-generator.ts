@@ -10,18 +10,10 @@ import {
 } from "@/hooks/use-qr-code-utils";
 import { useTemplate } from "@/hooks/use-template";
 import { useQrCodeGeneration } from "@/hooks/use-qr-code-generation";
-import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 export function useQrCodeGenerator() {
   const [qrData, setQrData] = useState("");
   const [activeTab, setActiveTab] = useState("url");
-
-  const {
-    formData,
-    updateFormData,
-    getQrContent,
-    setActiveTab: setStoreActiveTab,
-  } = useQrFormStore();
   const qrCodeSettings = useQrCodeSettings();
 
   const editMode = useEditMode({
@@ -51,34 +43,14 @@ export function useQrCodeGenerator() {
   const handleTabChange = useCallback(
     (value: string) => {
       setActiveTab(value);
-      setStoreActiveTab(value);
       qrCodeGeneration.setHighResQrCode("");
 
       if (!editMode.isEditMode) {
-        // 폼 스토어에서 해당 탭의 저장된 데이터 가져오기
-        const savedContent = getQrContent();
-
-        if (value === "url") {
-          // URL 탭의 경우, 저장된 데이터가 없으면 빈 문자열 사용
-          const urlData = formData.url || "";
-          setQrData(urlData);
-          if (!formData.url) {
-            updateFormData("url", "");
-          }
-        } else {
-          // 다른 탭의 경우, 저장된 내용이 있으면 사용, 없으면 빈 문자열
-          setQrData(savedContent || "");
-        }
+        // 탭 변경 시 qrData를 초기화
+        setQrData("");
       }
     },
-    [
-      editMode.isEditMode,
-      qrCodeGeneration.setHighResQrCode,
-      setStoreActiveTab,
-      getQrContent,
-      formData.url,
-      updateFormData,
-    ],
+    [editMode.isEditMode, qrCodeGeneration.setHighResQrCode],
   );
 
   const handleFormatChange = useCallback(
@@ -96,14 +68,6 @@ export function useQrCodeGenerator() {
       template.setTemplateApplied(false);
     }
   }, [template.templateApplied, qrData, template.defaultTemplateLoaded]);
-
-  // 폼 스토어의 데이터 변경 시 qrData 동기화
-  useEffect(() => {
-    const content = getQrContent();
-    if (content && content !== qrData && !editMode.isEditMode) {
-      setQrData(content);
-    }
-  }, [formData, activeTab, getQrContent, qrData, editMode.isEditMode]);
 
   useInitialEffects();
 

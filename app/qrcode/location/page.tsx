@@ -9,11 +9,9 @@ import { QrCodePageLayout } from "@/components/qr-code-page-layout";
 import { QrCodeTypeNavigation } from "@/components/qr-code-type-navigation";
 import { LocationForm } from "@/app/qrcode/location/location-form";
 import { useQrCodeGenerator } from "@/hooks/use-qr-code-generator";
-import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 export default function LocationQrCodePage() {
-  const { setQrData, setActiveTab, editMode } = useQrCodeGenerator();
-  const { getQrContent, setActiveTab: setStoreActiveTab } = useQrFormStore();
+  const { qrData, setQrData, setActiveTab, editMode } = useQrCodeGenerator();
 
   // QR 데이터 변경을 debounce 처리
   const debouncedSetQrData = useMemo(
@@ -25,29 +23,17 @@ export default function LocationQrCodePage() {
   useEffect(() => {
     if (!editMode.isEditMode) {
       setActiveTab("location");
-      setStoreActiveTab("location");
     }
-  }, [setActiveTab, setStoreActiveTab, editMode.isEditMode]);
-
-  // 편집모드에서 데이터가 로드된 후 QR 데이터 업데이트
-  useEffect(() => {
-    if (editMode.isEditMode) {
-      const content = getQrContent();
-      if (content) {
-        debouncedSetQrData(content);
-      }
-    }
-  }, [editMode.isEditMode, getQrContent, debouncedSetQrData]);
+  }, [setActiveTab, editMode.isEditMode]);
 
   // 각 폼에서 데이터가 변경될 때 QR 데이터 업데이트
-  const handleFormDataChange = () => {
-    const content = getQrContent();
-    debouncedSetQrData(content);
+  const handleFormDataChange = (data: string) => {
+    debouncedSetQrData(data);
   };
 
   return (
     <QrCodePageLayout
-      title="지도 QR 코드 생성기"
+      title="위치 QR 코드 생성기"
       description="위치 정보를 QR 코드로 변환하여 쉽게 공유하세요."
       qrType="location"
     >

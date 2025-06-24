@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -11,272 +13,247 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useQrFormStore } from "@/hooks/use-qr-form-store";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
-interface VCardData {
-  firstName: string;
-  lastName: string;
-  organization: string;
-  title: string;
-  phone: string;
-  email: string;
-  website: string;
-  address: string;
-}
+const vcardSchema = z
+  .object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    organization: z.string().optional(),
+    title: z.string().optional(),
+    phone: z.string().optional(),
+    email: z
+      .string()
+      .email("올바른 이메일 주소를 입력해주세요")
+      .optional()
+      .or(z.literal("")),
+    website: z
+      .string()
+      .url("올바른 웹사이트 주소를 입력해주세요")
+      .optional()
+      .or(z.literal("")),
+    address: z.string().optional(),
+  })
+  .refine(
+    (data) => data.firstName || data.lastName || data.phone || data.email,
+    {
+      message: "이름, 전화번호, 이메일 중 하나는 반드시 입력해야 합니다",
+      path: ["firstName"],
+    },
+  );
+
+type VCardFormData = z.infer<typeof vcardSchema>;
 
 interface VCardFormProps {
-  onChange: () => void;
-  initialValue?: string;
+  onChange: (data: string) => void;
 }
 
-export function VCardForm({ onChange, initialValue }: VCardFormProps) {
-  const { formData: storeData, updateFormData } = useQrFormStore();
-
-  const [formData, setFormData] = useState<VCardData>({
-    firstName: "",
-    lastName: "",
-    organization: "",
-    title: "",
-    phone: "",
-    email: "",
-    website: "",
-    address: "",
+export function VCardForm({ onChange }: VCardFormProps) {
+  const form = useForm<VCardFormData>({
+    resolver: zodResolver(vcardSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      organization: "",
+      title: "",
+      phone: "",
+      email: "",
+      website: "",
+      address: "",
+    },
+    mode: "onChange",
   });
 
-  const parseVCardString = useCallback((vcardStr: string): VCardData | null => {
-    if (!vcardStr.startsWith("BEGIN:VCARD")) return null;
-
-    const lines = vcardStr.split(/\r?\n/);
-    const data: Partial<VCardData> = {};
-
-    lines.forEach((line) => {
-      const [field, ...valueParts] = line.split(":");
-      const value = valueParts.join(":");
-
-      switch (field) {
-        case "FN": {
-          const nameParts = value.split(" ");
-          data.firstName = nameParts[0] || "";
-          data.lastName = nameParts.slice(1).join(" ") || "";
-          break;
-        }
-        case "ORG":
-          data.organization = value;
-          break;
-        case "TITLE":
-          data.title = value;
-          break;
-        case "TEL":
-          data.phone = value;
-          break;
-        case "EMAIL":
-          data.email = value;
-          break;
-        case "URL":
-          data.website = value;
-          break;
-        case "ADR":
-          data.address = value.split(";").filter(Boolean).join(" ");
-          break;
-      }
-    });
-
-    return {
-      firstName: data.firstName || "",
-      lastName: data.lastName || "",
-      organization: data.organization || "",
-      title: data.title || "",
-      phone: data.phone || "",
-      email: data.email || "",
-      website: data.website || "",
-      address: data.address || "",
-    };
-  }, []);
-
-  const generateVCardString = useCallback((data: VCardData): string => {
-    const {
-      firstName,
-      lastName,
-      organization,
-      title,
-      phone,
-      email,
-      website,
-      address,
-    } = data;
-
-    if (!firstName && !lastName && !phone && !email) {
+  // QR 콘텐츠 생성 함수
+  const generateVCardContent = (data: VCardFormData) => {
+    if (!data.firstName && !data.lastName && !data.phone && !data.email)
       return "";
-    }
 
     const vcard = ["BEGIN:VCARD", "VERSION:3.0"];
 
-    if (firstName || lastName) {
-      vcard.push(`FN:${firstName} ${lastName}`.trim());
-      vcard.push(`N:${lastName};${firstName};;;`);
+    if (data.firstName || data.lastName) {
+      vcard.push(`FN:${data.firstName} ${data.lastName}`.trim());
+      vcard.push(`N:${data.lastName};${data.firstName};;;`);
     }
 
-    if (organization) vcard.push(`ORG:${organization}`);
-    if (title) vcard.push(`TITLE:${title}`);
-    if (phone) vcard.push(`TEL:${phone}`);
-    if (email) vcard.push(`EMAIL:${email}`);
-    if (website) vcard.push(`URL:${website}`);
-    if (address) vcard.push(`ADR:;;${address};;;;`);
+    if (data.organization) vcard.push(`ORG:${data.organization}`);
+    if (data.title) vcard.push(`TITLE:${data.title}`);
+    if (data.phone) vcard.push(`TEL:${data.phone}`);
+    if (data.email) vcard.push(`EMAIL:${data.email}`);
+    if (data.website) vcard.push(`URL:${data.website}`);
+    if (data.address) vcard.push(`ADR:;;${data.address};;;;`);
 
     vcard.push("END:VCARD");
 
     return vcard.join("\n");
-  }, []);
+  };
 
-  const updateField = useCallback(
-    (field: keyof VCardData, value: string) => {
-      setFormData((prev) => {
-        const newData = { ...prev, [field]: value };
-        updateFormData("vcard", newData);
-        return newData;
-      });
-    },
-    [updateFormData],
+  // debounce된 onChange 함수 생성
+  const debouncedOnChange = useMemo(
+    () =>
+      debounce((data: VCardFormData) => {
+        const content = generateVCardContent(data);
+        onChange(content);
+      }, 300),
+    [onChange],
   );
 
-  // 초기값 설정 및 스토어 동기화
+  // 컴포넌트 언마운트 시 debounce 취소
   useEffect(() => {
-    // 스토어에서 저장된 데이터 우선 확인
-    const hasStoreData = Object.values(storeData.vcard).some(
-      (val) => val !== "",
-    );
+    return () => {
+      debouncedOnChange.cancel();
+    };
+  }, [debouncedOnChange]);
 
-    if (hasStoreData) {
-      setFormData(storeData.vcard);
-    } else if (initialValue && initialValue.startsWith("BEGIN:VCARD")) {
-      const parsed = parseVCardString(initialValue);
-      if (parsed) {
-        setFormData(parsed);
-        updateFormData("vcard", parsed);
+  useEffect(() => {
+    const subscription = form.watch((data) => {
+      if (
+        (data.firstName || data.lastName || data.phone || data.email) &&
+        form.formState.isValid
+      ) {
+        debouncedOnChange(data as VCardFormData);
       }
-    } else if (!initialValue) {
-      // initialValue가 비어있으면 폼 초기화
-      const emptyData = {
-        firstName: "",
-        lastName: "",
-        organization: "",
-        title: "",
-        phone: "",
-        email: "",
-        website: "",
-        address: "",
-      };
-      setFormData(emptyData);
-    }
-  }, [initialValue, parseVCardString, storeData.vcard, updateFormData]);
-
-  // Store의 formData가 변경될 때 로컬 state 업데이트
-  useEffect(() => {
-    setFormData(storeData.vcard);
-  }, [storeData.vcard]);
-
-  useEffect(() => {
-    const vcardString = generateVCardString(formData);
-    onChange();
-  }, [formData, generateVCardString, onChange]);
+    });
+    return () => {
+      subscription.unsubscribe();
+      debouncedOnChange.cancel();
+    };
+  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>연락처 (vCard)</CardTitle>
+        <CardTitle>연락처 정보</CardTitle>
         <CardDescription>
-          연락처 정보를 입력하여 주소록에 바로 추가할 수 있는 QR 코드를
-          생성하세요.
+          명함 정보를 입력하세요. 이름, 전화번호, 이메일 중 하나는 필수입니다.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="firstName">이름 *</Label>
-            <Input
-              id="firstName"
-              value={formData.firstName}
-              onChange={(e) => updateField("firstName", e.target.value)}
-              placeholder="홍길동"
-              required
+      <CardContent>
+        <Form {...form}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>이름</FormLabel>
+                    <FormControl>
+                      <Input placeholder="홍" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>성</FormLabel>
+                    <FormControl>
+                      <Input placeholder="길동" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="organization"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>회사/조직</FormLabel>
+                  <FormControl>
+                    <Input placeholder="회사명" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>직책</FormLabel>
+                  <FormControl>
+                    <Input placeholder="직책/직위" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>전화번호</FormLabel>
+                  <FormControl>
+                    <Input type="tel" placeholder="010-1234-5678" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>이메일</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="example@domain.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="website"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>웹사이트</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="url"
+                      placeholder="https://example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>주소</FormLabel>
+                  <FormControl>
+                    <Input placeholder="주소" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="lastName">성 (선택사항)</Label>
-            <Input
-              id="lastName"
-              value={formData.lastName}
-              onChange={(e) => updateField("lastName", e.target.value)}
-              placeholder="홍"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="organization">회사/조직 (선택사항)</Label>
-            <Input
-              id="organization"
-              value={formData.organization}
-              onChange={(e) => updateField("organization", e.target.value)}
-              placeholder="회사명"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="title">직함 (선택사항)</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => updateField("title", e.target.value)}
-              placeholder="대표이사"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="phone">전화번호 (선택사항)</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => updateField("phone", e.target.value)}
-              placeholder="010-1234-5678"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">이메일 (선택사항)</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => updateField("email", e.target.value)}
-              placeholder="example@example.com"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="website">웹사이트 (선택사항)</Label>
-          <Input
-            id="website"
-            type="url"
-            value={formData.website}
-            onChange={(e) => updateField("website", e.target.value)}
-            placeholder="https://example.com"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="address">주소 (선택사항)</Label>
-          <Textarea
-            id="address"
-            value={formData.address}
-            onChange={(e) => updateField("address", e.target.value)}
-            placeholder="서울특별시 강남구 테헤란로 123"
-            rows={2}
-          />
-        </div>
+        </Form>
       </CardContent>
     </Card>
   );

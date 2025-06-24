@@ -21,8 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useQrFormStore } from "@/hooks/use-qr-form-store";
-
 const urlSchema = z.object({
   url: z.string().url("올바른 URL을 입력해주세요").min(1, "URL을 입력해주세요"),
 });
@@ -31,16 +29,14 @@ type UrlFormData = z.infer<typeof urlSchema>;
 
 interface UrlFormProps {
   value: string;
-  onChange: () => void;
+  onChange: (url: string) => void;
 }
 
 export function UrlForm({ value, onChange }: UrlFormProps) {
-  const { formData, updateFormData } = useQrFormStore();
-
   const form = useForm<UrlFormData>({
     resolver: zodResolver(urlSchema),
     defaultValues: {
-      url: formData.url || "",
+      url: value || "",
     },
     mode: "onChange",
   });
@@ -49,10 +45,9 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
   const debouncedOnChange = useMemo(
     () =>
       debounce((url: string) => {
-        updateFormData("url", url);
-        onChange();
+        onChange(url);
       }, 300),
-    [updateFormData, onChange],
+    [onChange],
   );
 
   // 컴포넌트 언마운트 시 debounce 취소
@@ -62,12 +57,12 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
     };
   }, [debouncedOnChange]);
 
-  // 스토어의 URL 데이터가 변경될 때 폼 값 업데이트
+  // value prop이 변경될 때 폼 값 업데이트
   useEffect(() => {
-    if (formData.url !== form.getValues("url")) {
-      form.setValue("url", formData.url);
+    if (value !== form.getValues("url")) {
+      form.setValue("url", value);
     }
-  }, [formData.url, form]);
+  }, [value, form]);
 
   useEffect(() => {
     const subscription = form.watch((data) => {

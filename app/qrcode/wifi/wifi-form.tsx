@@ -1,17 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { debounce } from "lodash";
-import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -19,267 +14,173 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  escapeWifiString,
-  validateWifiQrString,
-  diagnoseWifiQrIssues,
-} from "@/lib/wifi-qr-validator";
-import { useQrFormStore } from "@/hooks/use-qr-form-store";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const wifiSchema = z.object({
+  ssid: z.string().min(1, "네트워크 이름을 입력해주세요"),
+  password: z.string().optional(),
+  encryption: z.enum(["WPA", "WEP", "nopass"]),
+  isHidden: z.boolean(),
+});
+
+type WifiFormData = z.infer<typeof wifiSchema>;
 
 interface WifiFormProps {
-  onWifiDataChange: () => void;
-  initialValue?: string;
+  onWifiDataChange: (data: string) => void;
 }
 
-export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
-  const { formData, updateFormData } = useQrFormStore();
+export function WifiForm({ onWifiDataChange }: WifiFormProps) {
+  const form = useForm<WifiFormData>({
+    resolver: zodResolver(wifiSchema),
+    defaultValues: {
+      ssid: "",
+      password: "",
+      encryption: "WPA",
+      isHidden: false,
+    },
+    mode: "onChange",
+  });
 
-  const [ssid, setSsid] = useState(formData.wifi.ssid || "");
-  const [password, setPassword] = useState(formData.wifi.password || "");
-  const [showPassword, setShowPassword] = useState(false);
-  const [encryption, setEncryption] = useState(
-    formData.wifi.encryption || "WPA",
-  );
-  const [isHidden, setIsHidden] = useState(formData.wifi.isHidden || false);
-  const [wifiString, setWifiString] = useState("");
-  const [validationResult, setValidationResult] = useState<{
-    isValid: boolean;
-    errors: string[];
-  }>({ isValid: true, errors: [] });
+  // QR 콘텐츠 생성 함수
+  const generateWifiContent = (data: WifiFormData) => {
+    if (!data.ssid) return "";
 
-  // Wi-Fi 문자열에서 개별 필드로 파싱하는 함수
-  const parseWifiString = (wifiStr: string) => {
-    // WIFI:T:WPA;S:MyNetwork;P:myPassword123;H:false;;
-    const regex = /WIFI:T:([^;]*);S:([^;]*);P:([^;]*);H:([^;]*);/;
-    const match = wifiStr.match(regex);
+    const escapedSsid = data.ssid.replace(/[\\";,]/g, "\\$&");
+    const escapedPassword = data.password?.replace(/[\\";,]/g, "\\$&") || "";
+    const hiddenFlag = data.isHidden ? "true" : "false";
 
-    if (match) {
-      return {
-        encryption: match[1] || "WPA",
-        ssid: match[2] || "",
-        password: match[3] || "",
-        hidden: match[4] === "true",
-      };
-    }
-    return null;
+    return `WIFI:T:${data.encryption};S:${escapedSsid};P:${escapedPassword};H:${hiddenFlag};;`;
   };
 
-  // 초기값 설정 및 스토어 동기화
-  useEffect(() => {
-    // 스토어에서 저장된 데이터 우선 확인
-    if (formData.wifi.ssid || formData.wifi.password) {
-      setSsid(formData.wifi.ssid);
-      setPassword(formData.wifi.password);
-      setEncryption(formData.wifi.encryption);
-      setIsHidden(formData.wifi.isHidden);
-    } else if (initialValue && initialValue.startsWith("WIFI:")) {
-      const parsed = parseWifiString(initialValue);
-      if (parsed) {
-        setSsid(parsed.ssid);
-        setPassword(parsed.password);
-        setEncryption(parsed.encryption);
-        setIsHidden(parsed.hidden);
-        // 스토어에도 저장
-        updateFormData("wifi", {
-          ssid: parsed.ssid,
-          password: parsed.password,
-          encryption: parsed.encryption,
-          isHidden: parsed.hidden,
-        });
-      }
-    } else if (!initialValue) {
-      // initialValue가 비어있으면 폼 초기화
-      setSsid("");
-      setPassword("");
-      setEncryption("WPA");
-      setIsHidden(false);
-    }
-  }, [initialValue, formData.wifi, updateFormData]);
-
-  // Store의 formData가 변경될 때 로컬 state 업데이트
-  useEffect(() => {
-    setSsid(formData.wifi.ssid);
-    setPassword(formData.wifi.password);
-    setEncryption(formData.wifi.encryption);
-    setIsHidden(formData.wifi.isHidden);
-  }, [formData.wifi]);
-
-  const generateWifiString = () => {
-    if (!ssid.trim()) {
-      setWifiString("");
-      updateFormData("wifi", { ssid: "", password: "", encryption, isHidden });
-      onWifiDataChange();
-      return;
-    }
-
-    const escapedSsid = escapeWifiString(ssid);
-    const escapedPassword = escapeWifiString(password);
-    const hiddenFlag = isHidden ? "true" : "false";
-
-    const newWifiString = `WIFI:T:${encryption};S:${escapedSsid};P:${escapedPassword};H:${hiddenFlag};;`;
-    setWifiString(newWifiString);
-
-    // 스토어에 데이터 저장
-    updateFormData("wifi", { ssid, password, encryption, isHidden });
-
-    // 검증 수행
-    const validation = validateWifiQrString(newWifiString);
-    const issues = diagnoseWifiQrIssues(newWifiString);
-
-    setValidationResult({
-      isValid: validation.isValid && issues.length === 0,
-      errors: [...validation.errors, ...issues],
-    });
-
-    onWifiDataChange();
-  };
-
-  // debounce된 generateWifiString 함수 생성
-  const debouncedGenerateWifiString = useMemo(
-    () => debounce(generateWifiString, 300),
-    [generateWifiString],
+  // debounce된 onChange 함수 생성
+  const debouncedOnChange = useMemo(
+    () =>
+      debounce((data: WifiFormData) => {
+        const content = generateWifiContent(data);
+        onWifiDataChange(content);
+      }, 300),
+    [onWifiDataChange],
   );
 
   // 컴포넌트 언마운트 시 debounce 취소
   useEffect(() => {
     return () => {
-      debouncedGenerateWifiString.cancel();
+      debouncedOnChange.cancel();
     };
-  }, [debouncedGenerateWifiString]);
+  }, [debouncedOnChange]);
 
-  // 모든 값이 변경될 때마다 자동으로 WiFi 문자열 생성
   useEffect(() => {
-    debouncedGenerateWifiString();
-  }, [ssid, password, encryption, isHidden, debouncedGenerateWifiString]);
+    const subscription = form.watch((data) => {
+      if (data.ssid && form.formState.isValid) {
+        debouncedOnChange(data as WifiFormData);
+      }
+    });
+    return () => {
+      subscription.unsubscribe();
+      debouncedOnChange.cancel();
+    };
+  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Wi-Fi 네트워크</CardTitle>
-        <CardDescription>
-          네트워크 정보를 입력하여 Wi-Fi 접속 QR 코드를 생성하세요.
-        </CardDescription>
+        <CardDescription>Wi-Fi 네트워크 정보를 입력하세요.</CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="ssid">네트워크 이름 (SSID)</Label>
-          <Input
-            id="ssid"
-            value={ssid}
-            onChange={(e) => setSsid(e.target.value)}
-            placeholder="WiFi 네트워크 이름을 입력하세요"
-            required
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="password">비밀번호</Label>
-          <div className="relative">
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="WiFi 비밀번호를 입력하세요"
-              className="pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
-              aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
-            >
-              {showPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
+      <CardContent>
+        <Form {...form}>
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="ssid"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>네트워크 이름 (SSID) *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wi-Fi 네트워크 이름" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </button>
+            />
+            <FormField
+              control={form.control}
+              name="encryption"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>보안 유형</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="보안 유형을 선택하세요" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="WPA">WPA/WPA2</SelectItem>
+                      <SelectItem value="WEP">WEP</SelectItem>
+                      <SelectItem value="nopass">보안 없음</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>비밀번호</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Wi-Fi 비밀번호"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isHidden"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">숨겨진 네트워크</FormLabel>
+                    <div className="text-sm text-muted-foreground">
+                      네트워크가 숨겨져 있는 경우 활성화하세요
+                    </div>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
           </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="encryption">암호화 방식</Label>
-          <Select
-            value={encryption}
-            onValueChange={(value) => setEncryption(value)}
-          >
-            <SelectTrigger id="encryption">
-              <SelectValue placeholder="암호화 방식 선택" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="WPA">WPA/WPA2/WPA3</SelectItem>
-              <SelectItem value="WEP">WEP (권장하지 않음)</SelectItem>
-              <SelectItem value="nopass">암호화 없음</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2 pt-6">
-          <input
-            type="checkbox"
-            id="isHidden"
-            checked={isHidden}
-            onChange={(e) => setIsHidden(e.target.checked)}
-            className="h-4 w-4"
-          />
-          <Label htmlFor="isHidden">숨겨진 네트워크</Label>
-        </div>
-
-        {/* 검증 결과 표시 */}
-        {ssid && !validationResult.isValid && (
-          <div className="col-span-full">
-            <Alert>
-              <AlertDescription>
-                <strong>WiFi QR 코드 문제가 발견되었습니다:</strong>
-                <ul className="list-disc list-inside mt-2">
-                  {validationResult.errors.map((error, index) => (
-                    <li key={index} className="text-sm">
-                      {error}
-                    </li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-
-        {/* 디버깅을 위한 생성된 WiFi 문자열 표시 */}
-        {ssid && (
-          <div className="col-span-full">
-            <Label>생성된 WiFi QR 코드 데이터</Label>
-            <div className="mt-1 p-2 bg-gray-100 rounded text-sm font-mono break-all">
-              {wifiString}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              이 문자열이 QR 코드로 변환됩니다. 특수 문자가 자동으로 이스케이프
-              처리됩니다.
-              {validationResult.isValid && " ✅ 유효한 WiFi QR 코드입니다."}
-            </p>
-          </div>
-        )}
-
-        {/* WiFi QR 코드 사용 가이드 */}
-        {ssid && validationResult.isValid && (
-          <div className="col-span-full">
-            <Alert>
-              <AlertDescription>
-                <strong>WiFi QR 코드 연결 가이드:</strong>
-                <ol className="list-decimal list-inside mt-2 space-y-1 text-sm">
-                  <li>
-                    스마트폰 카메라 앱을 열거나 QR 코드 스캐너를 사용하세요
-                  </li>
-                  <li>QR 코드를 스캔하면 WiFi 연결 알림이 나타납니다</li>
-                  <li>알림을 탭하여 자동으로 WiFi에 연결하세요</li>
-                  <li>
-                    연결이 되지 않으면 WiFi 설정에서 수동으로 확인해보세요
-                  </li>
-                </ol>
-                <p className="text-xs text-gray-600 mt-2">
-                  일부 구형 기기는 WiFi QR 코드를 지원하지 않을 수 있습니다.
-                </p>
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
+        </Form>
       </CardContent>
     </Card>
   );
