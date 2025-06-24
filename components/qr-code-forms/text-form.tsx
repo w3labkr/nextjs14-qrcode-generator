@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { debounce } from "lodash";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
@@ -44,15 +45,34 @@ export function TextForm({ value, onChange }: TextFormProps) {
     mode: "onChange",
   });
 
+  // debounce된 onChange 함수 생성
+  const debouncedOnChange = useMemo(
+    () =>
+      debounce((text: string) => {
+        updateFormData("text", text);
+        onChange(text);
+      }, 300),
+    [updateFormData, onChange],
+  );
+
+  // 컴포넌트 언마운트 시 debounce 취소
+  useEffect(() => {
+    return () => {
+      debouncedOnChange.cancel();
+    };
+  }, [debouncedOnChange]);
+
   useEffect(() => {
     const subscription = form.watch((data) => {
-      if (data.text) {
-        updateFormData("text", data.text);
-        onChange(data.text);
+      if (data.text !== undefined) {
+        debouncedOnChange(data.text);
       }
     });
-    return () => subscription.unsubscribe();
-  }, [form.watch, onChange, updateFormData]);
+    return () => {
+      subscription.unsubscribe();
+      debouncedOnChange.cancel();
+    };
+  }, [form.watch, debouncedOnChange]);
 
   return (
     <Card>

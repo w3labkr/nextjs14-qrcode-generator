@@ -2,8 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { debounce } from "lodash";
 import { GithubBadge } from "@/components/github-badge";
 import { PageHeader } from "@/components/page-header";
 import { QrCodeTabs } from "@/components/qr-code-tabs";
@@ -46,6 +47,12 @@ function QrCodePageContent() {
     getHighResDownloadFilename,
   } = useQrCodeGenerator();
 
+  // QR 데이터 변경을 debounce 처리
+  const debouncedSetQrData = useMemo(
+    () => debounce(setQrData, 200),
+    [setQrData],
+  );
+
   return (
     <main className="flex min-h-screen flex-col p-4 sm:p-8 md:p-24">
       <PageHeader isEditMode={isEditMode} />
@@ -56,7 +63,7 @@ function QrCodePageContent() {
           <div className="flex flex-col gap-4 flex-1">
             <QrCodeTabs
               qrData={qrData}
-              setQrData={setQrData}
+              setQrData={debouncedSetQrData}
               activeTab={activeTab}
               onTabChange={handleTabChange}
             />

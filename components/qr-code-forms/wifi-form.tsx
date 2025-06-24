@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { debounce } from "lodash";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,10 +99,23 @@ export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
     onWifiDataChange(newWifiString);
   };
 
+  // debounce된 generateWifiString 함수 생성
+  const debouncedGenerateWifiString = useMemo(
+    () => debounce(generateWifiString, 300),
+    [generateWifiString],
+  );
+
+  // 컴포넌트 언마운트 시 debounce 취소
+  useEffect(() => {
+    return () => {
+      debouncedGenerateWifiString.cancel();
+    };
+  }, [debouncedGenerateWifiString]);
+
   // 모든 값이 변경될 때마다 자동으로 WiFi 문자열 생성
   useEffect(() => {
-    generateWifiString();
-  }, [ssid, password, encryption, isHidden]);
+    debouncedGenerateWifiString();
+  }, [ssid, password, encryption, isHidden, debouncedGenerateWifiString]);
 
   return (
     <Card>

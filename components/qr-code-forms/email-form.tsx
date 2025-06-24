@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -98,14 +99,30 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
     onChange(emailString);
   };
 
+  // debounce된 onChange 함수 생성
+  const debouncedHandleFormChange = useMemo(
+    () => debounce(handleFormChange, 300),
+    [updateFormData, onChange],
+  );
+
+  // 컴포넌트 언마운트 시 debounce 취소
+  useEffect(() => {
+    return () => {
+      debouncedHandleFormChange.cancel();
+    };
+  }, [debouncedHandleFormChange]);
+
   useEffect(() => {
     const subscription = form.watch((data) => {
       if (data.email) {
-        handleFormChange(data as EmailFormData);
+        debouncedHandleFormChange(data as EmailFormData);
       }
     });
-    return () => subscription.unsubscribe();
-  }, [form.watch, onChange]);
+    return () => {
+      subscription.unsubscribe();
+      debouncedHandleFormChange.cancel();
+    };
+  }, [form.watch, debouncedHandleFormChange]);
 
   return (
     <Card>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,22 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
     onChangeRef.current = onChange;
   }, [onChange]);
 
+  // debounce된 onChange 함수 생성
+  const debouncedOnChange = useMemo(
+    () =>
+      debounce((locationString: string) => {
+        onChangeRef.current(locationString);
+      }, 300),
+    [],
+  );
+
+  // 컴포넌트 언마운트 시 debounce 취소
+  useEffect(() => {
+    return () => {
+      debouncedOnChange.cancel();
+    };
+  }, [debouncedOnChange]);
+
   useEffect(() => {
     if (initialValue && !address) {
       if (initialValue.includes("maps.google.com")) {
@@ -48,11 +65,11 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
     if (address) {
       const encodedAddress = encodeURIComponent(address);
       const mapsUrl = `https://maps.google.com/?q=${encodedAddress}`;
-      onChangeRef.current(mapsUrl);
+      debouncedOnChange(mapsUrl);
     } else {
-      onChangeRef.current("");
+      debouncedOnChange("");
     }
-  }, [address]);
+  }, [address, debouncedOnChange]);
 
   const handleAddressChange = useCallback((addr: string) => {
     setAddress(addr);

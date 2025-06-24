@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -85,14 +86,30 @@ export function SmsForm({ onChange, initialValue }: SmsFormProps) {
     onChange(smsString);
   };
 
+  // debounce된 onChange 함수 생성
+  const debouncedHandleFormChange = useMemo(
+    () => debounce(handleFormChange, 300),
+    [updateFormData, onChange],
+  );
+
+  // 컴포넌트 언마운트 시 debounce 취소
+  useEffect(() => {
+    return () => {
+      debouncedHandleFormChange.cancel();
+    };
+  }, [debouncedHandleFormChange]);
+
   useEffect(() => {
     const subscription = form.watch((data) => {
       if (data.phoneNumber) {
-        handleFormChange(data as SmsFormData);
+        debouncedHandleFormChange(data as SmsFormData);
       }
     });
-    return () => subscription.unsubscribe();
-  }, [form.watch, onChange]);
+    return () => {
+      subscription.unsubscribe();
+      debouncedHandleFormChange.cancel();
+    };
+  }, [form.watch, debouncedHandleFormChange]);
 
   return (
     <Card>

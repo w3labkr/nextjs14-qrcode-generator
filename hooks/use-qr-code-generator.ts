@@ -72,18 +72,7 @@ export function useQrCodeGenerator() {
       qrCodeGeneration.handleGenerate();
       template.setTemplateApplied(false);
     }
-  }, [
-    template.templateApplied,
-    qrData,
-    template.defaultTemplateLoaded,
-    qrCodeGeneration.handleGenerate,
-    template.setTemplateApplied,
-    qrCodeSettings.foregroundColor,
-    qrCodeSettings.backgroundColor,
-    qrCodeSettings.logo,
-    qrCodeSettings.width,
-    qrCodeSettings.frameOptions,
-  ]);
+  }, [template.templateApplied, qrData, template.defaultTemplateLoaded]);
 
   useInitialEffects();
 

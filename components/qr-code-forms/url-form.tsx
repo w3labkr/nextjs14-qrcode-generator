@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -45,6 +46,23 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
     mode: "onChange",
   });
 
+  // debounce된 onChange 함수 생성
+  const debouncedOnChange = useMemo(
+    () =>
+      debounce((url: string) => {
+        updateFormData("url", url);
+        onChange(url);
+      }, 300),
+    [updateFormData, onChange],
+  );
+
+  // 컴포넌트 언마운트 시 debounce 취소
+  useEffect(() => {
+    return () => {
+      debouncedOnChange.cancel();
+    };
+  }, [debouncedOnChange]);
+
   useEffect(() => {
     if (!value && !formData.url) {
       const defaultUrl = GITHUB_REPO_URL;
@@ -57,12 +75,14 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
   useEffect(() => {
     const subscription = form.watch((data) => {
       if (data.url && form.formState.isValid) {
-        updateFormData("url", data.url);
-        onChange(data.url);
+        debouncedOnChange(data.url);
       }
     });
-    return () => subscription.unsubscribe();
-  }, [form.watch, onChange, updateFormData, form.formState.isValid]);
+    return () => {
+      subscription.unsubscribe();
+      debouncedOnChange.cancel();
+    };
+  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>
