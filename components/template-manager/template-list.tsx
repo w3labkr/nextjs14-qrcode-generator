@@ -119,17 +119,18 @@ export default function TemplateList({
             </Button>
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={() => onEditTemplate(template)}
             >
-              <Edit className="h-4 w-4" />
+              편집
             </Button>
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
+              className="text-red-500"
               onClick={() => handleDeleteTemplate(template.id)}
             >
-              <Trash2 className="h-4 w-4 text-red-500" />
+              삭제
             </Button>
           </div>
         </div>
