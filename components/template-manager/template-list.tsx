@@ -6,6 +6,7 @@ import { QrCodeOptions } from "@/app/actions/qr-code";
 import { toast } from "sonner";
 import { Template } from "@/types/data-manager";
 import DeleteTemplateDialog from "./delete-template-dialog";
+import SaveTemplateButton from "./save-template-button";
 
 interface TemplateListProps {
   templates: Template[];
@@ -13,6 +14,7 @@ interface TemplateListProps {
   onEditTemplate: (template: Template) => void;
   onTemplateUpdate: () => void;
   activeTemplateId?: string;
+  currentSettings: QrCodeOptions;
 }
 
 export default function TemplateList({
@@ -21,6 +23,7 @@ export default function TemplateList({
   onEditTemplate,
   onTemplateUpdate,
   activeTemplateId,
+  currentSettings,
 }: TemplateListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<string | null>(null);
@@ -76,6 +79,11 @@ export default function TemplateList({
                 </div>
               </div>
               <div className="flex gap-2">
+                <SaveTemplateButton
+                  template={template}
+                  currentSettings={currentSettings}
+                  onTemplateUpdate={onTemplateUpdate}
+                />
                 <Button
                   size="sm"
                   variant="outline"

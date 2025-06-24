@@ -152,6 +152,7 @@ export default function TemplateManager({
           onEditTemplate={openEditDialog}
           onTemplateUpdate={() => loadTemplates(true)}
           activeTemplateId={activeTemplateId || undefined}
+          currentSettings={currentSettings}
         />
       </CardContent>
 
