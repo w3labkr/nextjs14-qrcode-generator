@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// 이 라우트는 동적이어야 함 (헤더를 사용하므로)
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     // Authorization 헤더에서 크론 시크릿 확인
