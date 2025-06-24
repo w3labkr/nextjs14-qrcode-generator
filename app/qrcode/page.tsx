@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { Suspense, useMemo } from "react";
+import { useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { debounce } from "lodash";
 import { GithubBadge } from "@/components/github-badge";
@@ -12,23 +12,8 @@ import { QrCodeSettingsPanel } from "@/components/qr-code-settings-panel";
 import { QrCodePreviewCard } from "@/components/qr-code-preview-card";
 import TemplateManager from "@/components/template-manager";
 import { useQrCodeGenerator } from "@/hooks/use-qr-code-generator";
-import { COPYRIGHT_TEXT } from "@/lib/constants";
 
 export default function QrCodePage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      }
-    >
-      <QrCodePageContent />
-    </Suspense>
-  );
-}
-
-function QrCodePageContent() {
   const { data: session } = useSession();
   const {
     // State
@@ -68,7 +53,7 @@ function QrCodePageContent() {
   );
 
   return (
-    <main className="flex min-h-screen flex-col p-4 sm:p-8 md:p-24">
+    <>
       <PageHeader isEditMode={isEditMode} />
 
       <div className="flex-1 flex flex-col items-center justify-center">
@@ -121,9 +106,6 @@ function QrCodePageContent() {
           </div>
         </div>
       </div>
-      <footer className="w-full mt-12 flex justify-center text-xs text-muted-foreground">
-        {COPYRIGHT_TEXT}
-      </footer>
-    </main>
+    </>
   );
 }
