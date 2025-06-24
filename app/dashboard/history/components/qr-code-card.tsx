@@ -117,9 +117,6 @@ export function QrCodeCard({
                 {QR_CODE_TYPES[qrCode.type as keyof typeof QR_CODE_TYPES]
                   ?.label || qrCode.type}
               </Badge>
-              {qrCode.isFavorite && (
-                <Heart className="h-4 w-4 text-red-500 fill-current" />
-              )}
             </div>
             <CardTitle className="text-base line-clamp-2">
               {qrCode.title || "제목 없음"}
@@ -130,38 +127,45 @@ export function QrCodeCard({
               })}
             </CardDescription>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onToggleFavorite(qrCode.id)}>
-                <Star className="h-4 w-4 mr-2" />
-                {qrCode.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDownload(qrCode)}>
-                <Download className="h-4 w-4 mr-2" />
-                다운로드
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(qrCode)}>
-                <Edit2 className="h-4 w-4 mr-2" />
-                편집
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-600"
-                onClick={() => onDelete(qrCode.id)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                삭제
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-start space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleFavorite(qrCode.id)}
+            >
+              <Heart
+                className={`h-4 w-4 ${
+                  qrCode.isFavorite
+                    ? "text-red-500 fill-current"
+                    : "text-gray-400"
+                }`}
+              />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onDownload(qrCode)}>
+                  <Download className="h-4 w-4 mr-2" />
+                  다운로드
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEdit(qrCode)}>
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  편집
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={() => onDelete(qrCode.id)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  삭제
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
