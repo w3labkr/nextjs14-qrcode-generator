@@ -31,7 +31,7 @@ type UrlFormData = z.infer<typeof urlSchema>;
 
 interface UrlFormProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: () => void;
 }
 
 export function UrlForm({ value, onChange }: UrlFormProps) {
@@ -40,7 +40,7 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
   const form = useForm<UrlFormData>({
     resolver: zodResolver(urlSchema),
     defaultValues: {
-      url: value || formData.url || "",
+      url: formData.url || "",
     },
     mode: "onChange",
   });
@@ -50,7 +50,7 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
     () =>
       debounce((url: string) => {
         updateFormData("url", url);
-        onChange(url);
+        onChange();
       }, 300),
     [updateFormData, onChange],
   );
@@ -62,19 +62,9 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
     };
   }, [debouncedOnChange]);
 
-  // value prop이 변경될 때 폼 값 업데이트
+  // 스토어의 URL 데이터가 변경될 때 폼 값 업데이트
   useEffect(() => {
-    if (value !== undefined && value !== form.getValues("url")) {
-      form.setValue("url", value);
-      if (value) {
-        updateFormData("url", value);
-      }
-    }
-  }, [value, form, updateFormData]);
-
-  // 스토어의 데이터로 폼 초기화
-  useEffect(() => {
-    if (formData.url && formData.url !== form.getValues("url")) {
+    if (formData.url !== form.getValues("url")) {
       form.setValue("url", formData.url);
     }
   }, [formData.url, form]);

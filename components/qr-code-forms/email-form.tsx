@@ -37,7 +37,7 @@ const emailSchema = z.object({
 type EmailFormData = z.infer<typeof emailSchema>;
 
 interface EmailFormProps {
-  onChange: (emailString: string) => void;
+  onChange: () => void;
   initialValue?: string;
 }
 
@@ -100,7 +100,7 @@ export function EmailForm({ onChange, initialValue }: EmailFormProps) {
   const handleFormChange = (data: EmailFormData) => {
     updateFormData("email", data);
     const emailString = generateEmailString(data);
-    onChange(emailString);
+    onChange();
   };
 
   // debounce된 onChange 함수 생성

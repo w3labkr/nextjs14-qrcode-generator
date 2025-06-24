@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UrlForm } from "@/components/qr-code-forms/url-form";
 import { TextForm } from "@/components/qr-code-forms/text-form";
@@ -8,6 +9,7 @@ import { EmailForm } from "@/components/qr-code-forms/email-form";
 import { SmsForm } from "@/components/qr-code-forms/sms-form";
 import { VCardForm } from "@/components/qr-code-forms/vcard-form";
 import { LocationForm } from "@/components/qr-code-forms/location-form";
+import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 interface QrCodeTabsProps {
   qrData: string;
@@ -22,6 +24,22 @@ export function QrCodeTabs({
   activeTab,
   onTabChange,
 }: QrCodeTabsProps) {
+  const { getQrContent, setActiveTab } = useQrFormStore();
+
+  // 탭이 변경될 때마다 해당 탭의 QR 데이터를 업데이트
+  useEffect(() => {
+    setActiveTab(activeTab);
+    const content = getQrContent();
+    if (content && content !== qrData) {
+      setQrData(content);
+    }
+  }, [activeTab, setActiveTab, getQrContent, qrData, setQrData]);
+
+  // 각 폼에서 데이터가 변경될 때 QR 데이터 업데이트
+  const handleFormDataChange = () => {
+    const content = getQrContent();
+    setQrData(content);
+  };
   return (
     <Tabs value={activeTab} className="w-full" onValueChange={onTabChange}>
       <div className="w-full overflow-x-auto">
@@ -71,25 +89,25 @@ export function QrCodeTabs({
         </TabsList>
       </div>
       <TabsContent value="url">
-        <UrlForm value={qrData} onChange={setQrData} />
+        <UrlForm value="" onChange={handleFormDataChange} />
       </TabsContent>
       <TabsContent value="text">
-        <TextForm value={qrData} onChange={setQrData} />
+        <TextForm value="" onChange={handleFormDataChange} />
       </TabsContent>
       <TabsContent value="wifi">
-        <WifiForm onWifiDataChange={setQrData} initialValue={qrData} />
+        <WifiForm onWifiDataChange={handleFormDataChange} />
       </TabsContent>
       <TabsContent value="email">
-        <EmailForm onChange={setQrData} initialValue={qrData} />
+        <EmailForm onChange={handleFormDataChange} />
       </TabsContent>
       <TabsContent value="sms">
-        <SmsForm onChange={setQrData} initialValue={qrData} />
+        <SmsForm onChange={handleFormDataChange} />
       </TabsContent>
       <TabsContent value="vcard">
-        <VCardForm onChange={setQrData} initialValue={qrData} />
+        <VCardForm onChange={handleFormDataChange} />
       </TabsContent>
       <TabsContent value="location">
-        <LocationForm onChange={setQrData} initialValue={qrData} />
+        <LocationForm onChange={handleFormDataChange} />
       </TabsContent>
     </Tabs>
   );

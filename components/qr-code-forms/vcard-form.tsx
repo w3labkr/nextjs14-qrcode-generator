@@ -25,7 +25,7 @@ interface VCardData {
 }
 
 interface VCardFormProps {
-  onChange: (vcardString: string) => void;
+  onChange: () => void;
   initialValue?: string;
 }
 
@@ -172,7 +172,7 @@ export function VCardForm({ onChange, initialValue }: VCardFormProps) {
 
   useEffect(() => {
     const vcardString = generateVCardString(formData);
-    onChange(vcardString);
+    onChange();
   }, [formData, generateVCardString, onChange]);
 
   return (

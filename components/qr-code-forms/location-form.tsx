@@ -17,7 +17,7 @@ import { Search } from "lucide-react";
 import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 interface LocationFormProps {
-  onChange: (locationString: string) => void;
+  onChange: () => void;
   initialValue?: string;
 }
 
@@ -34,8 +34,8 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
   // debounce된 onChange 함수 생성
   const debouncedOnChange = useMemo(
     () =>
-      debounce((locationString: string) => {
-        onChangeRef.current(locationString);
+      debounce(() => {
+        onChangeRef.current();
       }, 300),
     [],
   );
@@ -77,10 +77,10 @@ export function LocationForm({ onChange, initialValue }: LocationFormProps) {
       const encodedAddress = encodeURIComponent(address);
       const mapsUrl = `https://maps.google.com/?q=${encodedAddress}`;
       updateFormData("location", { address });
-      debouncedOnChange(mapsUrl);
+      debouncedOnChange();
     } else {
       updateFormData("location", { address: "" });
-      debouncedOnChange("");
+      debouncedOnChange();
     }
   }, [address, debouncedOnChange, updateFormData]);
 

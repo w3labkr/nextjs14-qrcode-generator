@@ -28,18 +28,20 @@ import {
 import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 interface WifiFormProps {
-  onWifiDataChange: (data: string) => void;
+  onWifiDataChange: () => void;
   initialValue?: string;
 }
 
 export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
   const { formData, updateFormData } = useQrFormStore();
 
-  const [ssid, setSsid] = useState("");
-  const [password, setPassword] = useState("");
+  const [ssid, setSsid] = useState(formData.wifi.ssid || "");
+  const [password, setPassword] = useState(formData.wifi.password || "");
   const [showPassword, setShowPassword] = useState(false);
-  const [encryption, setEncryption] = useState("WPA");
-  const [isHidden, setIsHidden] = useState(false);
+  const [encryption, setEncryption] = useState(
+    formData.wifi.encryption || "WPA",
+  );
+  const [isHidden, setIsHidden] = useState(formData.wifi.isHidden || false);
   const [wifiString, setWifiString] = useState("");
   const [validationResult, setValidationResult] = useState<{
     isValid: boolean;
@@ -98,8 +100,8 @@ export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
   const generateWifiString = () => {
     if (!ssid.trim()) {
       setWifiString("");
-      onWifiDataChange("");
       updateFormData("wifi", { ssid: "", password: "", encryption, isHidden });
+      onWifiDataChange();
       return;
     }
 
@@ -122,7 +124,7 @@ export function WifiForm({ onWifiDataChange, initialValue }: WifiFormProps) {
       errors: [...validation.errors, ...issues],
     });
 
-    onWifiDataChange(newWifiString);
+    onWifiDataChange();
   };
 
   // debounce된 generateWifiString 함수 생성

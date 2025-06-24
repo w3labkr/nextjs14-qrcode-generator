@@ -32,7 +32,7 @@ const smsSchema = z.object({
 type SmsFormData = z.infer<typeof smsSchema>;
 
 interface SmsFormProps {
-  onChange: (smsString: string) => void;
+  onChange: () => void;
   initialValue?: string;
 }
 
@@ -87,7 +87,7 @@ export function SmsForm({ onChange, initialValue }: SmsFormProps) {
   const handleFormChange = (data: SmsFormData) => {
     updateFormData("sms", data);
     const smsString = generateSmsString(data);
-    onChange(smsString);
+    onChange();
   };
 
   // debounce된 onChange 함수 생성

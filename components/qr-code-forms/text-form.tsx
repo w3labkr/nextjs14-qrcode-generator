@@ -31,7 +31,7 @@ type TextFormData = z.infer<typeof textSchema>;
 
 interface TextFormProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: () => void;
 }
 
 export function TextForm({ value, onChange }: TextFormProps) {
@@ -40,7 +40,7 @@ export function TextForm({ value, onChange }: TextFormProps) {
   const form = useForm<TextFormData>({
     resolver: zodResolver(textSchema),
     defaultValues: {
-      text: value || formData.text,
+      text: formData.text,
     },
     mode: "onChange",
   });
@@ -50,7 +50,7 @@ export function TextForm({ value, onChange }: TextFormProps) {
     () =>
       debounce((text: string) => {
         updateFormData("text", text);
-        onChange(text);
+        onChange();
       }, 300),
     [updateFormData, onChange],
   );
@@ -62,19 +62,9 @@ export function TextForm({ value, onChange }: TextFormProps) {
     };
   }, [debouncedOnChange]);
 
-  // value prop이 변경될 때 폼 값 업데이트
+  // 스토어의 텍스트 데이터가 변경될 때 폼 값 업데이트
   useEffect(() => {
-    if (value !== undefined && value !== form.getValues("text")) {
-      form.setValue("text", value);
-      if (value) {
-        updateFormData("text", value);
-      }
-    }
-  }, [value, form, updateFormData]);
-
-  // 스토어의 데이터로 폼 초기화
-  useEffect(() => {
-    if (formData.text && formData.text !== form.getValues("text")) {
+    if (formData.text !== form.getValues("text")) {
       form.setValue("text", formData.text);
     }
   }, [formData.text, form]);
