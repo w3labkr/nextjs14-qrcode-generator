@@ -15,7 +15,6 @@ import {
   History,
   Settings,
   LogOut,
-  Bookmark,
   Database,
   Cloud,
   UserCog,
@@ -72,12 +71,6 @@ export function UserNav() {
           <Link href="/dashboard/history">
             <History className="mr-2 h-4 w-4" />
             히스토리
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard/templates">
-            <Bookmark className="mr-2 h-4 w-4" />
-            템플릿
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
