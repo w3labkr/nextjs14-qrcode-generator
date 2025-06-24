@@ -358,6 +358,20 @@ npx prisma migrate dev
 npm run dev
 ```
 
+### 디버그 모드 설정
+
+인증 시스템에서 과도한 로그가 출력되는 경우, 환경 변수를 통해 디버그 모드를 제어할 수 있습니다:
+
+```bash
+# .env.local 파일에 추가하여 인증 디버그 로그 활성화
+AUTH_DEBUG=true
+
+# 또는 비활성화 (기본값)
+AUTH_DEBUG=false
+```
+
+**참고**: NextAuth.js의 기본 디버그 모드는 프로덕션 환경에서 자동으로 비활성화됩니다.
+
 ### 코딩 스타일 가이드
 
 - **TypeScript**: 모든 코드는 TypeScript로 작성

@@ -87,18 +87,18 @@ export default {
     signIn: "/auth/signin",
     error: "/auth/error",
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: false, // 디버그 모드 비활성화
   events: {
     async signIn({ user, account, profile }) {
-      // 환경 변수 검증 로그
-      if (process.env.NODE_ENV === "development") {
+      // 환경 변수 검증 로그 (필요시에만 활성화)
+      if (process.env.AUTH_DEBUG === "true") {
         logAuthEnvironment();
+        console.log("로그인 시도:", {
+          provider: account?.provider,
+          userId: user.id,
+          email: user.email,
+        });
       }
-      console.log("로그인 시도:", {
-        provider: account?.provider,
-        userId: user.id,
-        email: user.email,
-      });
     },
   },
   callbacks: {
@@ -121,15 +121,18 @@ export default {
           ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
           : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT;
 
-        console.log("로그인 시 기억하기 설정:", rememberMe);
-        console.log(
-          "세션 만료 시간:",
-          new Date(
-            (rememberMe
-              ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
-              : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT) * 1000,
-          ),
-        );
+        // 개발 환경에서만 로그 출력
+        if (process.env.AUTH_DEBUG === "true") {
+          console.log("로그인 시 기억하기 설정:", rememberMe);
+          console.log(
+            "세션 만료 시간:",
+            new Date(
+              (rememberMe
+                ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
+                : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT) * 1000,
+            ),
+          );
+        }
 
         return {
           ...extendedToken,
@@ -165,16 +168,20 @@ export default {
               ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
               : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT;
 
-            console.log(
-              "기억하기 설정 변경으로 인한 세션 만료 시간 업데이트:",
-              new Date(extendedToken.refreshTokenExpires * 1000),
-            );
+            if (process.env.AUTH_DEBUG === "true") {
+              console.log(
+                "기억하기 설정 변경으로 인한 세션 만료 시간 업데이트:",
+                new Date(extendedToken.refreshTokenExpires * 1000),
+              );
+            }
           }
 
-          console.log(
-            "세션 업데이트로 rememberMe 설정:",
-            extendedToken.rememberMe,
-          );
+          if (process.env.AUTH_DEBUG === "true") {
+            console.log(
+              "세션 업데이트로 rememberMe 설정:",
+              extendedToken.rememberMe,
+            );
+          }
         }
       }
 
@@ -187,7 +194,9 @@ export default {
           extendedToken.accessTokenExpires &&
           now >= extendedToken.accessTokenExpires
         ) {
-          console.log("기억하기 미설정 - 토큰 만료");
+          if (process.env.AUTH_DEBUG === "true") {
+            console.log("기억하기 미설정 - 토큰 만료");
+          }
           return {
             ...extendedToken,
             error: "AccessTokenExpired",
@@ -212,7 +221,9 @@ export default {
         !extendedToken.refreshTokenExpires ||
         now >= extendedToken.refreshTokenExpires
       ) {
-        console.log("리프레시 토큰 만료");
+        if (process.env.AUTH_DEBUG === "true") {
+          console.log("리프레시 토큰 만료");
+        }
         return {
           ...extendedToken,
           error: "RefreshAccessTokenError",
@@ -222,10 +233,14 @@ export default {
       // 액세스 토큰 갱신 시도
       try {
         const refreshedToken = await refreshAccessToken(extendedToken);
-        console.log("토큰 갱신 성공");
+        if (process.env.AUTH_DEBUG === "true") {
+          console.log("토큰 갱신 성공");
+        }
         return refreshedToken;
       } catch (error) {
-        console.error("토큰 갱신 실패:", error);
+        if (process.env.AUTH_DEBUG === "true") {
+          console.error("토큰 갱신 실패:", error);
+        }
         return {
           ...extendedToken,
           error: "RefreshAccessTokenError",
