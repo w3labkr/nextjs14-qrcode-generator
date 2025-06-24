@@ -45,6 +45,7 @@ export default function QrCodePage() {
     getCurrentSettings,
     getDownloadFilename,
     getHighResDownloadFilename,
+    activeTemplateId,
   } = useQrCodeGenerator();
 
   // QR 데이터 변경을 debounce 처리
@@ -112,6 +113,7 @@ export default function QrCodePage() {
               <TemplateManager
                 currentSettings={getCurrentSettings(qrData)}
                 onLoadTemplate={handleLoadTemplate}
+                activeTemplateId={activeTemplateId || undefined}
               />
             )}
           </div>

@@ -110,5 +110,8 @@ export function useQrCodeGenerator() {
     getDownloadFilename: () => getDownloadFilename(qrCodeSettings.format),
     getHighResDownloadFilename: () =>
       getHighResDownloadFilename(qrCodeSettings.format),
+
+    // Template
+    activeTemplateId: template.activeTemplateId,
   };
 }

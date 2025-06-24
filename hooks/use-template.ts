@@ -18,12 +18,16 @@ export function useTemplate({
   const { data: session } = useSession();
   const [templateApplied, setTemplateApplied] = useState(false);
   const [defaultTemplateLoaded, setDefaultTemplateLoaded] = useState(false);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const isInitializing = useRef(false);
 
   const handleLoadTemplate = useCallback(
-    async (settings: QrCodeOptions) => {
+    async (settings: QrCodeOptions, templateId?: string) => {
       loadSettings(settings);
       setTemplateApplied(true);
+      if (templateId) {
+        setActiveTemplateId(templateId);
+      }
     },
     [loadSettings],
   );
@@ -47,7 +51,7 @@ export function useTemplate({
           const defaultTemplate = await getDefaultTemplate();
           if (defaultTemplate) {
             const settings = JSON.parse(defaultTemplate.settings);
-            await handleLoadTemplate(settings);
+            await handleLoadTemplate(settings, defaultTemplate.id);
             setDefaultTemplateLoaded(true);
             toast.success(
               `기본 템플릿 "${defaultTemplate.name}"이 적용되었습니다.`,
@@ -69,11 +73,13 @@ export function useTemplate({
 
   useEffect(() => {
     const savedSettings = localStorage.getItem("qr-template-settings");
+    const savedTemplateId = localStorage.getItem("qr-active-template-id");
     if (savedSettings && !isEditMode) {
       try {
         const settings = JSON.parse(savedSettings);
-        handleLoadTemplate(settings);
+        handleLoadTemplate(settings, savedTemplateId || undefined);
         localStorage.removeItem("qr-template-settings");
+        localStorage.removeItem("qr-active-template-id");
         toast.success("템플릿이 적용되었습니다!");
       } catch (error) {
         console.error("템플릿 설정 로드 오류:", error);
@@ -86,5 +92,7 @@ export function useTemplate({
     defaultTemplateLoaded,
     handleLoadTemplate,
     setTemplateApplied,
+    activeTemplateId,
+    setActiveTemplateId,
   };
 }

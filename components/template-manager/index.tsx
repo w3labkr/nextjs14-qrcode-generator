@@ -19,18 +19,28 @@ import LoadingSkeleton from "./loading-skeleton";
 
 interface TemplateManagerProps {
   currentSettings: QrCodeOptions;
-  onLoadTemplate: (settings: QrCodeOptions) => void;
+  onLoadTemplate: (settings: QrCodeOptions, templateId?: string) => void;
+  activeTemplateId?: string;
 }
 
 export default function TemplateManager({
   currentSettings,
   onLoadTemplate,
+  activeTemplateId: propActiveTemplateId,
 }: TemplateManagerProps) {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(
+    propActiveTemplateId || null,
+  );
+
+  // prop이 변경될 때 로컬 상태 업데이트
+  useEffect(() => {
+    setActiveTemplateId(propActiveTemplateId || null);
+  }, [propActiveTemplateId]);
 
   const loadTemplates = async (showErrorToast = true) => {
     try {
@@ -75,6 +85,11 @@ export default function TemplateManager({
   const closeEditDialog = () => {
     setEditDialogOpen(false);
     setEditingTemplate(null);
+  };
+
+  const handleLoadTemplate = (settings: QrCodeOptions, templateId: string) => {
+    onLoadTemplate(settings, templateId);
+    setActiveTemplateId(templateId);
   };
 
   if (loading) {
@@ -133,9 +148,10 @@ export default function TemplateManager({
       <CardContent>
         <TemplateList
           templates={templates}
-          onLoadTemplate={onLoadTemplate}
+          onLoadTemplate={handleLoadTemplate}
           onEditTemplate={openEditDialog}
           onTemplateUpdate={() => loadTemplates(true)}
+          activeTemplateId={activeTemplateId || undefined}
         />
       </CardContent>
 

@@ -10,9 +10,10 @@ import { Template } from "@/types/data-manager";
 
 interface TemplateListProps {
   templates: Template[];
-  onLoadTemplate: (settings: QrCodeOptions) => void;
+  onLoadTemplate: (settings: QrCodeOptions, templateId: string) => void;
   onEditTemplate: (template: Template) => void;
   onTemplateUpdate: () => void;
+  activeTemplateId?: string;
 }
 
 export default function TemplateList({
@@ -20,6 +21,7 @@ export default function TemplateList({
   onLoadTemplate,
   onEditTemplate,
   onTemplateUpdate,
+  activeTemplateId,
 }: TemplateListProps) {
   const handleDeleteTemplate = async (templateId: string) => {
     if (!confirm("정말로 이 템플릿을 삭제하시겠습니까?")) {
@@ -39,7 +41,7 @@ export default function TemplateList({
   const handleLoadTemplate = (template: Template) => {
     try {
       const settings = JSON.parse(template.settings) as QrCodeOptions;
-      onLoadTemplate(settings);
+      onLoadTemplate(settings, template.id);
       toast.success(`"${template.name}" 템플릿이 적용되었습니다!`);
     } catch (error) {
       console.error("템플릿 로드 오류:", error);
@@ -75,66 +77,75 @@ export default function TemplateList({
 
   return (
     <div className="space-y-2">
-      {templates.map((template) => (
-        <div
-          key={template.id}
-          className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
-        >
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{template.name}</span>
-                {template.isDefault && (
-                  <Badge variant="secondary" className="text-xs">
-                    기본
-                  </Badge>
-                )}
+      {templates.map((template) => {
+        const isActive = activeTemplateId === template.id;
+        return (
+          <div
+            key={template.id}
+            className={`flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 ${
+              isActive
+                ? "border-blue-500 bg-blue-50/50 shadow-sm"
+                : "border-gray-200"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{template.name}</span>
+                  {template.isDefault && (
+                    <Badge variant="secondary" className="text-xs">
+                      기본
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(template.updatedAt).toLocaleDateString("ko-KR")}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {new Date(template.updatedAt).toLocaleDateString("ko-KR")}
-              </p>
+            </div>
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleToggleDefault(template)}
+                title={
+                  template.isDefault
+                    ? "기본 템플릿 해제"
+                    : "기본 템플릿으로 설정"
+                }
+              >
+                {template.isDefault ? (
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                ) : (
+                  <StarOff className="h-4 w-4 text-gray-400" />
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleLoadTemplate(template)}
+              >
+                적용
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onEditTemplate(template)}
+              >
+                편집
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-500"
+                onClick={() => handleDeleteTemplate(template.id)}
+              >
+                삭제
+              </Button>
             </div>
           </div>
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => handleToggleDefault(template)}
-              title={
-                template.isDefault ? "기본 템플릿 해제" : "기본 템플릿으로 설정"
-              }
-            >
-              {template.isDefault ? (
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              ) : (
-                <StarOff className="h-4 w-4 text-gray-400" />
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleLoadTemplate(template)}
-            >
-              적용
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onEditTemplate(template)}
-            >
-              편집
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-red-500"
-              onClick={() => handleDeleteTemplate(template.id)}
-            >
-              삭제
-            </Button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

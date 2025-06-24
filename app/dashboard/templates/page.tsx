@@ -4,8 +4,9 @@ import { QrCodeOptions } from "@/app/actions/qr-code";
 import TemplateManager from "@/components/template-manager";
 
 export default function TemplatesPage() {
-  const handleLoadTemplate = (settings: QrCodeOptions) => {
+  const handleLoadTemplate = (settings: QrCodeOptions, templateId: string) => {
     localStorage.setItem("qr-template-settings", JSON.stringify(settings));
+    localStorage.setItem("qr-active-template-id", templateId);
     window.location.href = "/qrcode";
   };
 
