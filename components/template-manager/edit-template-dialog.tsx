@@ -66,7 +66,7 @@ export default function EditTemplateDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>템플릿 편집</DialogTitle>
+          <DialogTitle>템플릿 수정</DialogTitle>
           <DialogDescription>
             템플릿 이름과 설정을 변경할 수 있습니다.
           </DialogDescription>

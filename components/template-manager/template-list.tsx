@@ -84,7 +84,7 @@ export default function TemplateList({
                     onEditTemplate(template);
                   }}
                 >
-                  편집
+                  수정
                 </Button>
                 <Button
                   size="sm"
