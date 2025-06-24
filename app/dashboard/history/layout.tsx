@@ -1,6 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { UserNav } from "@/components/user-nav";
 import { NewQrCodeButton } from "@/components/new-qr-code-button";
-import Link from "next/link";
+import { COPYRIGHT_TEXT } from "@/lib/constants";
 
 interface HistoryLayoutProps {
   children: React.ReactNode;
@@ -36,6 +38,9 @@ export default function HistoryLayout({ children }: HistoryLayoutProps) {
               />
             ))}
           </div>
+        </div>
+        <div className="mt-auto pt-16 text-center text-sm text-muted-foreground">
+          {COPYRIGHT_TEXT}
         </div>
       </div>
     );
@@ -62,6 +67,9 @@ export default function HistoryLayout({ children }: HistoryLayoutProps) {
               </Button>
             </CardContent>
           </Card>
+          <div className="mt-auto pt-16 text-center text-sm text-muted-foreground">
+            {COPYRIGHT_TEXT}
+          </div>
         </div>
       </div>
     );
@@ -83,6 +91,9 @@ export default function HistoryLayout({ children }: HistoryLayoutProps) {
           </div>
         </div>
         {children}
+        <div className="mt-auto pt-16 text-center text-sm text-muted-foreground">
+          {COPYRIGHT_TEXT}
+        </div>
       </div>
     </div>
   );

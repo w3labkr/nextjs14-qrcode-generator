@@ -14,6 +14,20 @@ import TemplateManager from "@/components/template-manager";
 import { useQrCodeGenerator } from "@/hooks/use-qr-code-generator";
 import { COPYRIGHT_TEXT } from "@/lib/constants";
 
+export default function QrCodePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      <QrCodePageContent />
+    </Suspense>
+  );
+}
+
 function QrCodePageContent() {
   const { data: session } = useSession();
   const {
@@ -111,19 +125,5 @@ function QrCodePageContent() {
         {COPYRIGHT_TEXT}
       </footer>
     </main>
-  );
-}
-
-export default function QrCodePage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      }
-    >
-      <QrCodePageContent />
-    </Suspense>
   );
 }

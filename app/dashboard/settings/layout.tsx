@@ -1,6 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserNav } from "@/components/user-nav";
-import Link from "next/link";
+import { COPYRIGHT_TEXT } from "@/lib/constants";
 
 interface SettingsLayoutProps {
   children: React.ReactNode;
@@ -34,6 +36,9 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
                 className="h-32 bg-gray-200 animate-pulse rounded-lg"
               />
             ))}
+          </div>
+          <div className="mt-auto pt-16 text-center text-sm text-muted-foreground">
+            {COPYRIGHT_TEXT}
           </div>
         </div>
       </div>
@@ -61,6 +66,9 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
               </Button>
             </CardContent>
           </Card>
+          <div className="mt-auto pt-16 text-center text-sm text-muted-foreground">
+            {COPYRIGHT_TEXT}
+          </div>
         </div>
       </div>
     );
@@ -79,6 +87,9 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
           <UserNav />
         </div>
         {children}
+        <div className="mt-auto pt-16 text-center text-sm text-muted-foreground">
+          {COPYRIGHT_TEXT}
+        </div>
       </div>
     </div>
   );
