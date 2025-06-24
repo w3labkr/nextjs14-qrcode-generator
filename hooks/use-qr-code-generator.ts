@@ -112,6 +112,7 @@ export function useQrCodeGenerator() {
     qrData,
     setQrData,
     activeTab,
+    setActiveTab,
     qrCode: qrCodeGeneration.qrCode,
     highResQrCode: qrCodeGeneration.highResQrCode,
     isLoading: qrCodeGeneration.isLoading,

@@ -29,7 +29,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/qrcode">
+            <Link href="/qrcode/url">
               <Button size="lg" className="w-full sm:w-auto">
                 QR 코드 생성하기
               </Button>

@@ -198,7 +198,37 @@ export default function QrCodeHistoryPage() {
       return;
     }
 
-    const editUrl = `/qrcode?edit=${qrCode.id}&type=${qrCode.type.toLowerCase()}`;
+    // QR 코드 타입에 따라 적절한 페이지로 라우팅
+    const qrType = qrCode.type.toLowerCase();
+    let editUrl: string;
+
+    switch (qrType) {
+      case "url":
+        editUrl = `/qrcode/url?edit=${qrCode.id}`;
+        break;
+      case "text":
+        editUrl = `/qrcode/text?edit=${qrCode.id}`;
+        break;
+      case "wifi":
+        editUrl = `/qrcode/wifi?edit=${qrCode.id}`;
+        break;
+      case "email":
+        editUrl = `/qrcode/email?edit=${qrCode.id}`;
+        break;
+      case "sms":
+        editUrl = `/qrcode/sms?edit=${qrCode.id}`;
+        break;
+      case "vcard":
+        editUrl = `/qrcode/vcard?edit=${qrCode.id}`;
+        break;
+      case "location":
+        editUrl = `/qrcode/location?edit=${qrCode.id}`;
+        break;
+      default:
+        // 알 수 없는 타입의 경우 기본 페이지로
+        editUrl = `/qrcode/url?edit=${qrCode.id}&type=${qrType}`;
+    }
+
     router.push(editUrl);
   };
 

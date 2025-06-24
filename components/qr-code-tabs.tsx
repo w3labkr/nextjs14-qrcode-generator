@@ -2,13 +2,13 @@
 
 import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UrlForm } from "@/components/qr-code-forms/url-form";
-import { TextForm } from "@/components/qr-code-forms/text-form";
-import { WifiForm } from "@/components/qr-code-forms/wifi-form";
-import { EmailForm } from "@/components/qr-code-forms/email-form";
-import { SmsForm } from "@/components/qr-code-forms/sms-form";
-import { VCardForm } from "@/components/qr-code-forms/vcard-form";
-import { LocationForm } from "@/components/qr-code-forms/location-form";
+import { UrlForm } from "@/app/qrcode/url/url-form";
+import { TextForm } from "@/app/qrcode/text/text-form";
+import { WifiForm } from "@/app/qrcode/wifi/wifi-form";
+import { EmailForm } from "@/app/qrcode/email/email-form";
+import { SmsForm } from "@/app/qrcode/sms/sms-form";
+import { VCardForm } from "@/app/qrcode/vcard/vcard-form";
+import { LocationForm } from "@/app/qrcode/location/location-form";
 import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 interface QrCodeTabsProps {
