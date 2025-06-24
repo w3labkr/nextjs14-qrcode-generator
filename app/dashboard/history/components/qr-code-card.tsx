@@ -152,7 +152,7 @@ export function QrCodeCard({
 
         {/* 액션 버튼들 */}
         <TooltipProvider>
-          <div className="flex items-center justify-between pt-2 border-t">
+          <div className="flex items-center justify-between pt-4 border-t">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
