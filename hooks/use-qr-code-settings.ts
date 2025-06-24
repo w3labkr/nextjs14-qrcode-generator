@@ -29,6 +29,16 @@ export function useQrCodeSettings() {
     if (settings.logo) setLogo(settings.logo);
     if (settings.width) setWidth(settings.width);
 
+    // 포맷 설정도 로드
+    if (
+      settings.type &&
+      (settings.type === "png" ||
+        settings.type === "svg" ||
+        settings.type === "jpg")
+    ) {
+      setFormat(settings.type as QrCodeFormat);
+    }
+
     if (settings.frameOptions) {
       setFrameOptions({
         type: (settings.frameOptions.type as any) || "none",

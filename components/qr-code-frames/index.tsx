@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -43,6 +43,11 @@ export function QrCodeFramesSelector({
   onChange,
 }: QrCodeFramesSelectorProps) {
   const [frameType, setFrameType] = useState<FrameType>(value.type || "none");
+
+  // value.type이 변경될 때 로컬 상태 동기화
+  useEffect(() => {
+    setFrameType(value.type || "none");
+  }, [value.type]);
 
   const handleFrameTypeChange = (type: FrameType) => {
     setFrameType(type);
