@@ -50,7 +50,7 @@ export function RecentQrCodes({ recentQrCodes }: RecentQrCodesProps) {
               아직 생성한 QR 코드가 없습니다.
             </p>
             <Button asChild>
-              <Link href="/">첫 QR 코드 만들기</Link>
+              <Link href="/qrcode">첫 QR 코드 만들기</Link>
             </Button>
           </div>
         ) : (

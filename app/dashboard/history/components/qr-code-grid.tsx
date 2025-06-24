@@ -70,7 +70,7 @@ export function QrCodeGrid({
               ? "검색 조건에 맞는 QR 코드가 없습니다."
               : "아직 생성한 QR 코드가 없습니다."}
           </p>
-          <Link href="/">
+          <Link href="/qrcode">
             <Button>첫 번째 QR 코드 만들기</Button>
           </Link>
         </CardContent>
