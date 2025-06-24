@@ -34,12 +34,14 @@ export function UserNav() {
     return (
       <div className="flex gap-2">
         <Button
-          onClick={() => signIn()}
+          asChild
           size="icon"
           variant="ghost"
           className="hover:bg-transparent"
         >
-          <Cloud className="!size-8" />
+          <Link href="/auth/signin">
+            <Cloud className="!size-8" />
+          </Link>
         </Button>
       </div>
     );
