@@ -145,5 +145,8 @@ export function useQrCodeGenerator() {
 
     // Template
     activeTemplateId: template.activeTemplateId,
+
+    // Edit Mode
+    editMode,
   };
 }

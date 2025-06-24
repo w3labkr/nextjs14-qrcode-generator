@@ -67,7 +67,7 @@ export function useEditMode({
         toast.error("QR 코드를 불러오는데 실패했습니다.");
       }
     },
-    [setQrData, loadSettings, loadedQrCodeId],
+    [setQrData, loadSettings, loadedQrCodeId, loadFromQrContent],
   );
 
   const exitEditMode = useCallback(() => {
@@ -94,10 +94,14 @@ export function useEditMode({
     const editId = searchParams.get("edit");
     const editType = searchParams.get("type");
 
-    if (editId && editType) {
+    if (editId) {
       setIsEditMode(true);
       setEditingQrCodeId(editId);
-      setActiveTab(editType);
+
+      // editType이 있으면 설정, 없으면 QR 코드 로드 후 설정
+      if (editType) {
+        setActiveTab(editType);
+      }
 
       // 이미 로드한 QR 코드가 아닌 경우에만 로드
       if (loadedQrCodeId !== editId) {
@@ -109,7 +113,7 @@ export function useEditMode({
       setEditingQrCodeId(null);
       setLoadedQrCodeId(null);
     }
-  }, [searchParams, setActiveTab, loadQrCodeForEdit]);
+  }, [searchParams, setActiveTab, loadQrCodeForEdit, loadedQrCodeId]);
 
   return {
     isEditMode,

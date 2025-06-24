@@ -12,7 +12,7 @@ import { useQrCodeGenerator } from "@/hooks/use-qr-code-generator";
 import { useQrFormStore } from "@/hooks/use-qr-form-store";
 
 export default function TextQrCodePage() {
-  const { setQrData, setActiveTab } = useQrCodeGenerator();
+  const { setQrData, setActiveTab, editMode } = useQrCodeGenerator();
   const {
     getQrContent,
     formData,
@@ -25,11 +25,20 @@ export default function TextQrCodePage() {
     [setQrData],
   );
 
-  // 컴포넌트 마운트 시 활성 탭 설정
+  // 컴포넌트 마운트 시 활성 탭 설정 (편집모드가 아닐 때만)
   useEffect(() => {
-    setActiveTab("text");
-    setStoreActiveTab("text");
-  }, [setActiveTab, setStoreActiveTab]);
+    if (!editMode.isEditMode) {
+      setActiveTab("text");
+      setStoreActiveTab("text");
+    }
+  }, [setActiveTab, setStoreActiveTab, editMode.isEditMode]);
+
+  // 편집모드에서 데이터가 로드된 후 QR 데이터 업데이트
+  useEffect(() => {
+    if (editMode.isEditMode && formData.text) {
+      debouncedSetQrData(formData.text);
+    }
+  }, [editMode.isEditMode, formData.text, debouncedSetQrData]);
 
   // 각 폼에서 데이터가 변경될 때 QR 데이터 업데이트
   const handleFormDataChange = () => {
