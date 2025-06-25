@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -21,6 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 const urlSchema = z.object({
   url: z.string().url("올바른 URL을 입력해주세요").min(1, "URL을 입력해주세요"),
 });
@@ -40,41 +39,6 @@ export function UrlForm({ value, onChange }: UrlFormProps) {
     },
     mode: "onChange",
   });
-
-  // debounce된 onChange 함수 생성
-  const debouncedOnChange = useMemo(
-    () =>
-      debounce((url: string) => {
-        onChange(url);
-      }, 300),
-    [onChange],
-  );
-
-  // 컴포넌트 언마운트 시 debounce 취소
-  useEffect(() => {
-    return () => {
-      debouncedOnChange.cancel();
-    };
-  }, [debouncedOnChange]);
-
-  // value prop이 변경될 때 폼 값 업데이트
-  useEffect(() => {
-    if (value !== form.getValues("url")) {
-      form.setValue("url", value);
-    }
-  }, [value, form]);
-
-  useEffect(() => {
-    const subscription = form.watch((data) => {
-      if (data.url && form.formState.isValid) {
-        debouncedOnChange(data.url);
-      }
-    });
-    return () => {
-      subscription.unsubscribe();
-      debouncedOnChange.cancel();
-    };
-  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>

@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -48,35 +46,6 @@ export function LocationForm({ onChange }: LocationFormProps) {
     const encodedAddress = encodeURIComponent(data.address);
     return `https://maps.google.com/?q=${encodedAddress}`;
   };
-
-  // debounce된 onChange 함수 생성
-  const debouncedOnChange = useMemo(
-    () =>
-      debounce((data: LocationFormData) => {
-        const content = generateLocationContent(data);
-        onChange(content);
-      }, 300),
-    [onChange],
-  );
-
-  // 컴포넌트 언마운트 시 debounce 취소
-  useEffect(() => {
-    return () => {
-      debouncedOnChange.cancel();
-    };
-  }, [debouncedOnChange]);
-
-  useEffect(() => {
-    const subscription = form.watch((data) => {
-      if (data.address && form.formState.isValid) {
-        debouncedOnChange(data as LocationFormData);
-      }
-    });
-    return () => {
-      subscription.unsubscribe();
-      debouncedOnChange.cancel();
-    };
-  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>

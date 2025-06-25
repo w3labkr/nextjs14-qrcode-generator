@@ -4,7 +4,6 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -65,35 +64,6 @@ export function WifiForm({ onWifiDataChange }: WifiFormProps) {
 
     return `WIFI:T:${data.encryption};S:${escapedSsid};P:${escapedPassword};H:${hiddenFlag};;`;
   };
-
-  // debounce된 onChange 함수 생성
-  const debouncedOnChange = useMemo(
-    () =>
-      debounce((data: WifiFormData) => {
-        const content = generateWifiContent(data);
-        onWifiDataChange(content);
-      }, 300),
-    [onWifiDataChange],
-  );
-
-  // 컴포넌트 언마운트 시 debounce 취소
-  useEffect(() => {
-    return () => {
-      debouncedOnChange.cancel();
-    };
-  }, [debouncedOnChange]);
-
-  useEffect(() => {
-    const subscription = form.watch((data) => {
-      if (data.ssid && form.formState.isValid) {
-        debouncedOnChange(data as WifiFormData);
-      }
-    });
-    return () => {
-      subscription.unsubscribe();
-      debouncedOnChange.cancel();
-    };
-  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>
