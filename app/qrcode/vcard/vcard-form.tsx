@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -94,21 +92,6 @@ export function VCardForm({ onChange }: VCardFormProps) {
 
     return vcard.join("\n");
   };
-
-  useEffect(() => {
-    const subscription = form.watch((data) => {
-      if (
-        (data.firstName || data.lastName || data.phone || data.email) &&
-        form.formState.isValid
-      ) {
-        const content = generateVCardContent(data as VCardFormData);
-        onChange(content);
-      }
-    });
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [form.watch, form.formState.isValid, onChange]);
 
   return (
     <Card>

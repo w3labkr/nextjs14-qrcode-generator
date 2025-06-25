@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { debounce } from "lodash";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
@@ -41,41 +39,6 @@ export function TextForm({ value, onChange }: TextFormProps) {
     },
     mode: "onChange",
   });
-
-  // debounce된 onChange 함수 생성
-  const debouncedOnChange = useMemo(
-    () =>
-      debounce((text: string) => {
-        onChange(text);
-      }, 300),
-    [onChange],
-  );
-
-  // 컴포넌트 언마운트 시 debounce 취소
-  useEffect(() => {
-    return () => {
-      debouncedOnChange.cancel();
-    };
-  }, [debouncedOnChange]);
-
-  // value prop이 변경될 때 폼 값 업데이트
-  useEffect(() => {
-    if (value !== form.getValues("text")) {
-      form.setValue("text", value);
-    }
-  }, [value, form]);
-
-  useEffect(() => {
-    const subscription = form.watch((data) => {
-      if (data.text !== undefined && form.formState.isValid) {
-        debouncedOnChange(data.text);
-      }
-    });
-    return () => {
-      subscription.unsubscribe();
-      debouncedOnChange.cancel();
-    };
-  }, [form.watch, debouncedOnChange, form.formState.isValid]);
 
   return (
     <Card>
