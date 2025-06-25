@@ -5,8 +5,6 @@ export const dynamic = "force-dynamic";
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 
-import { GithubBadge } from "@/components/github-badge";
-import { UserNav } from "@/components/user-nav";
 import { QrCodeSettingsPanel } from "@/components/qr-code-settings-panel";
 import { QrCodePreviewCard } from "@/components/qr-code-preview-card";
 import TemplateManager from "@/components/template-manager";
@@ -57,73 +55,48 @@ export default function EmailQrCodePage() {
   };
 
   return (
-    <>
-      <div className="w-full max-w-4xl mx-auto">
-        {/* 상단 네비게이션 */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">QR 코드 생성기</h1>
-            </div>
-            <UserNav />
-          </div>
-        </div>
+    <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
+      <div className="flex flex-col gap-4 flex-1">
+        <QrCodeTypeNavigation />
+        <EmailForm onChange={handleFormDataChange} />
 
-        {/* 메인 제목과 설명 */}
-        <div className="flex flex-col gap-4 mb-8">
-          <h2 className="text-4xl font-bold">이메일 QR 코드 생성기</h2>
-          <p className="text-muted-foreground">
-            이메일 정보를 QR 코드로 변환하여 쉽게 공유하세요.
-          </p>
-        </div>
+        <QrCodeSettingsPanel
+          foregroundColor={foregroundColor}
+          setForegroundColor={setForegroundColor}
+          backgroundColor={backgroundColor}
+          setBackgroundColor={setBackgroundColor}
+          logo={logo}
+          onLogoUpload={handleLogoUpload}
+          frameOptions={frameOptions}
+          setFrameOptions={setFrameOptions}
+        />
+
+        {session?.user && (
+          <TemplateManager
+            currentSettings={getCurrentSettings(qrData)}
+            onLoadTemplate={handleLoadTemplate}
+            activeTemplateId={activeTemplateId || undefined}
+          />
+        )}
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <GithubBadge />
-        <div className="z-10 w-full max-w-4xl items-start justify-between font-mono text-sm lg:flex gap-8">
-          <div className="flex flex-col gap-4 flex-1">
-            <QrCodeTypeNavigation />
-            <EmailForm onChange={handleFormDataChange} />
-
-            <QrCodeSettingsPanel
-              foregroundColor={foregroundColor}
-              setForegroundColor={setForegroundColor}
-              backgroundColor={backgroundColor}
-              setBackgroundColor={setBackgroundColor}
-              logo={logo}
-              onLogoUpload={handleLogoUpload}
-              frameOptions={frameOptions}
-              setFrameOptions={setFrameOptions}
-            />
-
-            {session?.user && (
-              <TemplateManager
-                currentSettings={getCurrentSettings(qrData)}
-                onLoadTemplate={handleLoadTemplate}
-                activeTemplateId={activeTemplateId || undefined}
-              />
-            )}
-          </div>
-
-          <div className="flex-1 mt-8 lg:mt-0">
-            <QrCodePreviewCard
-              qrCode={qrCode}
-              frameOptions={frameOptions}
-              format={format}
-              onFormatChange={handleFormatChange}
-              onGenerate={handleGenerate}
-              onGenerateHighRes={handleGenerateHighRes}
-              isLoading={isLoading}
-              isGeneratingHighRes={isGeneratingHighRes}
-              qrData={qrData}
-              highResQrCode={highResQrCode}
-              getDownloadFilename={getDownloadFilename}
-              getHighResDownloadFilename={getHighResDownloadFilename}
-              currentSettings={getCurrentSettings(qrData)}
-            />
-          </div>
-        </div>
+      <div className="flex-1 mt-8 lg:mt-0">
+        <QrCodePreviewCard
+          qrCode={qrCode}
+          frameOptions={frameOptions}
+          format={format}
+          onFormatChange={handleFormatChange}
+          onGenerate={handleGenerate}
+          onGenerateHighRes={handleGenerateHighRes}
+          isLoading={isLoading}
+          isGeneratingHighRes={isGeneratingHighRes}
+          qrData={qrData}
+          highResQrCode={highResQrCode}
+          getDownloadFilename={getDownloadFilename}
+          getHighResDownloadFilename={getHighResDownloadFilename}
+          currentSettings={getCurrentSettings(qrData)}
+        />
       </div>
-    </>
+    </div>
   );
 }
