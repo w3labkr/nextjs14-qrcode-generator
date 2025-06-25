@@ -39,11 +39,6 @@ export interface QrCodeState {
   isGeneratingHighRes: boolean;
 }
 
-export interface EditModeState {
-  isEditMode: boolean;
-  editingQrCodeId: string | null;
-}
-
 export interface TemplateState {
   templateApplied: boolean;
   defaultTemplateLoaded: boolean;
@@ -58,7 +53,7 @@ export interface QrCodePreviewCardProps {
   onGenerateHighRes: () => void;
   isLoading: boolean;
   isGeneratingHighRes: boolean;
-  isEditMode: boolean;
+  isEditMode?: boolean;
   qrData: string;
   highResQrCode: string;
   getDownloadFilename: () => string;

@@ -21,13 +21,11 @@ export default function VCardQrCodePage() {
     qrData,
     setQrData,
     setActiveTab,
-    editMode,
     // State
     qrCode,
     highResQrCode,
     isLoading,
     isGeneratingHighRes,
-    isEditMode,
     foregroundColor,
     setForegroundColor,
     backgroundColor,
@@ -49,18 +47,16 @@ export default function VCardQrCodePage() {
     activeTemplateId,
   } = useQrCodeGenerator();
 
-  // QR 데이터 변경을 debounce 처리
+  // 디바운스된 setQrData 생성 (lodash debounce 사용)
   const debouncedSetQrData = useMemo(
-    () => debounce(setQrData, 200),
+    () => debounce((data: string) => setQrData(data), 300),
     [setQrData],
   );
 
-  // 컴포넌트 마운트 시 활성 탭 설정 (편집모드가 아닐 때만)
+  // 컴포넌트 마운트 시 활성 탭 설정
   useEffect(() => {
-    if (!editMode.isEditMode) {
-      setActiveTab("vcard");
-    }
-  }, [setActiveTab, editMode.isEditMode]);
+    setActiveTab("vcard");
+  }, [setActiveTab]);
 
   // 각 폼에서 데이터가 변경될 때 QR 데이터 업데이트
   const handleFormDataChange = (data: string) => {
@@ -74,14 +70,7 @@ export default function VCardQrCodePage() {
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">
-                {isEditMode ? "QR 코드 편집" : "QR 코드 생성기"}
-              </h1>
-              {isEditMode && (
-                <span className="text-sm text-muted-foreground bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  편집 모드
-                </span>
-              )}
+              <h1 className="text-2xl font-bold">QR 코드 생성기</h1>
             </div>
             <UserNav />
           </div>
@@ -91,7 +80,7 @@ export default function VCardQrCodePage() {
         <div className="flex flex-col gap-4 mb-8">
           <h2 className="text-4xl font-bold">명함 QR 코드 생성기</h2>
           <p className="text-muted-foreground">
-            연락처 정보를 QR 코드로 변환하여 쉽게 공유하세요.
+            명함 정보를 QR 코드로 변환하여 쉽게 공유하세요.
           </p>
         </div>
       </div>
@@ -133,7 +122,6 @@ export default function VCardQrCodePage() {
               onGenerateHighRes={handleGenerateHighRes}
               isLoading={isLoading}
               isGeneratingHighRes={isGeneratingHighRes}
-              isEditMode={isEditMode}
               qrData={qrData}
               highResQrCode={highResQrCode}
               getDownloadFilename={getDownloadFilename}

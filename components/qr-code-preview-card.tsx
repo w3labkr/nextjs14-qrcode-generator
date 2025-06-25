@@ -29,7 +29,7 @@ export function QrCodePreviewCard({
   onGenerateHighRes,
   isLoading,
   isGeneratingHighRes,
-  isEditMode,
+  isEditMode = false,
   qrData,
   highResQrCode,
   getDownloadFilename,

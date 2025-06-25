@@ -1,0 +1,72 @@
+"use client";
+
+export const dynamic = "force-dynamic";
+
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+
+import { GithubBadge } from "@/components/github-badge";
+import { UserNav } from "@/components/user-nav";
+import { QrCodeSettingsPanel } from "@/components/qr-code-settings-panel";
+import { QrCodePreviewCard } from "@/components/qr-code-preview-card";
+import TemplateManager from "@/components/template-manager";
+import { QrCodeTypeNavigation } from "@/components/qr-code-type-navigation";
+import { WifiForm } from "@/app/qrcode/wifi/wifi-form";
+import { useQrCodeGenerator } from "@/hooks/use-qr-code-generator";
+
+export default function WifiQrCodePage() {
+  const { data: session } = useSession();
+  const {
+    qrData,
+    setQrData,
+    setActiveTab,
+    
+    // State
+    qrCode,
+    highResQrCode,
+    isLoading,
+    isGeneratingHighRes,
+    
+    foregroundColor,
+    setForegroundColor,
+    backgroundColor,
+    setBackgroundColor,
+    logo,
+    format,
+    frameOptions,
+    setFrameOptions,
+
+    // Handlers
+    handleLogoUpload,
+    handleGenerate,
+    handleFormatChange,
+    handleGenerateHighRes,
+    handleLoadTemplate,
+    getCurrentSettings,
+    getDownloadFilename,
+    getHighResDownloadFilename,
+    activeTemplateId,
+  } = useQrCodeGenerator();
+
+  // 컴포넌트 마운트 시 활성 탭 설정 (편집모드가 아닐 때만)
+  useEffect(() => {
+    
+      setActiveTab("wifi");
+    }
+  }, [setActiveTab]);
+
+  // 각 폼에서 데이터가 변경될 때 QR 데이터 업데이트
+  const handleFormDataChange = (data: string) => {
+    setQrData(data);
+  };
+
+  return (
+    <>
+      <div className="w-full max-w-4xl mx-auto">
+        {/* 상단 네비게이션 */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">
+                QR 코드 생성기
+              </h1>

@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useQrCodeSettings } from "@/hooks/use-qr-code-settings";
-import { useEditMode } from "@/hooks/use-edit-mode";
 import {
   useInitialEffects,
   getDownloadFilename,
@@ -16,15 +15,8 @@ export function useQrCodeGenerator() {
   const [activeTab, setActiveTab] = useState("url");
   const qrCodeSettings = useQrCodeSettings();
 
-  const editMode = useEditMode({
-    setQrData,
-    setActiveTab,
-    loadSettings: qrCodeSettings.loadSettings,
-  });
-
   const template = useTemplate({
     loadSettings: qrCodeSettings.loadSettings,
-    isEditMode: editMode.isEditMode,
   });
 
   const qrCodeGeneration = useQrCodeGeneration({
@@ -33,9 +25,6 @@ export function useQrCodeGenerator() {
     format: qrCodeSettings.format,
     getCurrentSettings: qrCodeSettings.getCurrentSettings,
     frameOptions: qrCodeSettings.frameOptions,
-    isEditMode: editMode.isEditMode,
-    editingQrCodeId: editMode.editingQrCodeId,
-    exitEditMode: editMode.exitEditMode,
     defaultTemplateLoaded: template.defaultTemplateLoaded,
     templateApplied: template.templateApplied,
   });
@@ -44,13 +33,10 @@ export function useQrCodeGenerator() {
     (value: string) => {
       setActiveTab(value);
       qrCodeGeneration.setHighResQrCode("");
-
-      if (!editMode.isEditMode) {
-        // 탭 변경 시 qrData를 초기화
-        setQrData("");
-      }
+      // 탭 변경 시 qrData를 초기화
+      setQrData("");
     },
-    [editMode.isEditMode, qrCodeGeneration.setHighResQrCode],
+    [qrCodeGeneration.setHighResQrCode],
   );
 
   const handleFormatChange = useCallback(
@@ -81,7 +67,6 @@ export function useQrCodeGenerator() {
     highResQrCode: qrCodeGeneration.highResQrCode,
     isLoading: qrCodeGeneration.isLoading,
     isGeneratingHighRes: qrCodeGeneration.isGeneratingHighRes,
-    isEditMode: editMode.isEditMode,
 
     // Settings
     foregroundColor: qrCodeSettings.foregroundColor,
@@ -109,8 +94,5 @@ export function useQrCodeGenerator() {
 
     // Template
     activeTemplateId: template.activeTemplateId,
-
-    // Edit Mode
-    editMode,
   };
 }

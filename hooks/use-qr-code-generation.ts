@@ -18,9 +18,9 @@ interface UseQrCodeGenerationProps {
   format: QrCodeFormat;
   getCurrentSettings: (qrData: string) => QrCodeOptions;
   frameOptions: FrameOptions;
-  isEditMode: boolean;
-  editingQrCodeId: string | null;
-  exitEditMode: () => void;
+  isEditMode?: boolean;
+  editingQrCodeId?: string | null;
+  exitEditMode?: () => void;
   defaultTemplateLoaded: boolean;
   templateApplied: boolean;
 }
@@ -31,8 +31,8 @@ export function useQrCodeGeneration({
   format,
   getCurrentSettings,
   frameOptions,
-  isEditMode,
-  editingQrCodeId,
+  isEditMode = false,
+  editingQrCodeId = null,
   exitEditMode,
   defaultTemplateLoaded,
   templateApplied,
@@ -90,7 +90,7 @@ export function useQrCodeGeneration({
             toast.success("QR 코드가 성공적으로 업데이트되었습니다!");
             // 업데이트 완료 후 히스토리로 돌아가기
             setTimeout(() => {
-              exitEditMode();
+              exitEditMode?.();
             }, 1000);
           } else {
             toast.error(

@@ -21,13 +21,11 @@ export default function UrlQrCodePage() {
     qrData,
     setQrData,
     setActiveTab,
-    editMode,
     // State
     qrCode,
     highResQrCode,
     isLoading,
     isGeneratingHighRes,
-    isEditMode,
     foregroundColor,
     setForegroundColor,
     backgroundColor,
@@ -55,12 +53,10 @@ export default function UrlQrCodePage() {
     [setQrData],
   );
 
-  // 컴포넌트 마운트 시 활성 탭 설정 (편집모드가 아닐 때만)
+  // 컴포넌트 마운트 시 활성 탭 설정
   useEffect(() => {
-    if (!editMode.isEditMode) {
-      setActiveTab("url");
-    }
-  }, [setActiveTab, editMode.isEditMode]);
+    setActiveTab("url");
+  }, [setActiveTab]);
 
   // 각 폼에서 데이터가 변경될 때 QR 데이터 업데이트
   const handleFormDataChange = (data: string) => {
@@ -74,14 +70,7 @@ export default function UrlQrCodePage() {
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">
-                {isEditMode ? "QR 코드 편집" : "QR 코드 생성기"}
-              </h1>
-              {isEditMode && (
-                <span className="text-sm text-muted-foreground bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  편집 모드
-                </span>
-              )}
+              <h1 className="text-2xl font-bold">QR 코드 생성기</h1>
             </div>
             <UserNav />
           </div>
@@ -133,7 +122,6 @@ export default function UrlQrCodePage() {
               onGenerateHighRes={handleGenerateHighRes}
               isLoading={isLoading}
               isGeneratingHighRes={isGeneratingHighRes}
-              isEditMode={isEditMode}
               qrData={qrData}
               highResQrCode={highResQrCode}
               getDownloadFilename={getDownloadFilename}

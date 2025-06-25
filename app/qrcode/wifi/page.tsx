@@ -20,13 +20,11 @@ export default function WifiQrCodePage() {
     qrData,
     setQrData,
     setActiveTab,
-    editMode,
     // State
     qrCode,
     highResQrCode,
     isLoading,
     isGeneratingHighRes,
-    isEditMode,
     foregroundColor,
     setForegroundColor,
     backgroundColor,
@@ -48,12 +46,10 @@ export default function WifiQrCodePage() {
     activeTemplateId,
   } = useQrCodeGenerator();
 
-  // 컴포넌트 마운트 시 활성 탭 설정 (편집모드가 아닐 때만)
+  // 컴포넌트 마운트 시 활성 탭 설정
   useEffect(() => {
-    if (!editMode.isEditMode) {
-      setActiveTab("wifi");
-    }
-  }, [setActiveTab, editMode.isEditMode]);
+    setActiveTab("wifi");
+  }, [setActiveTab]);
 
   // 각 폼에서 데이터가 변경될 때 QR 데이터 업데이트
   const handleFormDataChange = (data: string) => {
@@ -67,14 +63,7 @@ export default function WifiQrCodePage() {
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">
-                {isEditMode ? "QR 코드 편집" : "QR 코드 생성기"}
-              </h1>
-              {isEditMode && (
-                <span className="text-sm text-muted-foreground bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  편집 모드
-                </span>
-              )}
+              <h1 className="text-2xl font-bold">QR 코드 생성기</h1>
             </div>
             <UserNav />
           </div>
@@ -84,7 +73,7 @@ export default function WifiQrCodePage() {
         <div className="flex flex-col gap-4 mb-8">
           <h2 className="text-4xl font-bold">Wi-Fi QR 코드 생성기</h2>
           <p className="text-muted-foreground">
-            Wi-Fi 네트워크 정보를 QR 코드로 변환하여 쉽게 공유하세요.
+            Wi-Fi 정보를 QR 코드로 변환하여 쉽게 공유하세요.
           </p>
         </div>
       </div>
@@ -126,7 +115,6 @@ export default function WifiQrCodePage() {
               onGenerateHighRes={handleGenerateHighRes}
               isLoading={isLoading}
               isGeneratingHighRes={isGeneratingHighRes}
-              isEditMode={isEditMode}
               qrData={qrData}
               highResQrCode={highResQrCode}
               getDownloadFilename={getDownloadFilename}
