@@ -1,6 +1,7 @@
 import { UserNav } from "@/components/user-nav";
 import { GithubBadge } from "@/components/github-badge";
 import { COPYRIGHT_TEXT } from "@/lib/constants";
+import { appConfig } from "@/config/app";
 
 export default function QrCodeLayout2({
   children,
@@ -14,7 +15,12 @@ export default function QrCodeLayout2({
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">QR 코드 생성기</h1>
+              <h1 className="text-2xl font-bold">
+                QR 코드 생성기
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {appConfig.version}
+                </span>
+              </h1>
             </div>
             <UserNav />
           </div>
