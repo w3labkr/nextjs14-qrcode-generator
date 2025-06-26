@@ -204,29 +204,29 @@ export default function QrCodeHistoryPage() {
 
     switch (qrType) {
       case "url":
-        editUrl = `/qrcode/url?edit=${qrCode.id}&type=url`;
+        editUrl = `/qrcode?edit=${qrCode.id}&type=url`;
         break;
-      case "text":
-        editUrl = `/qrcode/text?edit=${qrCode.id}&type=text`;
+      case "textarea":
+        editUrl = `/qrcode?edit=${qrCode.id}&type=textarea`;
         break;
       case "wifi":
-        editUrl = `/qrcode/wifi?edit=${qrCode.id}&type=wifi`;
+        editUrl = `/qrcode?edit=${qrCode.id}&type=wifi`;
         break;
       case "email":
-        editUrl = `/qrcode/email?edit=${qrCode.id}&type=email`;
+        editUrl = `/qrcode?edit=${qrCode.id}&type=email`;
         break;
       case "sms":
-        editUrl = `/qrcode/sms?edit=${qrCode.id}&type=sms`;
+        editUrl = `/qrcode?edit=${qrCode.id}&type=sms`;
         break;
       case "vcard":
-        editUrl = `/qrcode/vcard?edit=${qrCode.id}&type=vcard`;
+        editUrl = `/qrcode?edit=${qrCode.id}&type=vcard`;
         break;
       case "location":
-        editUrl = `/qrcode/location?edit=${qrCode.id}&type=location`;
+        editUrl = `/qrcode?edit=${qrCode.id}&type=location`;
         break;
       default:
         // 알 수 없는 타입의 경우 기본 페이지로
-        editUrl = `/qrcode/url?edit=${qrCode.id}&type=${qrType}`;
+        editUrl = `/qrcode?edit=${qrCode.id}&type=${qrType}`;
     }
 
     router.push(editUrl);

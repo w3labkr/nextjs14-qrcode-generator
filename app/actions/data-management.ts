@@ -212,7 +212,7 @@ export async function importUserData(data: ImportData) {
 
           const validTypes = [
             "URL",
-            "TEXT",
+            "TEXTAREA",
             "WIFI",
             "EMAIL",
             "SMS",
@@ -328,7 +328,7 @@ export async function importQrCodes(qrCodes: any[], replaceExisting = false) {
 
         const validTypes = [
           "URL",
-          "TEXT",
+          "TEXTAREA",
           "WIFI",
           "EMAIL",
           "SMS",

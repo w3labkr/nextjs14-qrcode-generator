@@ -150,7 +150,7 @@ export const handleLocationQr = ({
 export const getQrHandler = (qrType: string) => {
   const handlers = {
     url: handleUrlQr,
-    text: handleTextQr,
+    textarea: handleTextQr,
     wifi: handleWifiQr,
     email: handleEmailQr,
     sms: handleSmsQr,

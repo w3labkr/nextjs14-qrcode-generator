@@ -2,7 +2,7 @@ export type QrCodeFormat = "png" | "svg" | "jpg";
 
 export type QrCodeType =
   | "URL"
-  | "TEXT"
+  | "TEXTAREA"
   | "WIFI"
   | "EMAIL"
   | "SMS"

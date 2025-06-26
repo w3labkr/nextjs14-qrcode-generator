@@ -26,7 +26,15 @@ import { CardStyle } from "./card-style";
 import { CardPreview } from "./card-preview";
 
 export const qrcodeFormSchema = z.object({
-  qrType: z.enum(["url", "text", "wifi", "email", "sms", "vcard", "location"]),
+  qrType: z.enum([
+    "url",
+    "textarea",
+    "wifi",
+    "email",
+    "sms",
+    "vcard",
+    "location",
+  ]),
   url: z.string().url("올바른 URL 형식을 입력해주세요."),
   textarea: z
     .string()
@@ -130,7 +138,7 @@ export function QrcodeForm() {
           >
             <TabsList className="flex flex-row justify-start items-center overflow-x-auto">
               <TabsTrigger value="url">URL</TabsTrigger>
-              <TabsTrigger value="text">텍스트</TabsTrigger>
+              <TabsTrigger value="textarea">텍스트</TabsTrigger>
               <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
               <TabsTrigger value="email">이메일</TabsTrigger>
               <TabsTrigger value="sms">SMS</TabsTrigger>
@@ -141,7 +149,7 @@ export function QrcodeForm() {
               <CardUrl />
               <CardStyle />
             </TabsContent>
-            <TabsContent value="text" className="space-y-4">
+            <TabsContent value="textarea" className="space-y-4">
               <CardTextarea />
               <CardStyle />
             </TabsContent>

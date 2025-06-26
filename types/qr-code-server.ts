@@ -14,7 +14,7 @@ export type FileType = "png" | "jpg" | "svg" | "webp";
 
 export type QrCodeType =
   | "URL"
-  | "TEXT"
+  | "TEXTAREA"
   | "WIFI"
   | "EMAIL"
   | "SMS"

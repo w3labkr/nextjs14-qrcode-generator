@@ -3,6 +3,21 @@ export const GITHUB_REPO_URL =
 
 export const COPYRIGHT_TEXT = "© 2025 W3LabKr. All rights reserved.";
 
+// QR 코드 타입 관련 상수
+export const QR_CODE_TYPES = {
+  url: { value: "url", label: "URL", displayName: "웹사이트" },
+  textarea: { value: "textarea", label: "TEXTAREA", displayName: "텍스트" },
+  wifi: { value: "wifi", label: "WIFI", displayName: "Wi-Fi" },
+  email: { value: "email", label: "EMAIL", displayName: "이메일" },
+  sms: { value: "sms", label: "SMS", displayName: "문자" },
+  vcard: { value: "vcard", label: "VCARD", displayName: "연락처" },
+  location: { value: "location", label: "LOCATION", displayName: "지도" },
+} as const;
+
+export const QR_CODE_TYPE_VALUES = Object.keys(QR_CODE_TYPES) as Array<
+  keyof typeof QR_CODE_TYPES
+>;
+
 // 토큰 관련 상수
 export const TOKEN_CONFIG = {
   // 토큰 갱신 시점 (만료 10분 전)

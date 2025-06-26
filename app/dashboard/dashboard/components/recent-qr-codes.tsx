@@ -20,7 +20,7 @@ export function RecentQrCodes({ recentQrCodes }: RecentQrCodesProps) {
   const getTypeLabel = (type: string) => {
     const typeMap: { [key: string]: string } = {
       URL: "웹사이트",
-      TEXT: "텍스트",
+      TEXTAREA: "텍스트",
       WIFI: "Wi-Fi",
       EMAIL: "이메일",
       SMS: "문자",

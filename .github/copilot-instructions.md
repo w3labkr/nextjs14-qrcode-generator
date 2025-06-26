@@ -143,7 +143,7 @@ If Copilot's suggestions do not meet expectations, actively modify and provide f
 * **File Count**: 165+ TypeScript/JavaScript files
 * **Package Count**: 101 npm packages (75 dependencies + 26 devDependencies)
 * **UI Components**: 46 shadcn/ui components
-* **QR Code Types**: 7 supported types (URL, TEXT, WIFI, EMAIL, SMS, VCARD, LOCATION)
+* **QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
 * **Authentication**: NextAuth.js v5 (beta.28) with Google OAuth
 * **Database**: Supabase PostgreSQL with Prisma ORM v6.10.1
 * **Security**: Row Level Security (RLS) implemented

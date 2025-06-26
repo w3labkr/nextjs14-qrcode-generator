@@ -565,7 +565,7 @@ model QrTemplate {
 
 * **코드베이스 규모**: 170+ 파일, 99개 npm 패키지
 * **컴포넌트 시스템**: 47개의 재사용 가능한 UI 컴포넌트
-* **QR 코드 유형**: 7가지 유형 완전 지원 (URL, TEXT, WIFI, EMAIL, SMS, VCARD, LOCATION)
+* **QR 코드 유형**: 7가지 유형 완전 지원 (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
 * **사용자 인증**: NextAuth.js v5 기반 Google OAuth 완전 구현
 * **데이터베이스**: Supabase PostgreSQL + Prisma ORM 완전 연동
 * **보안**: Row Level Security (RLS) 전체 테이블 적용

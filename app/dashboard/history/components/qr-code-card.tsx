@@ -1,5 +1,6 @@
 "use client";
 
+import { QR_CODE_TYPES } from "@/lib/constants";
 import {
   Card,
   CardContent,
@@ -20,10 +21,10 @@ import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-const QR_CODE_TYPES = {
+const QR_CODE_TYPE_MAP = {
   URL: { label: "웹사이트", color: "bg-blue-100 text-blue-800" },
-  TEXT: { label: "텍스트", color: "bg-gray-100 text-gray-800" },
-  WIFI: { label: "Wi-Fi", color: "bg-green-100 text-green-800" },
+  TEXTAREA: { label: "텍스트", color: "bg-green-100 text-green-800" },
+  WIFI: { label: "Wi-Fi", color: "bg-orange-100 text-orange-800" },
   EMAIL: { label: "이메일", color: "bg-purple-100 text-purple-800" },
   SMS: { label: "문자메시지", color: "bg-yellow-100 text-yellow-800" },
   VCARD: { label: "연락처", color: "bg-pink-100 text-pink-800" },
@@ -123,12 +124,14 @@ export function QrCodeCard({
                 <Badge
                   variant="secondary"
                   className={
-                    QR_CODE_TYPES[qrCode.type as keyof typeof QR_CODE_TYPES]
-                      ?.color
+                    QR_CODE_TYPE_MAP[
+                      qrCode.type as keyof typeof QR_CODE_TYPE_MAP
+                    ]?.color
                   }
                 >
-                  {QR_CODE_TYPES[qrCode.type as keyof typeof QR_CODE_TYPES]
-                    ?.label || qrCode.type}
+                  {QR_CODE_TYPE_MAP[
+                    qrCode.type as keyof typeof QR_CODE_TYPE_MAP
+                  ]?.label || qrCode.type}
                 </Badge>
               </div>
               <div className="flex items-center space-x-1">

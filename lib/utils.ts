@@ -41,7 +41,7 @@ export async function ensureUserExists() {
 
 export function inferQrCodeType(content: string): QrCodeType {
   if (!content || typeof content !== "string") {
-    return "TEXT";
+    return "TEXTAREA";
   }
 
   const trimmedContent = content.trim().toLowerCase();
@@ -73,5 +73,5 @@ export function inferQrCodeType(content: string): QrCodeType {
     return "LOCATION";
   }
 
-  return "TEXT";
+  return "TEXTAREA";
 }
