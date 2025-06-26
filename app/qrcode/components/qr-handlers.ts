@@ -160,3 +160,60 @@ export const getQrHandler = (qrType: string) => {
 
   return handlers[qrType as keyof typeof handlers] || handleUrlQr;
 };
+
+// QR 코드 다운로드 함수
+export const handleQrDownload = (qrCodeUrl: string, format: string): void => {
+  if (!qrCodeUrl) return;
+
+  // SVG 파일의 경우 특별한 처리가 필요
+  if (format === "svg") {
+    // SVG 데이터가 base64 data URL 형태인지 확인
+    if (qrCodeUrl.startsWith("data:image/svg+xml;base64,")) {
+      // base64 디코딩하여 SVG 문자열로 변환 후 Blob 생성
+      const base64Data = qrCodeUrl.split(",")[1];
+      const svgString = atob(base64Data);
+      const svgBlob = new Blob([svgString], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      downloadFile(svgUrl, format, true);
+    } else if (qrCodeUrl.startsWith("data:image/svg+xml")) {
+      // 일반 SVG data URL인 경우 그대로 사용
+      downloadFile(qrCodeUrl, format);
+    } else {
+      // SVG 문자열인 경우 Blob으로 변환
+      const svgBlob = new Blob([qrCodeUrl], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      downloadFile(svgUrl, format, true);
+    }
+  } else {
+    // PNG, JPG의 경우 기본 처리
+    downloadFile(qrCodeUrl, format);
+  }
+};
+
+const downloadFile = (
+  url: string,
+  format: string,
+  isObjectUrl = false,
+): void => {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `qrcode_${Date.now()}.${format}`;
+
+  // SVG의 경우 적절한 속성 설정
+  if (format === "svg") {
+    link.setAttribute("type", "image/svg+xml");
+  }
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  // Object URL인 경우 메모리 해제
+  if (isObjectUrl) {
+    URL.revokeObjectURL(url);
+  }
+};

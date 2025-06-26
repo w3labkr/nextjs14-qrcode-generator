@@ -2,11 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
-import { z } from "zod";
+import * as z from "zod";
 import { QrcodeFormValues, qrcodeFormSchema } from "./qrcode-form";
 import { useState, useCallback } from "react";
 import { generateQrCode } from "@/app/actions/qr-code-generator";
-import { getQrHandler } from "./qr-handlers";
+import { getQrHandler, handleQrDownload } from "./qr-handlers";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -80,6 +80,19 @@ export function CardPreview() {
           dark: values.styleForegroundColor || "#000000",
           light: values.styleBackgroundColor || "#ffffff",
         },
+        logo: values.styleLogo || undefined,
+        frameOptions:
+          values.styleBorderStyle !== "none"
+            ? {
+                type: values.styleBorderStyle || "simple",
+                text: values.styleText || "",
+                textColor: values.styleTextColor || "#000000",
+                backgroundColor: values.styleBackgroundColor || "#ffffff",
+                borderColor: values.styleBorderColor || "#000000",
+                borderWidth: 2,
+                borderRadius: values.styleBorderStyle === "rounded" ? 8 : 0,
+              }
+            : undefined,
       });
 
       setQrCodeUrl(qrResult);
@@ -95,13 +108,7 @@ export function CardPreview() {
   // 다운로드 함수
   const handleDownload = useCallback(() => {
     if (!qrCodeUrl) return;
-
-    const link = document.createElement("a");
-    link.href = qrCodeUrl;
-    link.download = `qrcode_${Date.now()}.${exportFormat || "png"}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    handleQrDownload(qrCodeUrl, exportFormat || "png");
   }, [qrCodeUrl, exportFormat]);
 
   return (

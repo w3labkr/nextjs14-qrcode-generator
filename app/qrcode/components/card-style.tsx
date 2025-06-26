@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
-import { z } from "zod";
+import * as z from "zod";
 import { QrcodeFormValues } from "./qrcode-form";
 
 import {
@@ -32,6 +32,9 @@ import {
 } from "@/components/ui/form";
 
 export function CardStyle() {
+  const { control } = useFormContext<QrcodeFormValues>();
+  const borderStyle = useWatch({ control, name: "styleBorderStyle" });
+
   return (
     <Card>
       <CardHeader>
@@ -47,8 +50,12 @@ export function CardStyle() {
         <FieldStyleLogo />
         <FieldStyleBorderStyle />
         <FieldStyleText />
-        <FieldStyleBorderColor />
-        <FieldStyleTextColor />
+        {borderStyle && borderStyle !== "none" && (
+          <>
+            <FieldStyleBorderColor />
+            <FieldStyleTextColor />
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -99,7 +106,32 @@ function FieldStyleBackgroundColor() {
 }
 
 function FieldStyleLogo() {
-  const { control } = useFormContext<QrcodeFormValues>();
+  const { control, setValue } = useFormContext<QrcodeFormValues>();
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // 파일 크기 제한 (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("파일 크기는 5MB 이하여야 합니다.");
+        return;
+      }
+
+      // 이미지 파일만 허용
+      if (!file.type.startsWith("image/")) {
+        alert("이미지 파일만 업로드할 수 있습니다.");
+        return;
+      }
+
+      // 파일을 base64로 변환
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setValue("styleLogo", result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <FormField
@@ -111,8 +143,17 @@ function FieldStyleLogo() {
             로고 <span className="text-xs">(선택)</span>
           </FormLabel>
           <FormControl>
-            <Input type="file" {...field} />
+            <Input type="file" accept="image/*" onChange={handleFileChange} />
           </FormControl>
+          {field.value && (
+            <div className="mt-2">
+              <img
+                src={field.value}
+                alt="로고 미리보기"
+                className="max-w-16 max-h-16 object-contain border rounded"
+              />
+            </div>
+          )}
           <FormMessage />
         </FormItem>
       )}

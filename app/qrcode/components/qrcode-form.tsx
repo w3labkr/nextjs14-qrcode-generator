@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
-import { z } from "zod";
+import * as z from "zod";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -52,10 +52,10 @@ export const qrcodeFormSchema = z.object({
   location: z.string().min(1, "주소를 입력해주세요."),
   vcardFullName: z.string().min(1, "이름을 입력해주세요."),
   vcardPhoneNumber: z.string(),
-  vcardEmail: z.string(),
+  vcardEmail: z.string().email("올바른 이메일 형식을 입력해주세요.").optional(),
   vcardOrganization: z.string(),
   vcardJobTitle: z.string(),
-  vcardWebsite: z.string(),
+  vcardWebsite: z.string().url("올바른 URL 형식을 입력해주세요.").optional(),
   vcardAddress: z.string(),
   styleForegroundColor: z.string(),
   styleBackgroundColor: z.string(),

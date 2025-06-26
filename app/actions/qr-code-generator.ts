@@ -1,13 +1,24 @@
 "use server";
 
 import QRCode from "qrcode";
+import { createCanvas, loadImage } from "canvas";
 import { auth } from "@/auth";
 import { withAuthenticatedRLSTransaction, withoutRLS } from "@/lib/rls-utils";
 import { QrCodeOptions, QrCodeGenerationOptions } from "@/types/qr-code-server";
 
 export async function generateQrCode(options: QrCodeOptions): Promise<string> {
   try {
-    const { text, type = "png", width = 400, margin = 0, color } = options;
+    const {
+      text,
+      type = "png",
+      width = 400,
+      margin = 0,
+      color,
+      logo,
+      dotsOptions,
+      cornersSquareOptions,
+      frameOptions,
+    } = options;
 
     if (!text || text.trim().length === 0) {
       throw new Error("QR code text cannot be empty.");
@@ -17,6 +28,12 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
       throw new Error("QR code width must be between 100px and 4096px.");
     }
 
+    // 고급 스타일링이 필요한 경우 qr-code-styling 사용
+    if (logo || dotsOptions || cornersSquareOptions || frameOptions) {
+      return await generateStyledQrCode(options);
+    }
+
+    // 기본 QR 코드 생성 (기존 로직)
     const qrcodeOptions: QRCode.QRCodeRenderersOptions = {
       errorCorrectionLevel: "H",
       width,
@@ -97,6 +114,82 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
   }
 }
 
+async function generateStyledQrCode(options: QrCodeOptions): Promise<string> {
+  const {
+    text,
+    type = "png",
+    width = 400,
+    margin = 0,
+    color,
+    logo,
+    dotsOptions,
+    cornersSquareOptions,
+    frameOptions,
+  } = options;
+
+  // 기본 QR 코드 생성
+  const qrcodeOptions: QRCode.QRCodeRenderersOptions = {
+    errorCorrectionLevel: "H",
+    width,
+    margin,
+    color: {
+      dark: color?.dark || "#000000",
+      light: color?.light || "#ffffff",
+    },
+  };
+
+  // Canvas로 QR 코드 생성
+  const canvas = createCanvas(width, width);
+  const ctx = canvas.getContext("2d");
+
+  // QR 코드를 Canvas에 그리기
+  await QRCode.toCanvas(canvas, text, qrcodeOptions);
+
+  // 로고 추가
+  if (logo) {
+    try {
+      const logoImage = await loadImage(logo);
+      const logoSize = width * 0.2; // QR 코드 크기의 20%
+      const logoX = (width - logoSize) / 2;
+      const logoY = (width - logoSize) / 2;
+
+      // 로고 배경 (흰색 원형)
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(width / 2, width / 2, logoSize / 2 + 5, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // 로고 그리기
+      ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+    } catch (error) {
+      console.warn("로고 로드 실패:", error);
+    }
+  }
+
+  let resultCanvas = canvas;
+
+  // 프레임과 텍스트 추가
+  if (frameOptions && (frameOptions.text || frameOptions.type !== "none")) {
+    resultCanvas = await addFrameAndTextToCanvas(canvas, frameOptions, width);
+  }
+
+  // 타입에 따른 결과 반환
+  if (type === "svg") {
+    // Canvas를 PNG로 변환 후 SVG로 임베드
+    const pngDataUrl = resultCanvas.toDataURL("image/png");
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${resultCanvas.width}" height="${resultCanvas.height}">
+      <image href="${pngDataUrl}" width="${resultCanvas.width}" height="${resultCanvas.height}"/>
+    </svg>`;
+    return `data:image/svg+xml;base64,${Buffer.from(svgContent).toString("base64")}`;
+  }
+
+  if (type === "jpg") {
+    return resultCanvas.toDataURL("image/jpeg", 0.9);
+  }
+
+  return resultCanvas.toDataURL("image/png");
+}
+
 export async function generateHighResQrCode(
   options: QrCodeOptions,
 ): Promise<string> {
@@ -172,5 +265,168 @@ export async function generateAndSaveQrCode(options: QrCodeGenerationOptions) {
   } catch (error) {
     console.error("Error generating and saving QR code:", error);
     throw error;
+  }
+}
+
+async function addFrameAndText(
+  qrCodeDataUrl: string,
+  frameOptions: NonNullable<QrCodeOptions["frameOptions"]>,
+  width: number,
+): Promise<string> {
+  try {
+    // Base64 데이터에서 이미지 로드
+    const qrImage = await loadImage(qrCodeDataUrl);
+
+    // 프레임을 위한 여백 계산
+    const textHeight = frameOptions.text ? 40 : 0;
+    const borderWidth = frameOptions.borderWidth || 2;
+    const padding = 20;
+
+    // 캔버스 크기 계산
+    const canvasWidth = width + (borderWidth + padding) * 2;
+    const canvasHeight = width + (borderWidth + padding) * 2 + textHeight;
+
+    const canvas = createCanvas(canvasWidth, canvasHeight);
+    const ctx = canvas.getContext("2d");
+
+    // 배경색 설정
+    ctx.fillStyle = frameOptions.backgroundColor || "#ffffff";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // 테두리 그리기
+    if (frameOptions.type !== "none" && borderWidth > 0) {
+      ctx.strokeStyle = frameOptions.borderColor || "#000000";
+      ctx.lineWidth = borderWidth;
+
+      if (frameOptions.type === "rounded") {
+        const radius = frameOptions.borderRadius || 8;
+        const x = borderWidth / 2;
+        const y = borderWidth / 2;
+        const w = canvasWidth - borderWidth;
+        const h = canvasHeight - borderWidth;
+
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + w - radius, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        ctx.lineTo(x + w, y + h - radius);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        ctx.lineTo(x + radius, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.stroke();
+      } else {
+        ctx.strokeRect(
+          borderWidth / 2,
+          borderWidth / 2,
+          canvasWidth - borderWidth,
+          canvasHeight - borderWidth,
+        );
+      }
+    }
+
+    // QR 코드 그리기
+    const qrX = borderWidth + padding;
+    const qrY = borderWidth + padding;
+    ctx.drawImage(qrImage, qrX, qrY, width, width);
+
+    // 텍스트 그리기
+    if (frameOptions.text) {
+      ctx.fillStyle = frameOptions.textColor || "#000000";
+      ctx.font = "16px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const textX = canvasWidth / 2;
+      const textY = width + borderWidth + padding * 2 + textHeight / 2;
+      ctx.fillText(frameOptions.text, textX, textY);
+    }
+
+    return canvas.toDataURL("image/png");
+  } catch (error) {
+    console.error("Error adding frame and text:", error);
+    // 프레임 추가에 실패하면 원본 QR 코드 반환
+    return qrCodeDataUrl;
+  }
+}
+
+async function addFrameAndTextToCanvas(
+  qrCanvas: any,
+  frameOptions: NonNullable<QrCodeOptions["frameOptions"]>,
+  qrWidth: number,
+): Promise<any> {
+  try {
+    // 프레임을 위한 여백 계산
+    const textHeight = frameOptions.text ? 40 : 0;
+    const borderWidth = frameOptions.borderWidth || 2;
+    const padding = 20;
+
+    // 캔버스 크기 계산
+    const canvasWidth = qrWidth + (borderWidth + padding) * 2;
+    const canvasHeight = qrWidth + (borderWidth + padding) * 2 + textHeight;
+
+    const canvas = createCanvas(canvasWidth, canvasHeight);
+    const ctx = canvas.getContext("2d");
+
+    // 배경색 설정
+    ctx.fillStyle = frameOptions.backgroundColor || "#ffffff";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // 테두리 그리기
+    if (frameOptions.type !== "none" && borderWidth > 0) {
+      ctx.strokeStyle = frameOptions.borderColor || "#000000";
+      ctx.lineWidth = borderWidth;
+
+      if (frameOptions.type === "rounded") {
+        const radius = frameOptions.borderRadius || 8;
+        const x = borderWidth / 2;
+        const y = borderWidth / 2;
+        const w = canvasWidth - borderWidth;
+        const h = canvasHeight - borderWidth;
+
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + w - radius, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+        ctx.lineTo(x + w, y + h - radius);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+        ctx.lineTo(x + radius, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.stroke();
+      } else {
+        ctx.strokeRect(
+          borderWidth / 2,
+          borderWidth / 2,
+          canvasWidth - borderWidth,
+          canvasHeight - borderWidth,
+        );
+      }
+    }
+
+    // QR 코드 그리기
+    const qrX = borderWidth + padding;
+    const qrY = borderWidth + padding;
+    ctx.drawImage(qrCanvas, qrX, qrY, qrWidth, qrWidth);
+
+    // 텍스트 그리기
+    if (frameOptions.text) {
+      ctx.fillStyle = frameOptions.textColor || "#000000";
+      ctx.font = "16px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const textX = canvasWidth / 2;
+      const textY = qrWidth + borderWidth + padding * 2 + textHeight / 2;
+      ctx.fillText(frameOptions.text, textX, textY);
+    }
+
+    return canvas;
+  } catch (error) {
+    console.error("Error adding frame and text to canvas:", error);
+    // 프레임 추가에 실패하면 원본 QR 코드 캔버스 반환
+    return qrCanvas;
   }
 }

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
-import { z } from "zod";
+import * as z from "zod";
 import { QrcodeFormValues } from "./qrcode-form";
 
 import { Input } from "@/components/ui/input";
