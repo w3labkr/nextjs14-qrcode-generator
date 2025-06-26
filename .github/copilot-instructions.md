@@ -62,6 +62,7 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 
 * **React Hook Form**: Use `react-hook-form` with `@hookform/resolvers` for form validation.
 * **Validation**: Use `zod` for schema validation and type safety.
+* **Field Validation**: Always use Zod schema for form field data validation to ensure type safety and consistent validation rules across the application.
 
 ### Zustand
 

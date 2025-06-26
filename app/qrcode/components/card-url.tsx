@@ -25,8 +25,6 @@ import {
 } from "@/components/ui/form";
 
 export function CardUrl() {
-  const { control } = useFormContext<QrcodeFormValues>();
-
   return (
     <Card>
       <CardHeader>

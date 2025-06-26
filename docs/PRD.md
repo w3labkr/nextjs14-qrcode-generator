@@ -78,13 +78,8 @@ nextjs14-qrcode-generator/
 │   ├── user-nav.tsx             # 사용자 네비게이션
 │   └── user-profile.tsx         # 사용자 프로필
 ├── hooks/                       # 커스텀 훅 & 상태 관리
-│   ├── use-qr-code-generation.ts # QR 코드 생성 훅
-│   ├── use-qr-code-generator.ts # QR 코드 생성기 훅
-│   ├── use-qr-code-settings.ts  # QR 코드 설정 훅
-│   ├── use-qr-code-utils.ts     # QR 코드 유틸리티 훅
 │   ├── use-template.ts          # 템플릿 관리 훅
 │   ├── use-mobile.tsx           # 모바일 감지 훅
-│   ├── use-edit-mode.ts         # 편집 모드 훅
 │   └── use-token-refresh.ts     # 토큰 갱신 훅
 ├── lib/                         # 유틸리티 & 설정
 │   ├── prisma.ts               # Prisma 클라이언트
@@ -92,10 +87,6 @@ nextjs14-qrcode-generator/
 │   ├── constants.ts            # 상수 정의
 │   ├── auth-utils.ts           # 인증 관련 유틸리티
 │   ├── csv-utils.ts            # CSV 처리 유틸리티
-│   ├── download-utils.ts       # 다운로드 유틸리티
-│   ├── qr-download-utils.ts    # QR 다운로드 전용
-│   ├── svg-converter.ts        # SVG 변환
-│   ├── wifi-qr-validator.ts    # Wi-Fi QR 검증
 │   ├── rls-utils.ts            # RLS 유틸리티
 │   └── supabase/               # Supabase 설정
 ├── types/                       # TypeScript 타입 정의
@@ -440,15 +431,6 @@ model QrTemplate {
   * `DELETE /api/qrcodes/:id` - QR 코드 삭제
   * `POST /api/qrcodes/:id/favorite` - 즐겨찾기 토글
   * `GET /api/qrcodes/:id/download` - 고해상도 QR 코드 다운로드 (로그인 사용자 전용)
-
-* **템플릿 관리 API**:
-  * `GET /api/templates` - 사용자의 템플릿 목록 조회
-  * `POST /api/templates` - 새 템플릿 생성
-  * `PUT /api/templates/:id` - 템플릿 업데이트
-  * `DELETE /api/templates/:id` - 템플릿 삭제
-
-* **통계 API**:
-  * `GET /api/stats` - 사용자의 QR 코드 생성 통계
 
 ---
 

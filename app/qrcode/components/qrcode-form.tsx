@@ -25,8 +25,10 @@ import { CardLocation } from "./card-location";
 import { CardStyle } from "./card-style";
 import { CardPreview } from "./card-preview";
 
-const qrcodeFormSchema = z.object({
-  url: z.string(),
+export const qrcodeFormSchema = z.object({
+  url: z
+    .string()
+    .url("올바른 URL 형식을 입력해주세요. (예: https://example.com)"),
   textarea: z.string(),
   wifiSsid: z.string(),
   wifiPassword: z.string(),
@@ -58,7 +60,7 @@ const qrcodeFormSchema = z.object({
 export type QrcodeFormValues = z.infer<typeof qrcodeFormSchema>;
 
 const defaultValues: QrcodeFormValues = {
-  url: "",
+  url: "https://example.com",
   textarea: "",
   wifiSsid: "",
   wifiPassword: "",

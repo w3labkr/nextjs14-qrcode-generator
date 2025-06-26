@@ -3,7 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { z } from "zod";
-import { QrcodeFormValues } from "./qrcode-form";
+import { QrcodeFormValues, qrcodeFormSchema } from "./qrcode-form";
+import { useState, useCallback } from "react";
+import { generateQrCode } from "@/app/actions/qr-code-generator";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,28 +34,118 @@ import {
 } from "@/components/ui/form";
 
 export function CardPreview() {
-  const { control } = useFormContext<QrcodeFormValues>();
+  const { control, getValues } = useFormContext<QrcodeFormValues>();
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  // 내보내기 포맷만 실시간 감지 (다운로드용)
+  const exportFormat = useWatch({ control, name: "previewExportFormat" });
+
+  // QR 코드 생성 함수 (버튼 클릭시에만 실행)
+  const handleGenerateQrCode = useCallback(async () => {
+    const values = getValues();
+    const url = values.url;
+
+    if (!url || url.trim().length === 0) {
+      setError("URL을 입력해주세요.");
+      setQrCodeUrl("");
+      return;
+    }
+
+    // qrcodeFormSchema를 사용한 URL 유효성 검사
+    const urlValidation = qrcodeFormSchema.shape.url.safeParse(url);
+    if (!urlValidation.success) {
+      setError(urlValidation.error.errors[0].message);
+      setQrCodeUrl("");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const result = await generateQrCode({
+        text: url,
+        type: (values.previewExportFormat || "png") as "png" | "svg" | "jpg",
+        width: 256,
+        color: {
+          dark: values.styleForegroundColor || "#000000",
+          light: values.styleBackgroundColor || "#ffffff",
+        },
+      });
+
+      setQrCodeUrl(result);
+    } catch (err) {
+      console.error("QR 코드 생성 오류:", err);
+      setError("QR 코드 생성에 실패했습니다.");
+      setQrCodeUrl("");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getValues]);
+
+  // 다운로드 함수
+  const handleDownload = useCallback(() => {
+    if (!qrCodeUrl) return;
+
+    const link = document.createElement("a");
+    link.href = qrCodeUrl;
+    link.download = `qrcode_${Date.now()}.${exportFormat || "png"}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [qrCodeUrl, exportFormat]);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>QR 코드 미리보기</CardTitle>
         <CardDescription>
-          QR 코드는 다양한 정보를 담을 수 있습니다. 아래 버튼을 클릭하여 QR
-          코드를 생성하세요.
+          "QR 코드 저장" 버튼을 클릭하면 QR 코드가 생성됩니다.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
         <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-          <p className="text-muted-foreground">생성 버튼을 눌러주세요</p>
+          {isLoading ? (
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary">
+              &nbsp;
+            </div>
+          ) : error ? (
+            <div className="text-center text-sm text-red-500 p-4">
+              <p>{error}</p>
+            </div>
+          ) : qrCodeUrl ? (
+            <img
+              src={qrCodeUrl}
+              alt="Generated QR Code"
+              className="max-w-full max-h-full object-contain"
+            />
+          ) : (
+            <p className="text-muted-foreground text-center">
+              "QR 코드 저장" 버튼을 클릭하여
+              <br />
+              QR 코드를 생성하세요
+            </p>
+          )}
         </div>
-        <Button type="submit" className="w-full">
-          QR 코드 생성
+        <Button
+          type="button"
+          className="w-full"
+          disabled={isLoading}
+          onClick={handleGenerateQrCode}
+        >
+          {isLoading ? "생성 중..." : "QR 코드 생성"}
         </Button>
       </CardContent>
       <CardFooter className="flex gap-2">
         <FieldPreviewExportFormat />
-        <Button type="button" className="w-full" disabled>
+        <Button
+          type="button"
+          className="w-full"
+          disabled={!qrCodeUrl || isLoading}
+          onClick={handleDownload}
+        >
           다운로드
         </Button>
       </CardFooter>
