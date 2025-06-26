@@ -19,6 +19,7 @@ export interface FrameOptions {
   backgroundColor?: string;
   borderWidth?: number;
   borderRadius?: number;
+  fontSize?: number;
 }
 
 export interface QrCodeSettings {

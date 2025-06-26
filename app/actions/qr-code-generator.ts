@@ -333,13 +333,15 @@ async function addFrameAndText(
 
     // 텍스트 그리기
     if (frameOptions.text) {
+      const fontSize = frameOptions.fontSize || 16;
       ctx.fillStyle = frameOptions.textColor || "#000000";
-      ctx.font = "16px Arial, sans-serif";
+      ctx.font = `900 ${fontSize}px Arial, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
       const textX = canvasWidth / 2;
-      const textY = width + borderWidth + padding * 2 + textHeight / 2;
+      // 텍스트 위치를 적절한 위치로 조정
+      const textY = width + borderWidth + padding * 1.5 + textHeight / 2;
       ctx.fillText(frameOptions.text, textX, textY);
     }
 
@@ -413,13 +415,15 @@ async function addFrameAndTextToCanvas(
 
     // 텍스트 그리기
     if (frameOptions.text) {
+      const fontSize = frameOptions.fontSize || 16;
       ctx.fillStyle = frameOptions.textColor || "#000000";
-      ctx.font = "16px Arial, sans-serif";
+      ctx.font = `900 ${fontSize}px Arial, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
       const textX = canvasWidth / 2;
-      const textY = qrWidth + borderWidth + padding * 2 + textHeight / 2;
+      // 텍스트 위치를 적절한 위치로 조정
+      const textY = qrWidth + borderWidth + padding * 1.5 + textHeight / 2;
       ctx.fillText(frameOptions.text, textX, textY);
     }
 

@@ -89,8 +89,9 @@ export function CardPreview() {
                 textColor: values.styleTextColor || "#000000",
                 backgroundColor: values.styleBackgroundColor || "#ffffff",
                 borderColor: values.styleBorderColor || "#000000",
-                borderWidth: 2,
-                borderRadius: values.styleBorderStyle === "rounded" ? 8 : 0,
+                borderWidth: values.styleBorderWidth || 2,
+                borderRadius: values.styleBorderRadius || 8,
+                fontSize: values.styleFontSize || 16,
               }
             : undefined,
       });

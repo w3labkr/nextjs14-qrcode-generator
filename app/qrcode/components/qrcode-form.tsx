@@ -63,6 +63,9 @@ export const qrcodeFormSchema = z.object({
   styleText: z.string(),
   styleTextColor: z.string(),
   styleBorderColor: z.string(),
+  styleBorderRadius: z.number().min(0).max(100),
+  styleBorderWidth: z.number().min(1).max(20),
+  styleFontSize: z.number().min(8).max(48),
   styleLogo: z.string(),
   previewExportFormat: z.string(),
 });
@@ -93,9 +96,12 @@ const defaultValues: QrcodeFormValues = {
   styleForegroundColor: "#000000",
   styleBackgroundColor: "#ffffff",
   styleBorderStyle: "none", // none, simple, rounded, custom
-  styleText: "",
+  styleText: "스캔해주세요",
   styleTextColor: "#000000",
   styleBorderColor: "#000000",
+  styleBorderRadius: 16,
+  styleBorderWidth: 2,
+  styleFontSize: 16,
   styleLogo: "",
   previewExportFormat: "png", // jpg, png, svg
 };

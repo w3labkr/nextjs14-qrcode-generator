@@ -47,6 +47,7 @@ export interface QrCodeOptions {
     borderColor?: string;
     borderWidth?: number;
     borderRadius?: number;
+    fontSize?: number;
   };
 }
 
