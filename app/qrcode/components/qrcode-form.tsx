@@ -63,7 +63,7 @@ export const qrcodeFormSchema = z.object({
   styleText: z.string(),
   styleTextColor: z.string(),
   styleBorderColor: z.string(),
-  styleBorderRadius: z.number().min(0).max(100),
+  styleBorderRadius: z.number().min(0).max(50),
   styleBorderWidth: z.number().min(1).max(20),
   styleFontSize: z.number().min(8).max(48),
   styleLogo: z.string(),

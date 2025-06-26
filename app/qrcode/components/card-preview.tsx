@@ -37,7 +37,7 @@ import {
 export function CardPreview() {
   const { control, getValues, setError, clearErrors } =
     useFormContext<QrcodeFormValues>();
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [qrCode, setQrCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [generalError, setGeneralError] = useState<string>("");
 
@@ -58,13 +58,13 @@ export function CardPreview() {
 
     // 유효성 검사 오류가 있으면 중단
     if (result.hasError) {
-      setQrCodeUrl("");
+      setQrCode("");
       return;
     }
 
     if (!result.text || result.text.trim().length === 0) {
       setGeneralError("내용을 입력해주세요.");
-      setQrCodeUrl("");
+      setQrCode("");
       return;
     }
 
@@ -96,11 +96,11 @@ export function CardPreview() {
             : undefined,
       });
 
-      setQrCodeUrl(qrResult);
+      setQrCode(qrResult);
     } catch (err) {
       console.error("QR 코드 생성 오류:", err);
       setGeneralError("QR 코드 생성에 실패했습니다.");
-      setQrCodeUrl("");
+      setQrCode("");
     } finally {
       setIsLoading(false);
     }
@@ -108,9 +108,9 @@ export function CardPreview() {
 
   // 다운로드 함수
   const handleDownload = useCallback(() => {
-    if (!qrCodeUrl) return;
-    handleQrDownload(qrCodeUrl, exportFormat || "png");
-  }, [qrCodeUrl, exportFormat]);
+    if (!qrCode) return;
+    handleQrDownload(qrCode, exportFormat || "png");
+  }, [qrCode, exportFormat]);
 
   return (
     <Card>
@@ -130,9 +130,9 @@ export function CardPreview() {
             <div className="text-center text-sm text-red-500 p-4">
               <p>{generalError}</p>
             </div>
-          ) : qrCodeUrl ? (
+          ) : qrCode ? (
             <img
-              src={qrCodeUrl}
+              src={qrCode}
               alt="Generated QR Code"
               className="max-w-full max-h-full object-contain"
             />
@@ -158,7 +158,7 @@ export function CardPreview() {
         <Button
           type="button"
           className="w-full"
-          disabled={!qrCodeUrl || isLoading}
+          disabled={!qrCode || isLoading}
           onClick={handleDownload}
         >
           다운로드

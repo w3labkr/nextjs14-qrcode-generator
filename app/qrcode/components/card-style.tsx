@@ -365,7 +365,7 @@ function FieldStyleBorderRadius() {
               <Input
                 type="range"
                 min="0"
-                max="100"
+                max="50"
                 step="1"
                 value={field.value}
                 onChange={(e) => field.onChange(Number(e.target.value))}
