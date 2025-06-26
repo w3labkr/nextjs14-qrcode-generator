@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -32,8 +33,18 @@ import {
 } from "@/components/ui/form";
 
 export function CardStyle() {
-  const { control } = useFormContext<QrcodeFormValues>();
+  const { control, setValue } = useFormContext<QrcodeFormValues>();
   const borderStyle = useWatch({ control, name: "styleBorderStyle" });
+
+  const handleResetStyles = () => {
+    setValue("styleForegroundColor", "#000000");
+    setValue("styleBackgroundColor", "#ffffff");
+    setValue("styleLogo", "");
+    setValue("styleBorderStyle", "none");
+    setValue("styleText", "");
+    setValue("styleBorderColor", "#000000");
+    setValue("styleTextColor", "#000000");
+  };
 
   return (
     <Card>
@@ -56,6 +67,16 @@ export function CardStyle() {
             <FieldStyleTextColor />
           </>
         )}
+        <div className="col-span-2 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleResetStyles}
+            className="w-full"
+          >
+            디자인 초기화
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
