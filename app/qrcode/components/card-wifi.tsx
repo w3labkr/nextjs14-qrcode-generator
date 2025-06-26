@@ -156,7 +156,11 @@ function FieldWifiIsHidden() {
       render={({ field }) => (
         <FormItem className="flex items-center gap-2">
           <FormControl>
-            <Checkbox id="isHidden" />
+            <Checkbox
+              id="isHidden"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+            />
           </FormControl>
           <Label htmlFor="isHidden" className="!mt-0.5">
             숨겨진 네트워크

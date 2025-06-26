@@ -22,12 +22,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { AddressSearch, AddressData } from "@/components/address-search";
 
 export function CardVCard() {
-  const { control } = useFormContext<QrcodeFormValues>();
-
   return (
     <Card>
       <CardHeader>
@@ -182,7 +179,11 @@ function FieldVcardWebsite() {
 }
 
 function FieldVcardAddress() {
-  const { control } = useFormContext<QrcodeFormValues>();
+  const { control, setValue } = useFormContext<QrcodeFormValues>();
+
+  const handleAddressSelect = (data: AddressData) => {
+    setValue("vcardAddress", data.address);
+  };
 
   return (
     <FormField
@@ -197,9 +198,7 @@ function FieldVcardAddress() {
             <FormControl>
               <Input placeholder="서울특별시 강남구 테헤란로 123" {...field} />
             </FormControl>
-            <Button type="button" variant="outline" size="icon">
-              <Search className="h-4 w-4" />
-            </Button>
+            <AddressSearch onSelect={handleAddressSelect} />
           </div>
           <FormDescription>
             정확한 주소나 장소명을 입력하거나 검색 버튼을 클릭하여 다음 우편번호
