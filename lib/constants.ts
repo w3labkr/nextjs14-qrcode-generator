@@ -52,20 +52,3 @@ export const QR_CODE_TYPES = {
 export const QR_CODE_TYPE_VALUES = Object.keys(QR_CODE_TYPES) as Array<
   keyof typeof QR_CODE_TYPES
 >;
-
-// 토큰 관련 상수
-export const TOKEN_CONFIG = {
-  // 토큰 갱신 시점 (만료 10분 전)
-  REFRESH_THRESHOLD_SECONDS: 600,
-  // 세션 갱신 주기 (3분)
-  SESSION_REFETCH_INTERVAL: 3 * 60,
-  // 액세스 토큰 기본 만료 시간 (1시간)
-  ACCESS_TOKEN_EXPIRES_IN: 60 * 60,
-  // 리프레시 토큰 만료 시간 (30일)
-  REFRESH_TOKEN_EXPIRES_IN: 30 * 24 * 60 * 60,
-  // 수동 갱신 버튼 표시 시점 (만료 15분 전)
-  MANUAL_REFRESH_THRESHOLD: 900,
-  // 세션 만료 시간 설정
-  SESSION_MAX_AGE_DEFAULT: 24 * 60 * 60, // 1일 (기본)
-  SESSION_MAX_AGE_REMEMBER: 30 * 24 * 60 * 60, // 30일 (기억하기)
-} as const;

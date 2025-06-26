@@ -1,8 +1,8 @@
-import { TOKEN_CONFIG } from "@/lib/constants";
+import { appConfig } from "@/config/app";
 
 export const setRememberMeCookie = (remember: boolean) => {
   const value = remember ? "true" : "false";
-  const maxAge = TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER;
+  const maxAge = appConfig.session.sessionMaxAgeRemember;
   const cookieString = `remember-me=${value}; path=/; max-age=${maxAge}; secure; samesite=strict`;
   document.cookie = cookieString;
 };

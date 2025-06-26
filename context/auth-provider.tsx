@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useTokenRefresh } from "@/hooks/use-token-refresh";
 import { useRememberMe } from "@/hooks/use-remember-me";
-import { TOKEN_CONFIG } from "@/lib/constants";
+import { appConfig } from "@/config/app";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider
-        refetchInterval={TOKEN_CONFIG.SESSION_REFETCH_INTERVAL}
+        refetchInterval={appConfig.session.sessionRefetchInterval}
         refetchOnWindowFocus={true}
       >
         <TokenRefreshProvider>{children}</TokenRefreshProvider>

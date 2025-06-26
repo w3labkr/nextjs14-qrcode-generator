@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useRef, useCallback } from "react";
-import { TOKEN_CONFIG } from "@/lib/constants";
+import { appConfig } from "@/config/app";
 
 interface ExtendedSession {
   accessTokenExpires?: number;
@@ -48,7 +48,7 @@ export function useTokenRefresh() {
       // 토큰이 설정된 시간(기본 5분) 전에 갱신되도록 스케줄링
       const refreshTime = Math.max(
         0,
-        (timeUntilExpiry - TOKEN_CONFIG.REFRESH_THRESHOLD_SECONDS) * 1000,
+        (timeUntilExpiry - appConfig.session.refreshThresholdSeconds) * 1000,
       );
 
       if (refreshTime > 0) {
@@ -108,7 +108,7 @@ export function useTokenRefresh() {
     isTokenExpiring: extendedSession?.accessTokenExpires
       ? Math.floor(Date.now() / 1000) >=
         extendedSession.accessTokenExpires -
-          TOKEN_CONFIG.REFRESH_THRESHOLD_SECONDS
+          appConfig.session.refreshThresholdSeconds
       : false,
     hasTokenError: extendedSession?.error === "RefreshAccessTokenError",
     refreshToken,

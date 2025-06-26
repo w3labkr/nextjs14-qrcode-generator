@@ -3,7 +3,7 @@ import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 import axios from "axios";
-import { TOKEN_CONFIG } from "@/lib/constants";
+import { appConfig } from "@/config/app";
 import {
   validateAuthEnvironment,
   logAuthEnvironment,
@@ -112,7 +112,7 @@ export default {
       if (account && user) {
         const now = Math.floor(Date.now() / 1000);
         const expiresIn =
-          account.expires_in || TOKEN_CONFIG.ACCESS_TOKEN_EXPIRES_IN;
+          account.expires_in || appConfig.session.accessTokenExpiresIn;
         const accessTokenExpires = now + expiresIn;
 
         // 기본적으로 기억하기를 false로 설정
@@ -121,8 +121,8 @@ export default {
 
         // 기억하기 설정에 따른 리프레시 토큰 만료 시간 계산
         const refreshTokenExpires = rememberMe
-          ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
-          : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT;
+          ? now + appConfig.session.sessionMaxAgeRemember
+          : now + appConfig.session.sessionMaxAgeDefault;
 
         // 개발 환경에서만 로그 출력
         if (process.env.AUTH_DEBUG === "true") {
@@ -131,8 +131,8 @@ export default {
             "세션 만료 시간:",
             new Date(
               (rememberMe
-                ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
-                : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT) * 1000,
+                ? now + appConfig.session.sessionMaxAgeRemember
+                : now + appConfig.session.sessionMaxAgeDefault) * 1000,
             ),
           );
         }
@@ -168,8 +168,8 @@ export default {
           if (prevRememberMe !== extendedToken.rememberMe) {
             const now = Math.floor(Date.now() / 1000);
             extendedToken.refreshTokenExpires = extendedToken.rememberMe
-              ? now + TOKEN_CONFIG.SESSION_MAX_AGE_REMEMBER
-              : now + TOKEN_CONFIG.SESSION_MAX_AGE_DEFAULT;
+              ? now + appConfig.session.sessionMaxAgeRemember
+              : now + appConfig.session.sessionMaxAgeDefault;
 
             if (process.env.AUTH_DEBUG === "true") {
               console.log(
@@ -214,7 +214,7 @@ export default {
         extendedToken.accessTokenExpires &&
         now <
           extendedToken.accessTokenExpires -
-            TOKEN_CONFIG.REFRESH_THRESHOLD_SECONDS
+            appConfig.session.refreshThresholdSeconds
       ) {
         return extendedToken;
       }
