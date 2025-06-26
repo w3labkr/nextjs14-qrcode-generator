@@ -134,9 +134,7 @@ export function CardPreview() {
           toast.error(saveResult.error || "QR 코드 저장에 실패했습니다.");
         }
       } else {
-        toast.success(
-          "QR 코드가 생성되었습니다! 로그인하시면 QR 코드를 저장할 수 있습니다.",
-        );
+        toast.success("QR 코드가 생성되었습니다!");
       }
     } catch (err) {
       console.error("QR 코드 생성 오류:", err);
