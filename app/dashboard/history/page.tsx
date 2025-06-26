@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { SearchAndFilters } from "./components/search-and-filters";
@@ -30,9 +29,6 @@ interface PaginationData {
 
 export default function QrCodeHistoryPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const editingQrCodeId = searchParams.get("returnFrom");
   const [qrCodes, setQrCodes] = useState<QrCodeData[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
@@ -114,19 +110,6 @@ export default function QrCodeHistoryPage() {
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
 
-  // returnFrom 파라미터가 있을 때 URL에서 제거
-  useEffect(() => {
-    if (editingQrCodeId) {
-      const timer = setTimeout(() => {
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.delete("returnFrom");
-        window.history.replaceState({}, "", currentUrl.toString());
-      }, 3000); // 3초 후 파라미터 제거
-
-      return () => clearTimeout(timer);
-    }
-  }, [editingQrCodeId]);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // 검색은 이미 useEffect에서 디바운스 처리되므로 여기서는 아무것도 하지 않음
@@ -191,47 +174,6 @@ export default function QrCodeHistoryPage() {
     setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
-  const handleEdit = (qrCode: QrCodeData) => {
-    if (!qrCode || !qrCode.id || !qrCode.type) {
-      console.warn("Invalid qrCode data for edit:", qrCode);
-      toast.error("잘못된 QR 코드 정보입니다.");
-      return;
-    }
-
-    // QR 코드 타입에 따라 적절한 페이지로 라우팅
-    const qrType = qrCode.type.toLowerCase();
-    let editUrl: string;
-
-    switch (qrType) {
-      case "url":
-        editUrl = `/qrcode?edit=${qrCode.id}&type=url`;
-        break;
-      case "textarea":
-        editUrl = `/qrcode?edit=${qrCode.id}&type=textarea`;
-        break;
-      case "wifi":
-        editUrl = `/qrcode?edit=${qrCode.id}&type=wifi`;
-        break;
-      case "email":
-        editUrl = `/qrcode?edit=${qrCode.id}&type=email`;
-        break;
-      case "sms":
-        editUrl = `/qrcode?edit=${qrCode.id}&type=sms`;
-        break;
-      case "vcard":
-        editUrl = `/qrcode?edit=${qrCode.id}&type=vcard`;
-        break;
-      case "location":
-        editUrl = `/qrcode?edit=${qrCode.id}&type=location`;
-        break;
-      default:
-        // 알 수 없는 타입의 경우 기본 페이지로
-        editUrl = `/qrcode?edit=${qrCode.id}&type=${qrType}`;
-    }
-
-    router.push(editUrl);
-  };
-
   return (
     <>
       <SearchAndFilters
@@ -255,12 +197,10 @@ export default function QrCodeHistoryPage() {
         selectedType={selectedType}
         showFavorites={showFavorites}
         onToggleFavorite={toggleFavorite}
-        onEdit={handleEdit}
         onDelete={(id) => {
           setQrCodeToDelete(id);
           setDeleteDialogOpen(true);
         }}
-        editingQrCodeId={editingQrCodeId}
       />
 
       <Pagination pagination={pagination} onPageChange={handlePageChange} />

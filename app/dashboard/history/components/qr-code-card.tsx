@@ -16,7 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Heart, Download, Trash2, QrCode, Edit2 } from "lucide-react";
+import { Heart, Download, Trash2, QrCode } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -45,19 +45,15 @@ interface QrCodeData {
 interface QrCodeCardProps {
   qrCode: QrCodeData;
   onToggleFavorite: (id: string) => void;
-  onEdit: (qrCode: QrCodeData) => void;
   onDelete: (id: string) => void;
   onDownload: (qrCode: QrCodeData) => void;
-  isEditing?: boolean;
 }
 
 export function QrCodeCard({
   qrCode,
   onToggleFavorite,
-  onEdit,
   onDelete,
   onDownload,
-  isEditing = false,
 }: QrCodeCardProps) {
   // 안전한 데이터 검증
   if (!qrCode || !qrCode.id) {
@@ -106,16 +102,7 @@ export function QrCodeCard({
   };
 
   return (
-    <Card
-      className={cn("group hover:shadow-lg transition-shadow relative", {
-        "ring-2 ring-blue-500 ring-offset-2": isEditing,
-      })}
-    >
-      {isEditing && (
-        <div className="absolute -top-2 -right-2 z-10">
-          <Badge className="bg-blue-500 text-white">편집 중</Badge>
-        </div>
-      )}
+    <Card className="group hover:shadow-lg transition-shadow relative">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
@@ -198,19 +185,6 @@ export function QrCodeCard({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>다운로드</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(qrCode)}
-                  className="flex-1 mr-2"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>편집</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>

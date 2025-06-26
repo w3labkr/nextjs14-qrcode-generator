@@ -25,9 +25,7 @@ interface QrCodeGridProps {
   selectedType: string;
   showFavorites: boolean;
   onToggleFavorite: (id: string) => void;
-  onEdit: (qrCode: QrCodeData) => void;
   onDelete: (id: string) => void;
-  editingQrCodeId?: string | null;
 }
 
 export function QrCodeGrid({
@@ -37,9 +35,7 @@ export function QrCodeGrid({
   selectedType,
   showFavorites,
   onToggleFavorite,
-  onEdit,
   onDelete,
-  editingQrCodeId,
 }: QrCodeGridProps) {
   const { handleDownload } = useQrCodeDownload();
 
@@ -87,10 +83,8 @@ export function QrCodeGrid({
           key={qrCode.id}
           qrCode={qrCode}
           onToggleFavorite={onToggleFavorite}
-          onEdit={onEdit}
           onDelete={onDelete}
           onDownload={handleDownload}
-          isEditing={editingQrCodeId === qrCode.id}
         />
       ))}
     </div>
