@@ -4,15 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Form,
@@ -31,13 +22,16 @@ import { CardEmail } from "./card-email";
 import { CardSms } from "./card-sms";
 import { CardVCard } from "./card-vcard";
 import { CardLocation } from "./card-location";
+import { CardStyle } from "./card-style";
+import { CardPreview } from "./card-preview";
 
 const qrcodeFormSchema = z.object({
   url: z.string(),
-  text: z.string(),
+  textarea: z.string(),
   wifiSsid: z.string(),
   wifiPassword: z.string(),
-  wifiWpa: z.string(),
+  wifiEncryption: z.enum(["WPA", "WEP", "nopass"]),
+  wifiIsHidden: z.boolean(),
   smsPhoneNumber: z.string(),
   smsMessage: z.string(),
   emailAddress: z.string(),
@@ -51,33 +45,52 @@ const qrcodeFormSchema = z.object({
   vcardJobTitle: z.string(),
   vcardWebsite: z.string(),
   vcardAddress: z.string(),
+  styleForegroundColor: z.string(),
+  styleBackgroundColor: z.string(),
+  styleBorderStyle: z.string(),
+  styleText: z.string(),
+  styleTextColor: z.string(),
+  styleBorderColor: z.string(),
+  styleLogo: z.string(),
+  previewExportFormat: z.string(),
 });
 
 export type QrcodeFormValues = z.infer<typeof qrcodeFormSchema>;
 
+const defaultValues: QrcodeFormValues = {
+  url: "",
+  textarea: "",
+  wifiSsid: "",
+  wifiPassword: "",
+  wifiEncryption: "WPA", // WPA, WEP, nopass
+  wifiIsHidden: false,
+  smsPhoneNumber: "",
+  smsMessage: "",
+  emailAddress: "",
+  emailSubject: "",
+  emailBody: "",
+  location: "",
+  vcardFullName: "",
+  vcardPhoneNumber: "",
+  vcardEmail: "",
+  vcardOrganization: "",
+  vcardJobTitle: "",
+  vcardWebsite: "",
+  vcardAddress: "",
+  styleForegroundColor: "#000000",
+  styleBackgroundColor: "#ffffff",
+  styleBorderStyle: "none", // none, simple, rounded, custom
+  styleText: "",
+  styleTextColor: "#000000",
+  styleBorderColor: "#000000",
+  styleLogo: "",
+  previewExportFormat: "png", // jpg, png, svg
+};
+
 export function QrcodeForm() {
   const form = useForm<QrcodeFormValues>({
     resolver: zodResolver(qrcodeFormSchema),
-    defaultValues: {
-      url: "",
-      text: "",
-      wifiSsid: "",
-      wifiPassword: "",
-      wifiWpa: "",
-      smsPhoneNumber: "",
-      smsMessage: "",
-      emailAddress: "",
-      emailSubject: "",
-      emailBody: "",
-      location: "",
-      vcardFullName: "",
-      vcardPhoneNumber: "",
-      vcardEmail: "",
-      vcardOrganization: "",
-      vcardJobTitle: "",
-      vcardWebsite: "",
-      vcardAddress: "",
-    },
+    defaultValues,
   });
   const { handleSubmit } = form;
 
@@ -103,47 +116,38 @@ export function QrcodeForm() {
               <TabsTrigger value="vcard">연락처</TabsTrigger>
               <TabsTrigger value="location">지도</TabsTrigger>
             </TabsList>
-            <TabsContent value="url">
+            <TabsContent value="url" className="space-y-4">
               <CardUrl />
+              <CardStyle />
             </TabsContent>
-            <TabsContent value="text">
+            <TabsContent value="text" className="space-y-4">
               <CardTextarea />
+              <CardStyle />
             </TabsContent>
-            <TabsContent value="wifi">
+            <TabsContent value="wifi" className="space-y-4">
               <CardWifi />
+              <CardStyle />
             </TabsContent>
-            <TabsContent value="email">
+            <TabsContent value="email" className="space-y-4">
               <CardEmail />
+              <CardStyle />
             </TabsContent>
-            <TabsContent value="sms">
+            <TabsContent value="sms" className="space-y-4">
               <CardSms />
+              <CardStyle />
             </TabsContent>
-            <TabsContent value="vcard">
+            <TabsContent value="vcard" className="space-y-4">
               <CardVCard />
+              <CardStyle />
             </TabsContent>
-            <TabsContent value="location">
+            <TabsContent value="location" className="space-y-4">
               <CardLocation />
+              <CardStyle />
             </TabsContent>
           </Tabs>
         </div>
         <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>QR 코드 미리보기</CardTitle>
-              <CardDescription>QR 코드를 미리 볼 수 있습니다.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6">
-              <p>
-                QR 코드는 다양한 정보를 담을 수 있습니다. 아래 버튼을 클릭하여
-                QR 코드를 생성하세요.
-              </p>
-              <Button type="submit">QR 코드 생성</Button>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button>기본 해상도</Button>
-              <Button>다운로드</Button>
-            </CardFooter>
-          </Card>
+          <CardPreview />
         </div>
       </form>
     </Form>

@@ -5,7 +5,6 @@ import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { QrcodeFormValues } from "./qrcode-form";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,7 +14,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
 import {
   Form,
   FormControl,
@@ -36,22 +34,30 @@ export function CardUrl() {
         <CardDescription>연결할 웹사이트 주소를 입력하세요.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <FormField
-          control={control}
-          name="url"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                URL <span className="text-xs text-destructive">(필수)</span>
-              </FormLabel>
-              <FormControl>
-                <Input placeholder="https://example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FieldUrl />
       </CardContent>
     </Card>
+  );
+}
+
+function FieldUrl() {
+  const { control } = useFormContext<QrcodeFormValues>();
+
+  return (
+    <FormField
+      control={control}
+      name="url"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>
+            URL <span className="text-xs text-destructive">(필수)</span>
+          </FormLabel>
+          <FormControl>
+            <Input placeholder="https://example.com" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }

@@ -9,7 +9,10 @@ interface AddressSearchProps {
   children?: React.ReactNode;
 }
 
-export function AddressSearch({ onAddressSelect, children }: AddressSearchProps) {
+export function AddressSearch({
+  onAddressSelect,
+  children,
+}: AddressSearchProps) {
   const openPostcode = useDaumPostcodePopup();
 
   const handleComplete = (data: Address) => {
@@ -37,7 +40,7 @@ export function AddressSearch({ onAddressSelect, children }: AddressSearchProps)
       onClick={() => openPostcode({ onComplete: handleComplete })}
       className="w-full"
     >
-      <Search className="h-4 w-4 mr-2" />
+      <Search className="h-4 w-4" />
       주소 검색
     </Button>
   );
