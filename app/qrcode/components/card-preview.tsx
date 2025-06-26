@@ -4,11 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
 import * as z from "zod";
 import { QrcodeFormValues, qrcodeFormSchema } from "./qrcode-form";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { generateQrCode } from "@/app/actions/qr-code-generator";
 import { saveQrCode } from "@/app/actions/qr-code-management";
 import { getQrHandler, handleQrDownload } from "./qr-handlers";
+import { getAuthStatus } from "@/lib/auth-helpers";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,16 @@ export function CardPreview() {
     useFormContext<QrcodeFormValues>();
   const [qrCode, setQrCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  // 컴포넌트 마운트 시 인증 상태 확인
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authStatus = await getAuthStatus();
+      setIsAuthenticated(authStatus.isAuthenticated);
+    };
+    checkAuth();
+  }, []);
 
   // 내보내기 포맷만 실시간 감지 (다운로드용)
   const exportFormat = useWatch({ control, name: "previewExportFormat" });
@@ -71,6 +82,9 @@ export function CardPreview() {
     setIsLoading(true);
 
     try {
+      // 인증 상태 확인
+      const authStatus = await getAuthStatus();
+
       const qrResult = await generateQrCode({
         text: result.text,
         type: (values.previewExportFormat || "png") as "png" | "svg" | "jpg",
@@ -97,37 +111,43 @@ export function CardPreview() {
 
       setQrCode(qrResult);
 
-      // 데이터베이스에 QR 코드 저장
-      const saveResult = await saveQrCode({
-        type: values.qrType,
-        content: result.text,
-        settings: {
-          color: {
-            dark: values.styleForegroundColor || "#000000",
-            light: values.styleBackgroundColor || "#ffffff",
+      // 로그인한 사용자만 데이터베이스에 저장
+      if (authStatus.isAuthenticated) {
+        const saveResult = await saveQrCode({
+          type: values.qrType,
+          content: result.text,
+          settings: {
+            color: {
+              dark: values.styleForegroundColor || "#000000",
+              light: values.styleBackgroundColor || "#ffffff",
+            },
+            width: 256,
+            logo: values.styleLogo || undefined,
+            frameOptions:
+              values.styleBorderStyle !== "none"
+                ? {
+                    type: values.styleBorderStyle || "simple",
+                    text: values.styleText || "",
+                    textColor: values.styleTextColor || "#000000",
+                    backgroundColor: values.styleBackgroundColor || "#ffffff",
+                    borderColor: values.styleBorderColor || "#000000",
+                    borderWidth: values.styleBorderWidth || 2,
+                    borderRadius: values.styleBorderRadius || 8,
+                    fontSize: values.styleFontSize || 16,
+                  }
+                : undefined,
           },
-          width: 256,
-          logo: values.styleLogo || undefined,
-          frameOptions:
-            values.styleBorderStyle !== "none"
-              ? {
-                  type: values.styleBorderStyle || "simple",
-                  text: values.styleText || "",
-                  textColor: values.styleTextColor || "#000000",
-                  backgroundColor: values.styleBackgroundColor || "#ffffff",
-                  borderColor: values.styleBorderColor || "#000000",
-                  borderWidth: values.styleBorderWidth || 2,
-                  borderRadius: values.styleBorderRadius || 8,
-                  fontSize: values.styleFontSize || 16,
-                }
-              : undefined,
-        },
-      });
+        });
 
-      if (saveResult.success) {
-        toast.success("QR 코드가 성공적으로 저장되었습니다!");
+        if (saveResult.success) {
+          toast.success("QR 코드가 성공적으로 저장되었습니다!");
+        } else {
+          toast.error(saveResult.error || "QR 코드 저장에 실패했습니다.");
+        }
       } else {
-        toast.error(saveResult.error || "QR 코드 저장에 실패했습니다.");
+        toast.success(
+          "QR 코드가 생성되었습니다! 로그인하시면 QR 코드를 저장할 수 있습니다.",
+        );
       }
     } catch (err) {
       console.error("QR 코드 생성 오류:", err);
@@ -149,7 +169,9 @@ export function CardPreview() {
       <CardHeader>
         <CardTitle>QR 코드 미리보기</CardTitle>
         <CardDescription>
-          "QR 코드 저장" 버튼을 클릭하면 QR 코드가 생성됩니다.
+          {isAuthenticated
+            ? '"QR 코드 저장" 버튼을 클릭하면 QR 코드가 생성되고 저장됩니다.'
+            : '"QR 코드 생성" 버튼을 클릭하면 QR 코드가 생성됩니다. 로그인하시면 QR 코드를 저장할 수 있습니다.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
@@ -166,9 +188,9 @@ export function CardPreview() {
             />
           ) : (
             <p className="text-muted-foreground text-center">
-              "QR 코드 저장" 버튼을 클릭하여
-              <br />
-              QR 코드를 생성하세요
+              {isAuthenticated
+                ? '"QR 코드 저장" 버튼을 클릭하여\nQR 코드를 생성하고 저장하세요'
+                : '"QR 코드 생성" 버튼을 클릭하여\nQR 코드를 생성하세요'}
             </p>
           )}
         </div>
@@ -178,7 +200,11 @@ export function CardPreview() {
           disabled={isLoading}
           onClick={handleGenerateQrCode}
         >
-          {isLoading ? "생성 중..." : "QR 코드 저장"}
+          {isLoading
+            ? "생성 중..."
+            : isAuthenticated
+              ? "QR 코드 저장"
+              : "QR 코드 생성"}
         </Button>
       </CardContent>
       <CardFooter className="flex gap-2">
