@@ -14,7 +14,7 @@
 
 > 회원가입이나 로그인 없이 누구나 즉시 사용할 수 있는 강력하고 아름다운 정적 QR 코드 생성기
 
-이 프로젝트는 **Next.js 14**, **Tailwind CSS**, **Shadcn UI**를 사용하여 구축된 오픈소스 QR 코드 생성기입니다. 7가지 유형의 정적 QR 코드를 생성하고, 45개 이상의 UI 컴포넌트를 활용한 풍부한 커스터마이징 옵션을 제공합니다.
+이 프로젝트는 **Next.js 14**, **Tailwind CSS**, **Shadcn UI**를 사용하여 구축된 오픈소스 QR 코드 생성기입니다. 7가지 유형의 정적 QR 코드를 생성하고, 46개의 UI 컴포넌트를 활용한 풍부한 커스터마이징 옵션을 제공합니다.
 
 ![SCREENSHOT](./SCREENSHOT.png)
 
@@ -81,7 +81,7 @@
 - **[Tailwind CSS 3.4.1](https://tailwindcss.com/)** - 유틸리티 기반 CSS 프레임워크
 
 ### UI 컴포넌트 및 디자인
-- **[Shadcn UI](https://ui.shadcn.com/)** - 45개 이상의 고품질 React 컴포넌트
+- **[Shadcn UI](https://ui.shadcn.com/)** - 46개의 고품질 React 컴포넌트
 - **[Radix UI](https://www.radix-ui.com/)** - 접근성을 고려한 UI 프리미티브
 - **[Lucide React](https://lucide.dev/)** - 아름다운 SVG 아이콘 라이브러리
 - **[Next Themes](https://github.com/pacocoursey/next-themes)** - 다크/라이트 모드 지원
@@ -234,9 +234,9 @@ npm start
 프로젝트의 상세한 정보와 가이드는 다음 문서들을 참고하세요:
 
 - **[📋 제품 요구사항 정의서 (PRD)](./docs/PRD.md)** - 프로젝트 비전, 기술 스택, 아키텍처 상세 설명
-- **[📦 의존성 패키지 목록](./docs/DEPENDENCIES.md)** - 70+ 패키지 의존성 정보 및 사용 목적
-- **[🗃️ RLS 설정 가이드](./docs/RLS_SETUP.md)** - Row Level Security 데이터베이스 보안 설정
-- **[⏰ 크론잡 설정 가이드](./docs/CRON_SETUP.md)** - Vercel 크론잡을 통한 Supabase 비활성화 방지
+- **[📦 의존성 패키지 목록](./docs/DEPENDENCIES.md)** - 101개 패키지 의존성 정보 및 사용 목적
+- **[🗃️ RLS 설정 가이드](./docs/RLS.md)** - Row Level Security 데이터베이스 보안 설정
+- **[⏰ 크론잡 설정 가이드](./docs/CRON.md)** - Vercel 크론잡을 통한 Supabase 비활성화 방지
 - **[🔒 보안 정책](./SECURITY.md)** - 보안 취약점 보고 및 관련 정책
 - **[🤝 기여 가이드](./CONTRIBUTING.md)** - 오픈소스 기여 방법 및 개발 가이드라인
 
@@ -249,11 +249,10 @@ nextjs14-qrcode-generator/
 │   ├── api/               # API Routes (인증, QR API)
 │   ├── dashboard/         # 대시보드 (로그인 사용자 전용)
 │   └── qrcode/           # QR 코드 생성 메인 페이지
+│       └── components/   # QR 코드 관련 컴포넌트 (10개)
 ├── components/            # React 컴포넌트
-│   ├── ui/               # Shadcn UI 컴포넌트 (45개+)
-│   ├── qr-code-forms/    # QR 코드 유형별 폼 (7가지)
-│   ├── qr-code-frames/   # QR 코드 프레임 선택
-│   └── template-manager/ # 템플릿 관리
+│   ├── ui/               # Shadcn UI 컴포넌트 (46개)
+│   └── ...               # 기타 유틸리티 컴포넌트
 ├── hooks/                 # 커스텀 훅 & Zustand 스토어
 ├── lib/                   # 유틸리티 & 설정
 ├── types/                 # TypeScript 타입 정의

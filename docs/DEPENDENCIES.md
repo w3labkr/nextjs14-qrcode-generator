@@ -16,9 +16,10 @@
   - [Day.js](#dayjs)
   - [qs](#qs)
   - [cookies-next](#cookies-next)
+  - [es-toolkit](#es-toolkit)
   - [QRCode](#qrcode)
   - [Auth.js](#authjs)
-  - [Supabase & PostgreSQL](#supabase--postgresql)
+  - [Supabase \& PostgreSQL](#supabase--postgresql)
   - [ESLint](#eslint)
   - [Prettier](#prettier)
   - [Troubleshooting](#troubleshooting)
@@ -194,6 +195,12 @@ Getting, setting and removing cookies on both client and server with next.js
 
 ```shell
 npm i cookies-next@4
+```
+
+## es-toolkit
+
+```shell
+npm install es-toolkit @toss/utils overlay-kit
 ```
 
 ## QRCode

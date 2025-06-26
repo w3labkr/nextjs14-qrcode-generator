@@ -69,26 +69,30 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 
 ### UI Components
 
-* **Tables**: Use `@tanstack/react-table` for data tables.
-* **Notifications**: Use `sonner` for toast notifications.
-* **Date Picker**: Use `react-day-picker` with `date-fns` for date handling.
-* **Charts**: Use `recharts` for data visualization.
-* **Icons**: Use `lucide-react` for icons.
-* **Carousel**: Use `embla-carousel-react` for carousel components.
-* **Panels**: Use `react-resizable-panels` for resizable layout panels.
-* **Drawer**: Use `vaul` for mobile drawer components.
-* **Command**: Use `cmdk` for command palette interfaces.
-* **OTP**: Use `input-otp` for OTP input components.
+* **Tables**: Use `@tanstack/react-table` v8.21.3 for data tables.
+* **Notifications**: Use `sonner` v2.0.5 for toast notifications.
+* **Date Picker**: Use `react-day-picker` v9.7.0 with `date-fns` v4.1.0 for date handling.
+* **Charts**: Use `recharts` v2.15.3 for data visualization.
+* **Icons**: Use `lucide-react` v0.515.0 for icons.
+* **Carousel**: Use `embla-carousel-react` v8.6.0 for carousel components.
+* **Panels**: Use `react-resizable-panels` v3.0.3 for resizable layout panels.
+* **Drawer**: Use `vaul` v1.1.2 for mobile drawer components.
+* **Command**: Use `cmdk` v1.1.1 for command palette interfaces.
+* **OTP**: Use `input-otp` v1.4.2 for OTP input components.
 
 ### Utilities
 
-* **HTTP Client**: Use `axios` for HTTP requests.
-* **Query String**: Use `qs` for query string parsing.
-* **Cookies**: Use `cookies-next` for cookie management.
-* **DOM Manipulation**: Use `jsdom` for server-side DOM operations.
-* **JWT**: Use `jose` for JWT token handling.
-* **Date Libraries**: Use `date-fns` for date manipulation and `dayjs` for lightweight date operations.
-* **Address Search**: Use `react-daum-postcode` for Korean address search functionality.
+* **HTTP Client**: Use `axios` v1.10.0 for HTTP requests.
+* **Query String**: Use `qs` v6.14.0 for query string parsing.
+* **Cookies**: Use `cookies-next` v4.3.0 for cookie management.
+* **DOM Manipulation**: Use `jsdom` v26.1.0 for server-side DOM operations.
+* **JWT**: Use `jose` v6.0.11 for JWT token handling.
+* **Date Libraries**: Use `date-fns` v4.1.0 for date manipulation and `dayjs` v1.11.13 for lightweight date operations.
+* **Address Search**: Use `react-daum-postcode` v3.2.0 for Korean address search functionality.
+* **Utility Functions**: Use `@toss/utils` v1.6.1 and `es-toolkit` v1.39.5 for modern utility functions.
+* **Browser Compatibility**: Use `browserslist` v4.25.0 for browser compatibility configuration.
+* **Authentication Library**: Use `auth` v1.2.3 for additional authentication utilities.
+* **Layout Management**: Use `overlay-kit` v1.8.2 for overlay and modal management.
 
 ## Directory Structure
 
@@ -97,26 +101,31 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * `api/`: API routes for client-side data fetching.
   * `auth/`: Authentication-related pages (signin, error, verify-request).
   * `dashboard/`: Protected dashboard pages and features.
-  * `qrcode/`: QR code generation main page.
+  * `qrcode/`: QR code generation main page with components.
+    * `components/`: QR code specific components (form cards, preview, styling).
 * `components/`: Contains reusable components.
-  * `ui/`: Contains shadcn/ui components (47 components).
-  * `qr-code-forms/`: Form components for different QR code types.
-  * `qr-code-frames/`: QR code frame selection components.
-  * `template-manager/`: Template management components.
+  * `ui/`: Contains shadcn/ui components (46 components).
+  * Other utility components (address-search, loading-spinner, user-nav, etc.).
 * `lib/`: Contains utility functions and constants.
-  * Database connection, download utilities, QR code utilities, etc.
+  * Database connection, download utilities, QR code utilities, auth helpers, etc.
+  * `supabase/`: Supabase client and related utilities.
 * `hooks/`: Contains custom hooks and Zustand stores.
-  * Custom hooks for QR code generation, mobile detection, token refresh, etc.
+  * Custom hooks for QR code generation, mobile detection, token refresh, template management, etc.
 * `types/`: Contains TypeScript type definitions.
-  * Type definitions for QR codes, data management, environment, etc.
+  * Type definitions for QR codes, data management, environment, authentication, RLS, etc.
 * `public/`: Contains static assets.
-  * PWA manifest, service worker, fonts, etc.
+  * PWA manifest, service worker, fonts, screenshots, etc.
 * `prisma/`: Contains database schema and migrations.
 * `docs/`: Contains project documentation.
   * PRD.md (Product Requirements Document)
   * DEPENDENCIES.md (Dependencies documentation)
-  * RLS_SETUP.md (Row Level Security setup guide)
-* `test/`: Contains test files (currently empty).
+  * RLS.md (Row Level Security setup guide)
+  * CRON.md (Cron job documentation)
+* `context/`: Contains React context providers.
+  * Authentication provider and client providers.
+* `config/`: Contains application configuration.
+* `scripts/`: Contains utility scripts.
+* `screenshots/`: Contains application screenshots for documentation.
 
 ## Specific Task Guidelines
 
@@ -128,14 +137,15 @@ If Copilot's suggestions do not meet expectations, actively modify and provide f
 
 ## Project Current Status
 
-* **Version**: v1.2.105 (as of June 2024)
-* **File Count**: 170+ TypeScript/JavaScript files
-* **Package Count**: 99 npm packages
-* **UI Components**: 47 shadcn/ui components
+* **Version**: v1.3.56 (as of June 2025)
+* **File Count**: 165+ TypeScript/JavaScript files
+* **Package Count**: 101 npm packages (75 dependencies + 26 devDependencies)
+* **UI Components**: 46 shadcn/ui components
 * **QR Code Types**: 7 supported types (URL, TEXT, WIFI, EMAIL, SMS, VCARD, LOCATION)
-* **Authentication**: NextAuth.js v5 with Google OAuth
-* **Database**: Supabase PostgreSQL with Prisma ORM
+* **Authentication**: NextAuth.js v5 (beta.28) with Google OAuth
+* **Database**: Supabase PostgreSQL with Prisma ORM v6.10.1
 * **Security**: Row Level Security (RLS) implemented
-* **State Management**: Zustand stores implemented for global state management
-* **Form Handling**: React Hook Form with Zod validation integrated
-* **Query Management**: React Query for server state management
+* **State Management**: Zustand v5.0.5 stores implemented for global state management
+* **Form Handling**: React Hook Form v7.58.0 with Zod v3.25.64 validation integrated
+* **Query Management**: React Query v5.80.7 for server state management
+* **Code Quality**: ESLint, Prettier, and TypeScript configured with strict rules
