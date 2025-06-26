@@ -2,6 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QrCode, Heart, TrendingUp, Plus } from "lucide-react";
+import { QR_CODE_TYPES } from "@/lib/constants";
+import { getTypeLabel } from "@/lib/utils";
 
 interface QrCodeStats {
   total: number;
@@ -16,19 +18,6 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ stats, loading }: StatsCardsProps) {
-  const getTypeLabel = (type: string) => {
-    const typeMap: { [key: string]: string } = {
-      URL: "웹사이트",
-      TEXT: "텍스트",
-      WIFI: "Wi-Fi",
-      EMAIL: "이메일",
-      SMS: "문자",
-      VCARD: "연락처",
-      LOCATION: "지도",
-    };
-    return typeMap[type] || type;
-  };
-
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

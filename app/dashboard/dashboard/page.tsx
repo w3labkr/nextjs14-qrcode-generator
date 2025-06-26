@@ -54,19 +54,6 @@ export default function DashboardPage() {
     }
   }, [status]);
 
-  const getTypeLabel = (type: string) => {
-    const typeMap: { [key: string]: string } = {
-      URL: "웹사이트",
-      TEXT: "텍스트",
-      WIFI: "Wi-Fi",
-      EMAIL: "이메일",
-      SMS: "문자",
-      VCARD: "연락처",
-      LOCATION: "지도",
-    };
-    return typeMap[type] || type;
-  };
-
   return (
     <>
       <StatsCards stats={stats} loading={loading} />

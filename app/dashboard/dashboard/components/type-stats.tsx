@@ -8,6 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { QR_CODE_TYPES } from "@/lib/constants";
+import { getTypeLabel } from "@/lib/utils";
 
 interface QrCodeStats {
   total: number;
@@ -21,19 +23,6 @@ interface TypeStatsProps {
 }
 
 export function TypeStats({ stats }: TypeStatsProps) {
-  const getTypeLabel = (type: string) => {
-    const typeMap: { [key: string]: string } = {
-      URL: "웹사이트",
-      TEXT: "텍스트",
-      WIFI: "Wi-Fi",
-      EMAIL: "이메일",
-      SMS: "문자",
-      VCARD: "연락처",
-      LOCATION: "지도",
-    };
-    return typeMap[type] || type;
-  };
-
   return (
     <Card>
       <CardHeader>

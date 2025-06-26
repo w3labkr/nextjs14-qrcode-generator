@@ -11,16 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Heart } from "lucide-react";
-
-const QR_CODE_TYPES = {
-  URL: { label: "웹사이트", color: "bg-blue-100 text-blue-800" },
-  TEXT: { label: "텍스트", color: "bg-gray-100 text-gray-800" },
-  WIFI: { label: "Wi-Fi", color: "bg-green-100 text-green-800" },
-  EMAIL: { label: "이메일", color: "bg-purple-100 text-purple-800" },
-  SMS: { label: "문자메시지", color: "bg-yellow-100 text-yellow-800" },
-  VCARD: { label: "연락처", color: "bg-pink-100 text-pink-800" },
-  LOCATION: { label: "지도", color: "bg-red-100 text-red-800" },
-};
+import { QR_CODE_TYPES } from "@/lib/constants";
 
 interface SearchAndFiltersProps {
   searchTerm: string;
@@ -78,9 +69,9 @@ export function SearchAndFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">모든 유형</SelectItem>
-              {Object.entries(QR_CODE_TYPES).map(([type, info]) => (
-                <SelectItem key={type} value={type}>
-                  {info.label}
+              {Object.values(QR_CODE_TYPES).map((qrType) => (
+                <SelectItem key={qrType.label} value={qrType.label}>
+                  {qrType.displayName}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -19,17 +19,7 @@ import {
 import { Heart, Download, Trash2, QrCode } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-
-const QR_CODE_TYPE_MAP = {
-  URL: { label: "웹사이트", color: "bg-blue-100 text-blue-800" },
-  TEXTAREA: { label: "텍스트", color: "bg-green-100 text-green-800" },
-  WIFI: { label: "Wi-Fi", color: "bg-orange-100 text-orange-800" },
-  EMAIL: { label: "이메일", color: "bg-purple-100 text-purple-800" },
-  SMS: { label: "문자메시지", color: "bg-yellow-100 text-yellow-800" },
-  VCARD: { label: "연락처", color: "bg-pink-100 text-pink-800" },
-  LOCATION: { label: "지도", color: "bg-red-100 text-red-800" },
-};
+import { cn, getTypeLabel, getTypeColor } from "@/lib/utils";
 
 interface QrCodeData {
   id: string;
@@ -110,15 +100,9 @@ export function QrCodeCard({
               <div className="flex items-center space-x-2">
                 <Badge
                   variant="secondary"
-                  className={
-                    QR_CODE_TYPE_MAP[
-                      qrCode.type as keyof typeof QR_CODE_TYPE_MAP
-                    ]?.color
-                  }
+                  className={getTypeColor(qrCode.type)}
                 >
-                  {QR_CODE_TYPE_MAP[
-                    qrCode.type as keyof typeof QR_CODE_TYPE_MAP
-                  ]?.label || qrCode.type}
+                  {getTypeLabel(qrCode.type)}
                 </Badge>
               </div>
               <div className="flex items-center space-x-1">

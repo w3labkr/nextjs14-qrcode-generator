@@ -11,30 +11,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import Link from "next/link";
+import { QR_CODE_TYPES } from "@/lib/constants";
+import { truncateContent, getTypeLabel } from "@/lib/utils";
 
 interface RecentQrCodesProps {
   recentQrCodes: any[];
 }
 
 export function RecentQrCodes({ recentQrCodes }: RecentQrCodesProps) {
-  const getTypeLabel = (type: string) => {
-    const typeMap: { [key: string]: string } = {
-      URL: "웹사이트",
-      TEXTAREA: "텍스트",
-      WIFI: "Wi-Fi",
-      EMAIL: "이메일",
-      SMS: "문자",
-      VCARD: "연락처",
-      LOCATION: "지도",
-    };
-    return typeMap[type] || type;
-  };
-
-  const truncateContent = (content: string, maxLength: number = 80) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + "...";
-  };
-
   return (
     <Card>
       <CardHeader>

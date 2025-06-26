@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { QrCodeType } from "@/types/qr-code-server";
+import { QR_CODE_TYPES } from "@/lib/constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -74,4 +75,44 @@ export function inferQrCodeType(content: string): QrCodeType {
   }
 
   return "TEXTAREA";
+}
+
+/**
+ * 텍스트를 지정된 길이로 자르고 생략표를 추가합니다.
+ * @param content - 자를 텍스트
+ * @param maxLength - 최대 길이 (기본값: 80)
+ * @returns 잘린 텍스트
+ */
+export function truncateContent(
+  content: string,
+  maxLength: number = 80,
+): string {
+  if (content.length <= maxLength) return content;
+  return content.substring(0, maxLength) + "...";
+}
+
+/**
+ * QR 코드 타입의 표시명을 반환합니다.
+ * @param type - QR 코드 타입 (예: "URL", "TEXTAREA", "WIFI" 등)
+ * @returns 타입의 한국어 표시명
+ */
+export function getTypeLabel(type: string): string {
+  // QR_CODE_TYPES에서 해당 타입의 displayName을 찾기
+  const qrCodeType = Object.values(QR_CODE_TYPES).find(
+    (qrType) => qrType.label === type.toUpperCase(),
+  );
+  return qrCodeType?.displayName || type;
+}
+
+/**
+ * QR 코드 타입의 색상 클래스를 반환합니다.
+ * @param type - QR 코드 타입 (예: "URL", "TEXTAREA", "WIFI" 등)
+ * @returns 타입의 색상 클래스
+ */
+export function getTypeColor(type: string): string {
+  // QR_CODE_TYPES에서 해당 타입의 color를 찾기
+  const qrCodeType = Object.values(QR_CODE_TYPES).find(
+    (qrType) => qrType.label === type.toUpperCase(),
+  );
+  return qrCodeType?.color || "bg-gray-100 text-gray-800";
 }
