@@ -1,3 +1,5 @@
+import axios from "axios";
+
 // 설정값을 파싱하고 기본값을 적용하는 함수
 const parseQrSettings = (settings: any, content: string, format: string) => {
   let parsedSettings = settings;
@@ -317,9 +319,8 @@ const convertSvgToPng = async (
 
 // SVG로 다운로드하는 함수
 const downloadAsSvg = async (qrCodeDataUrl: string, filename: string) => {
-  const response = await fetch(qrCodeDataUrl);
-  const blob = await response.blob();
-  downloadFile(blob, filename);
+  const response = await axios.get(qrCodeDataUrl, { responseType: "blob" });
+  downloadFile(response.data, filename);
 };
 
 // 일반 이미지 형식으로 다운로드하는 함수
@@ -332,9 +333,8 @@ const downloadAsImage = async (
   if (qrCodeDataUrl.includes("data:image/svg+xml") && format === "png") {
     try {
       const pngDataUrl = await convertSvgToPng(qrCodeDataUrl, 1024); // 고품질을 위해 1024x1024로 변환
-      const response = await fetch(pngDataUrl);
-      const blob = await response.blob();
-      downloadFile(blob, filename);
+      const response = await axios.get(pngDataUrl, { responseType: "blob" });
+      downloadFile(response.data, filename);
       return;
     } catch (error) {
       console.warn("SVG to PNG 변환 실패, PNG로 직접 생성 시도:", error);
@@ -344,9 +344,8 @@ const downloadAsImage = async (
     }
   }
 
-  const response = await fetch(qrCodeDataUrl);
-  const blob = await response.blob();
-  downloadFile(blob, filename);
+  const response = await axios.get(qrCodeDataUrl, { responseType: "blob" });
+  downloadFile(response.data, filename);
 };
 
 // 개발환경에서 디버깅 로그를 출력하는 함수
@@ -398,9 +397,8 @@ export const downloadQrCode = async (
         const pngDataUrl = await generateQrCode(pngSettings);
         const filename = generateFileName(title, type, "png");
 
-        const response = await fetch(pngDataUrl);
-        const blob = await response.blob();
-        downloadFile(blob, filename);
+        const response = await axios.get(pngDataUrl, { responseType: "blob" });
+        downloadFile(response.data, filename);
 
         return { success: true };
       } catch (retryError) {

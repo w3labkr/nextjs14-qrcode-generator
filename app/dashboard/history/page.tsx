@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import axios from "axios";
 
 import { SearchAndFilters } from "./components/search-and-filters";
 import { QrCodeGrid } from "./components/qr-code-grid";
@@ -60,13 +61,8 @@ export default function QrCodeHistoryPage() {
         sortOrder,
       });
 
-      const response = await fetch(`/api/qrcodes?${params}`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await axios.get(`/api/qrcodes?${params}`);
+      const data = response.data;
 
       if (data.qrCodes && Array.isArray(data.qrCodes)) {
         setQrCodes(data.qrCodes);
@@ -122,24 +118,19 @@ export default function QrCodeHistoryPage() {
     }
 
     try {
-      const response = await fetch(`/api/qrcodes/${qrCodeId}/favorite`, {
-        method: "POST",
-      });
+      await axios.post(`/api/qrcodes/${qrCodeId}/favorite`);
 
-      if (response.ok) {
-        setQrCodes((prev) =>
-          prev.map((qr) =>
-            qr.id === qrCodeId ? { ...qr, isFavorite: !qr.isFavorite } : qr,
-          ),
-        );
-        toast.success("즐겨찾기가 업데이트되었습니다.");
-      } else {
-        const data = await response.json();
-        toast.error(data.error || "즐겨찾기 업데이트에 실패했습니다.");
-      }
-    } catch (error) {
+      setQrCodes((prev) =>
+        prev.map((qr) =>
+          qr.id === qrCodeId ? { ...qr, isFavorite: !qr.isFavorite } : qr,
+        ),
+      );
+      toast.success("즐겨찾기가 업데이트되었습니다.");
+    } catch (error: any) {
       console.error("즐겨찾기 토글 실패:", error);
-      toast.error("즐겨찾기 업데이트에 실패했습니다.");
+      const errorMessage =
+        error.response?.data?.error || "즐겨찾기 업데이트에 실패했습니다.";
+      toast.error(errorMessage);
     }
   };
 
@@ -150,20 +141,15 @@ export default function QrCodeHistoryPage() {
     }
 
     try {
-      const response = await fetch(`/api/qrcodes/${qrCodeId}`, {
-        method: "DELETE",
-      });
+      await axios.delete(`/api/qrcodes/${qrCodeId}`);
 
-      if (response.ok) {
-        setQrCodes((prev) => prev.filter((qr) => qr.id !== qrCodeId));
-        toast.success("QR 코드가 삭제되었습니다.");
-      } else {
-        const data = await response.json();
-        toast.error(data.error || "QR 코드 삭제에 실패했습니다.");
-      }
-    } catch (error) {
+      setQrCodes((prev) => prev.filter((qr) => qr.id !== qrCodeId));
+      toast.success("QR 코드가 삭제되었습니다.");
+    } catch (error: any) {
       console.error("QR 코드 삭제 실패:", error);
-      toast.error("QR 코드 삭제에 실패했습니다.");
+      const errorMessage =
+        error.response?.data?.error || "QR 코드 삭제에 실패했습니다.";
+      toast.error(errorMessage);
     } finally {
       setDeleteDialogOpen(false);
       setQrCodeToDelete(null);

@@ -2,6 +2,7 @@ import { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
+import axios from "axios";
 import { TOKEN_CONFIG } from "@/lib/constants";
 import {
   validateAuthEnvironment,
@@ -30,22 +31,24 @@ async function refreshAccessToken(token: ExtendedJWT): Promise<ExtendedJWT> {
   try {
     // Google OAuth2 토큰 갱신 예시
     if (token.refreshToken) {
-      const response = await fetch("https://oauth2.googleapis.com/token", {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
+      const response = await axios.post(
+        "https://oauth2.googleapis.com/token",
+        new URLSearchParams({
           client_id: process.env.AUTH_GOOGLE_ID!,
           client_secret: process.env.AUTH_GOOGLE_SECRET!,
           grant_type: "refresh_token",
           refresh_token: token.refreshToken,
         }),
-        method: "POST",
-      });
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        },
+      );
 
-      const refreshedTokens = await response.json();
+      const refreshedTokens = response.data;
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw refreshedTokens;
       }
 
