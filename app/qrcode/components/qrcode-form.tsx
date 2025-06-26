@@ -26,10 +26,14 @@ import { CardStyle } from "./card-style";
 import { CardPreview } from "./card-preview";
 
 export const qrcodeFormSchema = z.object({
+  qrType: z.enum(["url", "text", "wifi", "email", "sms", "vcard", "location"]),
   url: z
     .string()
     .url("올바른 URL 형식을 입력해주세요. (예: https://example.com)"),
-  textarea: z.string(),
+  textarea: z
+    .string()
+    .min(1, "텍스트를 입력해주세요.")
+    .max(2000, "텍스트는 2000자 이하로 입력해주세요."),
   wifiSsid: z.string(),
   wifiPassword: z.string(),
   wifiEncryption: z.enum(["WPA", "WEP", "nopass"]),
@@ -60,8 +64,9 @@ export const qrcodeFormSchema = z.object({
 export type QrcodeFormValues = z.infer<typeof qrcodeFormSchema>;
 
 const defaultValues: QrcodeFormValues = {
+  qrType: "url" as const,
   url: "https://example.com",
-  textarea: "",
+  textarea: "안녕하세요! 이것은 QR 코드로 변환될 텍스트입니다.",
   wifiSsid: "",
   wifiPassword: "",
   wifiEncryption: "WPA", // WPA, WEP, nopass
@@ -94,7 +99,8 @@ export function QrcodeForm() {
     resolver: zodResolver(qrcodeFormSchema),
     defaultValues,
   });
-  const { handleSubmit } = form;
+  const { handleSubmit, setValue, watch } = form;
+  const qrType = watch("qrType");
 
   function onSubmit(values: QrcodeFormValues) {
     console.log(values);
@@ -108,7 +114,10 @@ export function QrcodeForm() {
         className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto"
       >
         <div>
-          <Tabs defaultValue="url">
+          <Tabs
+            value={qrType}
+            onValueChange={(value) => setValue("qrType", value as any)}
+          >
             <TabsList className="flex flex-row justify-start items-center overflow-x-auto">
               <TabsTrigger value="url">URL</TabsTrigger>
               <TabsTrigger value="text">텍스트</TabsTrigger>

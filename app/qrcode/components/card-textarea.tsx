@@ -51,8 +51,21 @@ function FieldTextarea() {
             텍스트 <span className="text-xs text-destructive">(필수)</span>
           </FormLabel>
           <FormControl>
-            <Textarea placeholder="여기에 텍스트를 입력하세요." {...field} />
+            <Textarea
+              placeholder="여기에 텍스트를 입력하세요."
+              className="min-h-[120px] resize-none"
+              {...field}
+            />
           </FormControl>
+          <div className="flex justify-between items-center">
+            <FormDescription>
+              텍스트, 숫자, 특수문자 등을 포함한 모든 내용을 QR 코드로 변환할 수
+              있습니다.
+            </FormDescription>
+            <span className="text-xs text-muted-foreground">
+              {field.value?.length || 0}/2000
+            </span>
+          </div>
           <FormMessage />
         </FormItem>
       )}

@@ -45,20 +45,68 @@ export function CardPreview() {
   // QR 코드 생성 함수 (버튼 클릭시에만 실행)
   const handleGenerateQrCode = useCallback(async () => {
     const values = getValues();
-    const url = values.url;
+    const qrType = values.qrType;
+    let text = "";
+    let validationSchema: z.ZodString | undefined;
 
-    if (!url || url.trim().length === 0) {
-      setError("URL을 입력해주세요.");
+    // QR 타입에 따라 텍스트와 유효성 검사 결정
+    switch (qrType) {
+      case "url":
+        text = values.url;
+        validationSchema = qrcodeFormSchema.shape.url;
+        break;
+      case "text":
+        text = values.textarea;
+        validationSchema = qrcodeFormSchema.shape.textarea;
+        break;
+      case "wifi":
+        // Wi-Fi QR 코드 형식: WIFI:T:WPA;S:MyNetwork;P:MyPassword;H:false;;
+        text = `WIFI:T:${values.wifiEncryption};S:${values.wifiSsid};P:${values.wifiPassword};H:${values.wifiIsHidden ? "true" : "false"};;`;
+        break;
+      case "email":
+        // 이메일 QR 코드 형식: mailto:email@example.com?subject=Subject&body=Body
+        text = `mailto:${values.emailAddress}?subject=${encodeURIComponent(values.emailSubject)}&body=${encodeURIComponent(values.emailBody)}`;
+        break;
+      case "sms":
+        // SMS QR 코드 형식: sms:+1234567890?body=Message
+        text = `sms:${values.smsPhoneNumber}?body=${encodeURIComponent(values.smsMessage)}`;
+        break;
+      case "vcard":
+        // vCard QR 코드 형식
+        text = `BEGIN:VCARD
+VERSION:3.0
+FN:${values.vcardFullName}
+TEL:${values.vcardPhoneNumber}
+EMAIL:${values.vcardEmail}
+ORG:${values.vcardOrganization}
+TITLE:${values.vcardJobTitle}
+URL:${values.vcardWebsite}
+ADR:;;${values.vcardAddress};;;;
+END:VCARD`;
+        break;
+      case "location":
+        // 위치 QR 코드 형식: geo:latitude,longitude
+        text = values.location;
+        break;
+      default:
+        text = values.url;
+        validationSchema = qrcodeFormSchema.shape.url;
+    }
+
+    if (!text || text.trim().length === 0) {
+      setError("내용을 입력해주세요.");
       setQrCodeUrl("");
       return;
     }
 
-    // qrcodeFormSchema를 사용한 URL 유효성 검사
-    const urlValidation = qrcodeFormSchema.shape.url.safeParse(url);
-    if (!urlValidation.success) {
-      setError(urlValidation.error.errors[0].message);
-      setQrCodeUrl("");
-      return;
+    // 지정된 유효성 검사가 있는 경우 실행
+    if (validationSchema) {
+      const validation = validationSchema.safeParse(text);
+      if (!validation.success) {
+        setError(validation.error.errors[0].message);
+        setQrCodeUrl("");
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -66,7 +114,7 @@ export function CardPreview() {
 
     try {
       const result = await generateQrCode({
-        text: url,
+        text: text,
         type: (values.previewExportFormat || "png") as "png" | "svg" | "jpg",
         width: 256,
         color: {
