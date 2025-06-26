@@ -135,7 +135,7 @@ nextjs14-qrcode-generator/
 * `qrcode.react@^4.2.0` - React QR 코드 컴포넌트
 * `canvas@^3.1.0` - 서버사이드 캔버스 렌더링
 
-**UI 컴포넌트 (Radix UI 기반 47개):**
+**UI 컴포넌트 (Radix UI 기반 46개):**
 * `@radix-ui/react-*` - 27개의 다양한 UI 프리미티브 (accordion, alert-dialog, avatar, checkbox, dialog, dropdown-menu, hover-card, label, menubar, navigation-menu, popover, progress, radio-group, scroll-area, select, separator, slider, slot, switch, tabs, toggle, tooltip 등)
 * `lucide-react@^0.515.0` - 아이콘 라이브러리
 * `tailwindcss@^3.4.1` - CSS 프레임워크
@@ -563,16 +563,16 @@ model QrTemplate {
 
 **✅ 완료된 주요 마일스톤**:
 
-* **코드베이스 규모**: 170+ 파일, 99개 npm 패키지
-* **컴포넌트 시스템**: 47개의 재사용 가능한 UI 컴포넌트
+* **코드베이스 규모**: 170+ 파일, 105개 npm 패키지 (74 dependencies + 31 devDependencies)
+* **컴포넌트 시스템**: 46개의 재사용 가능한 UI 컴포넌트
 * **QR 코드 유형**: 7가지 유형 완전 지원 (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
-* **사용자 인증**: NextAuth.js v5 기반 Google OAuth 완전 구현
-* **데이터베이스**: Supabase PostgreSQL + Prisma ORM 완전 연동
+* **사용자 인증**: NextAuth.js v5.0.0-beta.28 기반 Google OAuth 완전 구현
+* **데이터베이스**: Supabase PostgreSQL + Prisma ORM v6.10.1 완전 연동
 * **보안**: Row Level Security (RLS) 전체 테이블 적용
 * **반응형 UI**: 모바일 퍼스트 디자인 완료
 * **개발 도구**: TypeScript, ESLint, Prettier 완전 적용
 * **UI 라이브러리**: 27개 Radix UI 프리미티브 기반 shadcn/ui 통합
-* **상태 관리**: Zustand + React Query + React Hook Form 완전 구현
+* **상태 관리**: Zustand v5.0.5 + React Query v5.80.7 + React Hook Form v7.58.0 완전 구현
 
 ### **6.2. 현재 프로덕션 준비 상태**
 
@@ -601,10 +601,11 @@ model QrTemplate {
 
 ### **7.1. 현재 버전 정보**
 
-* **프로젝트 버전**: v1.2.104 (2025년 6월 기준)
+* **프로젝트 버전**: v1.4.1 (2025년 6월 27일 기준)
 * **Next.js**: 14.2.30
 * **Node.js 요구사항**: `.nvmrc` 파일 기반 버전 관리
 * **패키지 관리**: npm 기반 의존성 관리
+* **총 패키지 수**: 105개 (74 dependencies + 31 devDependencies)
 
 ### **7.2. 주요 업데이트 포인트**
 

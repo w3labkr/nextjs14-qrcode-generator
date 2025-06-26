@@ -24,6 +24,7 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * **App Router**: Utilize the App Router for routing, layouts, and server components.
 * **Server Actions**: Use Server Actions for mutations and data fetching on the server side.
 * **API Routes**: For client-side data fetching, use API Routes.
+* **HTTP Client**: Use `axios` instead of `fetch` for all API calls to ensure consistent error handling and request/response interceptors.
 
 ### React
 
@@ -33,7 +34,7 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 
 ### Authentication
 
-* **NextAuth.js**: Use NextAuth.js v5 (beta) with Prisma adapter for authentication.
+* **NextAuth.js**: Use NextAuth.js v5.0.0-beta.28 with Prisma adapter for authentication.
 * **Database**: Authentication data is stored using `@auth/prisma-adapter`.
 
 ### Database
@@ -104,7 +105,7 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * `auth/`: Authentication-related pages (signin, error, verify-request).
   * `dashboard/`: Protected dashboard pages and features.
   * `qrcode/`: QR code generation main page with components.
-    * `components/`: QR code specific components (form cards, preview, styling).
+    * `components/`: QR code specific components (form cards, preview, styling, handlers).
 * `components/`: Contains reusable components.
   * `ui/`: Contains shadcn/ui components (46 components).
   * Other utility components (address-search, loading-spinner, user-nav, etc.).
@@ -112,7 +113,7 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * Database connection, download utilities, QR code utilities, auth helpers, etc.
   * `supabase/`: Supabase client and related utilities.
 * `hooks/`: Contains custom hooks and Zustand stores.
-  * Custom hooks for QR code generation, mobile detection, token refresh, template management, etc.
+  * Custom hooks for QR code generation, mobile detection, token refresh, remember me functionality, etc.
 * `types/`: Contains TypeScript type definitions.
   * Type definitions for QR codes, data management, environment, authentication, RLS, etc.
 * `public/`: Contains static assets.
@@ -139,12 +140,12 @@ If Copilot's suggestions do not meet expectations, actively modify and provide f
 
 ## Project Current Status
 
-* **Version**: v1.3.56 (as of June 2025)
-* **File Count**: 165+ TypeScript/JavaScript files
-* **Package Count**: 101 npm packages (75 dependencies + 26 devDependencies)
+* **Version**: v1.4.1 (as of 2025년 6월 27일)
+* **File Count**: 170+ TypeScript/JavaScript files
+* **Package Count**: 105 npm packages (74 dependencies + 31 devDependencies)
 * **UI Components**: 46 shadcn/ui components
 * **QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
-* **Authentication**: NextAuth.js v5 (beta.28) with Google OAuth
+* **Authentication**: NextAuth.js v5.0.0-beta.28 with Google OAuth
 * **Database**: Supabase PostgreSQL with Prisma ORM v6.10.1
 * **Security**: Row Level Security (RLS) implemented
 * **State Management**: Zustand v5.0.5 stores implemented for global state management

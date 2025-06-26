@@ -4,6 +4,7 @@
 
 - [DEPENDENCIES](#dependencies)
   - [Table of Contents](#table-of-contents)
+  - [Current Package Summary](#current-package-summary)
   - [Git](#git)
   - [Next.js](#nextjs)
   - [shadcn](#shadcn)
@@ -23,6 +24,23 @@
   - [ESLint](#eslint)
   - [Prettier](#prettier)
   - [Troubleshooting](#troubleshooting)
+
+## Current Package Summary
+
+**Project Version**: v1.4.1 (as of 2025년 6월 27일)
+
+**Total Packages**: 105 (74 dependencies + 31 devDependencies)
+
+**Core Technologies**:
+
+- Next.js 14.2.30
+- React 18
+- TypeScript 5
+- Node.js (managed via .nvmrc)
+
+**UI Components**: 46 shadcn/ui components based on Radix UI primitives
+
+**QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
 
 ## Git
 
