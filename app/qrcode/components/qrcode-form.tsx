@@ -34,17 +34,23 @@ export const qrcodeFormSchema = z.object({
     .string()
     .min(1, "텍스트를 입력해주세요.")
     .max(2000, "텍스트는 2000자 이하로 입력해주세요."),
-  wifiSsid: z.string(),
-  wifiPassword: z.string(),
+  wifiSsid: z.string().min(1, "Wi-Fi 네트워크 이름(SSID)을 입력해주세요."),
+  wifiPassword: z.string().min(1, "Wi-Fi 비밀번호를 입력해주세요."),
   wifiEncryption: z.enum(["WPA", "WEP", "nopass"]),
   wifiIsHidden: z.boolean(),
-  smsPhoneNumber: z.string(),
+  smsPhoneNumber: z
+    .string()
+    .min(1, "전화번호를 입력해주세요.")
+    .regex(/^[\d\-\+\(\)\s]+$/, "올바른 전화번호 형식을 입력해주세요."),
   smsMessage: z.string(),
-  emailAddress: z.string(),
+  emailAddress: z
+    .string()
+    .min(1, "이메일 주소를 입력해주세요.")
+    .email("올바른 이메일 형식을 입력해주세요."),
   emailSubject: z.string(),
   emailBody: z.string(),
-  location: z.string(),
-  vcardFullName: z.string(),
+  location: z.string().min(1, "주소를 입력해주세요."),
+  vcardFullName: z.string().min(1, "이름을 입력해주세요."),
   vcardPhoneNumber: z.string(),
   vcardEmail: z.string(),
   vcardOrganization: z.string(),
@@ -67,17 +73,17 @@ const defaultValues: QrcodeFormValues = {
   qrType: "url" as const,
   url: "https://example.com",
   textarea: "안녕하세요! 이것은 QR 코드로 변환될 텍스트입니다.",
-  wifiSsid: "",
-  wifiPassword: "",
+  wifiSsid: "MyWiFi",
+  wifiPassword: "password123",
   wifiEncryption: "WPA", // WPA, WEP, nopass
   wifiIsHidden: false,
-  smsPhoneNumber: "",
-  smsMessage: "",
-  emailAddress: "",
-  emailSubject: "",
-  emailBody: "",
-  location: "",
-  vcardFullName: "",
+  smsPhoneNumber: "010-1234-5678",
+  smsMessage: "안녕하세요!",
+  emailAddress: "example@email.com",
+  emailSubject: "제목",
+  emailBody: "메일 내용",
+  location: "서울시 강남구 테헤란로 427",
+  vcardFullName: "홍길동",
   vcardPhoneNumber: "",
   vcardEmail: "",
   vcardOrganization: "",

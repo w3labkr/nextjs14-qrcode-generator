@@ -35,17 +35,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export function CardWifi() {
-  // QR 콘텐츠 생성 함수
-  // const generateWifiContent = (data: WifiFormData) => {
-  //   if (!data.ssid) return "";
-
-  //   const escapedSsid = data.ssid.replace(/[\\";,]/g, "\\$&");
-  //   const escapedPassword = data.password?.replace(/[\\";,]/g, "\\$&") || "";
-  //   const hiddenFlag = data.isHidden ? "true" : "false";
-
-  //   return `WIFI:T:${data.encryption};S:${escapedSsid};P:${escapedPassword};H:${hiddenFlag};;`;
-  // };
-
   return (
     <Card>
       <CardHeader>
