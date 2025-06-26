@@ -11,6 +11,7 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * **Response Language**: Please provide all suggestions and responses in **Korean**.
 * **Maintain Context**: Understand and utilize the context based on the current file you are working on, surrounding code, and other related open files when suggesting code.
 * **Adhere to Code Style**: Identify the project's existing code style (indentation, naming conventions, etc.) and generate code with consistent styling.
+* **Code Readability**: Prioritize code readability over brevity. Use descriptive variable names, clear function names, and logical code structure. Break down complex logic into smaller, understandable pieces.
 * **Avoid Unnecessary Comments**: When generating code, **do not add comments.** Developers will add comments manually as needed.
 * **Idiomatic Code**: Write code using common idioms and best practices for the specific programming language and framework.
 * **Modularity and Reusability**: Where possible, consider modularizing code and making it reusable.
