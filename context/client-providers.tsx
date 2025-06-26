@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { LoadingSpinner } from "@/components/loading-spinner";
 
 const AuthProvider = dynamic(
-  () => import("@/components/auth-provider").then((mod) => mod.AuthProvider),
+  () => import("@/context/auth-provider").then((mod) => mod.AuthProvider),
   {
     ssr: false,
     loading: () => <LoadingSpinner />,

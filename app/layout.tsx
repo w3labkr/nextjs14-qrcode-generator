@@ -3,7 +3,7 @@ import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
-import { AuthProvider } from "@/components/auth-provider";
+import { AuthProvider } from "@/context/auth-provider";
 import { ClientOnly } from "@/components/client-only";
 import { LoadingSpinner } from "@/components/loading-spinner";
 
