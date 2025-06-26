@@ -36,6 +36,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 
 export function CardPreview() {
   const { control, getValues, setError, clearErrors } =
@@ -158,11 +159,16 @@ export function CardPreview() {
         <CardDescription>
           {isAuthenticated
             ? '"QR 코드 저장" 버튼을 클릭하면 QR 코드가 생성되고 저장됩니다.'
-            : '"QR 코드 생성" 버튼을 클릭하면 QR 코드가 생성됩니다. 로그인하시면 QR 코드를 저장할 수 있습니다.'}
+            : '"QR 코드 생성" 버튼을 클릭하면 QR 코드가 생성됩니다.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
-        <div className="w-64 h-64 bg-gray-100 p-4 rounded-lg flex items-center justify-center">
+        <div
+          className={cn(
+            "w-64 h-64 p-4 rounded-lg flex items-center justify-center",
+            qrCode ? "bg-transparent" : "bg-gray-100",
+          )}
+        >
           {isLoading ? (
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary">
               &nbsp;
