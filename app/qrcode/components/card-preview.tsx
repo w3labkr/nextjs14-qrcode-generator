@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { generateQrCode } from "@/app/actions/qr-code-generator";
 import { saveQrCode } from "@/app/actions/qr-code-management";
 import { getQrHandler, handleQrDownload } from "./qr-handlers";
-import { getAuthStatus } from "@/lib/auth-helpers";
+import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -42,16 +42,8 @@ export function CardPreview() {
     useFormContext<QrcodeFormValues>();
   const [qrCode, setQrCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
-  // 컴포넌트 마운트 시 인증 상태 확인
-  useEffect(() => {
-    const checkAuth = async () => {
-      const authStatus = await getAuthStatus();
-      setIsAuthenticated(authStatus.isAuthenticated);
-    };
-    checkAuth();
-  }, []);
+  const { data: session, status } = useSession();
+  const isAuthenticated = !!session?.user;
 
   // 내보내기 포맷만 실시간 감지 (다운로드용)
   const exportFormat = useWatch({ control, name: "previewExportFormat" });
@@ -82,9 +74,6 @@ export function CardPreview() {
     setIsLoading(true);
 
     try {
-      // 인증 상태 확인
-      const authStatus = await getAuthStatus();
-
       const qrResult = await generateQrCode({
         text: result.text,
         type: (values.previewExportFormat || "png") as "png" | "svg" | "jpg",
@@ -112,7 +101,7 @@ export function CardPreview() {
       setQrCode(qrResult);
 
       // 로그인한 사용자만 데이터베이스에 저장
-      if (authStatus.isAuthenticated) {
+      if (isAuthenticated) {
         const saveResult = await saveQrCode({
           type: values.qrType,
           content: result.text,
@@ -156,7 +145,7 @@ export function CardPreview() {
     } finally {
       setIsLoading(false);
     }
-  }, [getValues, setError, clearErrors]);
+  }, [getValues, setError, clearErrors, isAuthenticated]);
 
   // 다운로드 함수
   const handleDownload = useCallback(() => {
@@ -175,7 +164,7 @@ export function CardPreview() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
-        <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+        <div className="w-64 h-64 bg-gray-100 p-4 rounded-lg flex items-center justify-center">
           {isLoading ? (
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary">
               &nbsp;
