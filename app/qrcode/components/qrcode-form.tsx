@@ -27,9 +27,7 @@ import { CardPreview } from "./card-preview";
 
 export const qrcodeFormSchema = z.object({
   qrType: z.enum(["url", "text", "wifi", "email", "sms", "vcard", "location"]),
-  url: z
-    .string()
-    .url("올바른 URL 형식을 입력해주세요. (예: https://example.com)"),
+  url: z.string().url("올바른 URL 형식을 입력해주세요."),
   textarea: z
     .string()
     .min(1, "텍스트를 입력해주세요.")

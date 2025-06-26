@@ -5,7 +5,9 @@ import { useForm, useFormContext, useWatch } from "react-hook-form";
 import * as z from "zod";
 import { QrcodeFormValues, qrcodeFormSchema } from "./qrcode-form";
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import { generateQrCode } from "@/app/actions/qr-code-generator";
+import { saveQrCode } from "@/app/actions/qr-code-management";
 import { getQrHandler, handleQrDownload } from "./qr-handlers";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +41,6 @@ export function CardPreview() {
     useFormContext<QrcodeFormValues>();
   const [qrCode, setQrCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [generalError, setGeneralError] = useState<string>("");
 
   // 내보내기 포맷만 실시간 감지 (다운로드용)
   const exportFormat = useWatch({ control, name: "previewExportFormat" });
@@ -50,7 +51,6 @@ export function CardPreview() {
 
     // 모든 필드 오류 초기화
     clearErrors();
-    setGeneralError("");
 
     // QR 타입별 핸들러로 텍스트 생성 및 유효성 검사
     const handler = getQrHandler(values.qrType);
@@ -63,13 +63,12 @@ export function CardPreview() {
     }
 
     if (!result.text || result.text.trim().length === 0) {
-      setGeneralError("내용을 입력해주세요.");
+      toast.error("내용을 입력해주세요.");
       setQrCode("");
       return;
     }
 
     setIsLoading(true);
-    setGeneralError("");
 
     try {
       const qrResult = await generateQrCode({
@@ -97,9 +96,42 @@ export function CardPreview() {
       });
 
       setQrCode(qrResult);
+
+      // 데이터베이스에 QR 코드 저장
+      const saveResult = await saveQrCode({
+        type: values.qrType,
+        content: result.text,
+        settings: {
+          color: {
+            dark: values.styleForegroundColor || "#000000",
+            light: values.styleBackgroundColor || "#ffffff",
+          },
+          width: 256,
+          logo: values.styleLogo || undefined,
+          frameOptions:
+            values.styleBorderStyle !== "none"
+              ? {
+                  type: values.styleBorderStyle || "simple",
+                  text: values.styleText || "",
+                  textColor: values.styleTextColor || "#000000",
+                  backgroundColor: values.styleBackgroundColor || "#ffffff",
+                  borderColor: values.styleBorderColor || "#000000",
+                  borderWidth: values.styleBorderWidth || 2,
+                  borderRadius: values.styleBorderRadius || 8,
+                  fontSize: values.styleFontSize || 16,
+                }
+              : undefined,
+        },
+      });
+
+      if (saveResult.success) {
+        toast.success("QR 코드가 성공적으로 저장되었습니다!");
+      } else {
+        toast.error(saveResult.error || "QR 코드 저장에 실패했습니다.");
+      }
     } catch (err) {
       console.error("QR 코드 생성 오류:", err);
-      setGeneralError("QR 코드 생성에 실패했습니다.");
+      toast.error("QR 코드 생성에 실패했습니다.");
       setQrCode("");
     } finally {
       setIsLoading(false);
@@ -125,10 +157,6 @@ export function CardPreview() {
           {isLoading ? (
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary">
               &nbsp;
-            </div>
-          ) : generalError ? (
-            <div className="text-center text-sm text-red-500 p-4">
-              <p>{generalError}</p>
             </div>
           ) : qrCode ? (
             <img

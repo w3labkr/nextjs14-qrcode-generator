@@ -53,6 +53,10 @@ function FieldUrl() {
           <FormControl>
             <Input placeholder="https://example.com" {...field} />
           </FormControl>
+          <FormDescription>
+            QR 코드가 연결할 웹사이트의 URL을 입력하세요. <br />
+            올바른 URL 형식이어야 합니다. (예: https://example.com)
+          </FormDescription>
           <FormMessage />
         </FormItem>
       )}
