@@ -5,56 +5,47 @@ import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { QrcodeFormValues } from "./qrcode-form";
 
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 
-export function CardWifi() {
+export function CardEmail() {
   const { control } = useFormContext<QrcodeFormValues>();
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Wi-Fi 네트워크</CardTitle>
+        <CardTitle>이메일</CardTitle>
         <CardDescription>
-          QR 코드에 포함할 Wi-Fi 네트워크 정보를 입력하세요.
+          이메일 주소와 제목, 내용을 입력하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <FormField
           control={control}
-          name="wifiSsid"
+          name="emailAddress"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                네트워크 이름 (SSID){" "}
+                이메일 주소{" "}
                 <span className="text-xs text-destructive">(필수)</span>
               </FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Wi-Fi 네트워크 이름을 입력하세요."
-                  {...field}
-                />
+                <Input type="email" placeholder="me@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -62,19 +53,14 @@ export function CardWifi() {
         />
         <FormField
           control={control}
-          name="wifiPassword"
+          name="emailSubject"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                비밀번호{" "}
-                <span className="text-xs text-destructive">(필수)</span>
+                제목 <span className="text-xs">(선택)</span>
               </FormLabel>
               <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Wi-Fi 비밀번호를 입력하세요."
-                  {...field}
-                />
+                <Input placeholder="제목을 입력하세요." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,15 +68,16 @@ export function CardWifi() {
         />
         <FormField
           control={control}
-          name="wifiWpa"
+          name="emailBody"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                암호화 방식 <span className="text-xs">(선택)</span>
+                내용 <span className="text-xs">(선택)</span>
               </FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Wi-Fi 암호화 방식을 입력하세요"
+                <Textarea
+                  placeholder="내용을 입력하세요."
+                  className="min-h-[100px]"
                   {...field}
                 />
               </FormControl>

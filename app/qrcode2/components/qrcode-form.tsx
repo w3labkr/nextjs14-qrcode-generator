@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFormContext } from "react-hook-form";
+import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -28,39 +25,70 @@ import {
 } from "@/components/ui/form";
 
 import { CardWifi } from "./card-wifi";
-import { CardText } from "./card-text";
+import { CardTextarea } from "./card-textarea";
 import { CardUrl } from "./card-url";
+import { CardEmail } from "./card-email";
+import { CardSms } from "./card-sms";
+import { CardVCard } from "./card-vcard";
+import { CardLocation } from "./card-location";
 
-const formSchema = z.object({
+const qrcodeFormSchema = z.object({
   url: z.string(),
   text: z.string(),
-  wifi_ssid: z.string(),
-  wifi_password: z.string(),
-  wifi_wpa: z.string(),
+  wifiSsid: z.string(),
+  wifiPassword: z.string(),
+  wifiWpa: z.string(),
+  smsPhoneNumber: z.string(),
+  smsMessage: z.string(),
+  emailAddress: z.string(),
+  emailSubject: z.string(),
+  emailBody: z.string(),
+  location: z.string(),
+  vcardFullName: z.string(),
+  vcardPhoneNumber: z.string(),
+  vcardEmail: z.string(),
+  vcardOrganization: z.string(),
+  vcardJobTitle: z.string(),
+  vcardWebsite: z.string(),
+  vcardAddress: z.string(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+export type QrcodeFormValues = z.infer<typeof qrcodeFormSchema>;
 
 export function QrcodeForm() {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<QrcodeFormValues>({
+    resolver: zodResolver(qrcodeFormSchema),
     defaultValues: {
       url: "",
       text: "",
-      wifi_ssid: "",
-      wifi_password: "",
-      wifi_wpa: "",
+      wifiSsid: "",
+      wifiPassword: "",
+      wifiWpa: "",
+      smsPhoneNumber: "",
+      smsMessage: "",
+      emailAddress: "",
+      emailSubject: "",
+      emailBody: "",
+      location: "",
+      vcardFullName: "",
+      vcardPhoneNumber: "",
+      vcardEmail: "",
+      vcardOrganization: "",
+      vcardJobTitle: "",
+      vcardWebsite: "",
+      vcardAddress: "",
     },
   });
   const { handleSubmit } = form;
 
-  function onSubmit(values: FormValues) {
+  function onSubmit(values: QrcodeFormValues) {
     console.log(values);
   }
 
   return (
     <Form {...form}>
       <form
+        noValidate
         onSubmit={handleSubmit(onSubmit)}
         className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto"
       >
@@ -79,10 +107,22 @@ export function QrcodeForm() {
               <CardUrl />
             </TabsContent>
             <TabsContent value="text">
-              <CardText />
+              <CardTextarea />
             </TabsContent>
             <TabsContent value="wifi">
               <CardWifi />
+            </TabsContent>
+            <TabsContent value="email">
+              <CardEmail />
+            </TabsContent>
+            <TabsContent value="sms">
+              <CardSms />
+            </TabsContent>
+            <TabsContent value="vcard">
+              <CardVCard />
+            </TabsContent>
+            <TabsContent value="location">
+              <CardLocation />
             </TabsContent>
           </Tabs>
         </div>

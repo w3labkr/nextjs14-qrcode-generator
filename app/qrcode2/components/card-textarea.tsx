@@ -1,8 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFormContext } from "react-hook-form";
+import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { z } from "zod";
+import { QrcodeFormValues } from "./qrcode-form";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,8 +29,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-export function CardText() {
-  const { control } = useFormContext();
+export function CardTextarea() {
+  const { control } = useFormContext<QrcodeFormValues>();
 
   return (
     <Card>
@@ -37,13 +38,15 @@ export function CardText() {
         <CardTitle>일반 텍스트</CardTitle>
         <CardDescription>QR 코드에 포함할 텍스트를 입력하세요.</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-6">
+      <CardContent className="space-y-4">
         <FormField
           control={control}
           name="text"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>텍스트</FormLabel>
+              <FormLabel>
+                텍스트 <span className="text-xs text-destructive">(필수)</span>
+              </FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="여기에 텍스트를 입력하세요."
