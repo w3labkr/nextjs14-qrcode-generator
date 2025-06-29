@@ -32,6 +32,15 @@ import { Label } from "@/components/ui/label";
 import { DatePickerWithRange } from "@/components/ui/date-picker";
 import { DateRange } from "react-day-picker";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
+import {
   AlertCircle,
   Activity,
   Shield,
@@ -80,9 +89,13 @@ const LOG_LEVEL_COLORS = {
 export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
   const [logs, setLogs] = useState<ApplicationLogData[]>(initialData);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [filters, setFilters] = useState<LogFilterOptions>({
     limit: 50,
     orderBy: "desc" as const,
+    page: 1,
   });
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [selectedLog, setSelectedLog] = useState<ApplicationLogData | null>(
@@ -99,6 +112,7 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...filters,
+          page: currentPage,
           startDate: dateRange?.from,
           endDate: dateRange?.to,
         }),
@@ -110,6 +124,8 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
 
       const data = await response.json();
       setLogs(data.logs || []);
+      setTotalCount(data.totalCount || 0);
+      setTotalPages(Math.ceil((data.totalCount || 0) / (filters.limit || 50)));
     } catch (error) {
       console.error("로그 가져오기 실패:", error);
       toast({
@@ -120,6 +136,18 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 페이지 변경 함수
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setFilters((prev) => ({ ...prev, page }));
+  };
+
+  // 필터 변경 시 첫 페이지로 리셋
+  const updateFilters = (newFilters: Partial<LogFilterOptions>) => {
+    setCurrentPage(1);
+    setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
   };
 
   // CSV 내보내기
@@ -156,7 +184,15 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
 
   useEffect(() => {
     fetchLogs();
-  }, []);
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchLogs();
+    }
+  }, [filters.type, filters.level, filters.search, filters.limit, dateRange]);
 
   return (
     <div className="space-y-6">
@@ -180,10 +216,9 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                     : filters.type || "all"
                 }
                 onValueChange={(value) =>
-                  setFilters((prev) => ({
-                    ...prev,
+                  updateFilters({
                     type: value === "all" ? undefined : (value as any),
-                  }))
+                  })
                 }
               >
                 <SelectTrigger>
@@ -210,10 +245,9 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                     : filters.level || "all"
                 }
                 onValueChange={(value) =>
-                  setFilters((prev) => ({
-                    ...prev,
+                  updateFilters({
                     level: value === "all" ? undefined : (value as any),
-                  }))
+                  })
                 }
               >
                 <SelectTrigger>
@@ -238,10 +272,9 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                 placeholder="메시지나 액션 검색"
                 value={filters.search || ""}
                 onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
+                  updateFilters({
                     search: e.target.value || undefined,
-                  }))
+                  })
                 }
               />
             </div>
@@ -252,7 +285,7 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
               <Select
                 value={filters.limit?.toString() || "50"}
                 onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, limit: parseInt(value) }))
+                  updateFilters({ limit: parseInt(value) })
                 }
               >
                 <SelectTrigger>
@@ -309,7 +342,7 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
           <CardTitle className="flex items-center space-x-2">
             <FileText className="h-5 w-5" />
             <span>시스템 로그</span>
-            <Badge variant="secondary">{logs.length}개</Badge>
+            <Badge variant="secondary">{totalCount}개</Badge>
           </CardTitle>
           <CardDescription>
             시스템에서 발생한 모든 로그를 확인할 수 있습니다.
@@ -492,6 +525,76 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() =>
+                        currentPage > 1 && handlePageChange(currentPage - 1)
+                      }
+                      className={
+                        currentPage <= 1
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
+                    >
+                      이전
+                    </PaginationPrevious>
+                  </PaginationItem>
+
+                  {/* 페이지 번호들 */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(pageNum)}
+                          isActive={currentPage === pageNum}
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() =>
+                        currentPage < totalPages &&
+                        handlePageChange(currentPage + 1)
+                      }
+                      className={
+                        currentPage >= totalPages
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
+                    >
+                      다음
+                    </PaginationNext>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+
+              <div className="text-center text-sm text-muted-foreground mt-2">
+                페이지 {currentPage} / {totalPages} (총 {totalCount}개)
+              </div>
             </div>
           )}
         </CardContent>

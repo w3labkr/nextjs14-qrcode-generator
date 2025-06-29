@@ -66,11 +66,12 @@ async function testUnifiedLogging() {
     // 2. 로그 조회 테스트
     console.log("\n2. 로그 조회 테스트...");
 
-    const logs = await UnifiedLogger.getLogs({
+    const logsResult = await UnifiedLogger.getLogs({
       limit: 10,
       orderBy: "desc",
     });
-    console.log(`✅ 최근 로그 ${logs.length}개 조회 완료`);
+    console.log(`✅ 최근 로그 ${logsResult.logs.length}개 조회 완료`);
+    console.log(`   총 로그 수: ${logsResult.totalCount}`);
 
     // 3. 통계 테스트
     console.log("\n3. 로그 통계 테스트...");
@@ -86,7 +87,8 @@ async function testUnifiedLogging() {
     return {
       success: true,
       logsCreated: 6,
-      logsRetrieved: logs.length,
+      logsRetrieved: logsResult.logs.length,
+      totalCount: logsResult.totalCount,
       stats,
     };
   } catch (error) {

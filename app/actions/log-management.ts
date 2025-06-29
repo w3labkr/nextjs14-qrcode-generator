@@ -183,8 +183,8 @@ export async function getLogsAction(filters: LogFilterOptions = {}) {
       filters.userId = userId;
     }
 
-    const logs = await UnifiedLogger.getLogs(filters, userId, userIsAdmin);
-    return { success: true, data: logs };
+    const result = await UnifiedLogger.getLogs(filters, userId, userIsAdmin);
+    return { success: true, data: result.logs, pagination: result };
   } catch (error) {
     console.error("로그 조회 액션 실패:", error);
     return { success: false, error: "로그 조회에 실패했습니다" };

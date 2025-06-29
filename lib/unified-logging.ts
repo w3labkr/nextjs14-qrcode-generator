@@ -354,6 +354,7 @@ export class UnifiedLogger {
       endDate,
       limit = 100,
       offset = 0,
+      page = 1,
       orderBy = "desc",
       ipAddress,
       search,
@@ -388,21 +389,36 @@ export class UnifiedLogger {
       if (endDate) where.createdAt.lte = endDate;
     }
 
-    return await prisma.applicationLog.findMany({
-      where,
-      orderBy: { createdAt: orderBy },
-      take: limit,
-      skip: offset,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    // 페이지네이션 계산
+    const actualOffset = page ? (page - 1) * limit : offset;
+
+    // 총 개수와 데이터를 동시에 조회
+    const [totalCount, logs] = await Promise.all([
+      prisma.applicationLog.count({ where }),
+      prisma.applicationLog.findMany({
+        where,
+        orderBy: { createdAt: orderBy },
+        take: limit,
+        skip: actualOffset,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
-      },
-    });
+      }),
+    ]);
+
+    return {
+      logs,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      limit,
+    };
   }
 
   /**

@@ -48,12 +48,15 @@ export async function POST(request: NextRequest) {
       clientInfo,
     );
 
-    const logs = await UnifiedLogger.getLogs(filters);
+    const result = await UnifiedLogger.getLogs(
+      filters,
+      session.user.id || session.user.email,
+      true,
+    );
 
     return NextResponse.json({
       success: true,
-      logs,
-      total: logs.length,
+      ...result,
     });
   } catch (error) {
     console.error("관리자 로그 조회 실패:", error);

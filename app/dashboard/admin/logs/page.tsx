@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { AdminLogsContent } from "./components/admin-logs-content";
 import { LogStatistics } from "./components/log-statistics";
 import { LogCleanupManager } from "./components/log-cleanup-manager";
-import { AlertTriangle, Shield, Activity } from "lucide-react";
+import { AlertTriangle, Activity } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -45,30 +45,18 @@ export default async function AdminLogsPage() {
 
   if (!isAdmin) {
     return (
-      <div className="container mx-auto p-6 space-y-6">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>접근 권한 없음</AlertTitle>
-          <AlertDescription>
-            관리자만 이 페이지에 접근할 수 있습니다. 계정 권한을 확인해주세요.
-          </AlertDescription>
-        </Alert>
-      </div>
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>접근 권한 없음</AlertTitle>
+        <AlertDescription>
+          관리자만 이 페이지에 접근할 수 있습니다. 계정 권한을 확인해주세요.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* 헤더 */}
-      <div className="flex items-center space-x-2">
-        <Shield className="h-6 w-6 text-primary" />
-        <h1 className="text-3xl font-bold tracking-tight">관리자 로그 관리</h1>
-      </div>
-
-      <div className="text-sm text-muted-foreground">
-        시스템 로그, 오류 추적 및 사용자 활동을 모니터링합니다.
-      </div>
-
+    <div className="space-y-6">
       {/* 통계 카드 */}
       <Suspense
         fallback={

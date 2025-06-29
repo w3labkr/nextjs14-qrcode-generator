@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { UnifiedLogger } from "@/lib/unified-logging";
 import { PerformanceLogger } from "@/lib/logging-middleware";
 import {
@@ -142,14 +143,14 @@ async function examplePerformanceTracking() {
 // 9. 로그 조회 및 필터링
 async function exampleLogRetrieval() {
   // 특정 사용자의 최근 로그 조회
-  const userLogs = await UnifiedLogger.getLogs({
+  const userLogsResult = await UnifiedLogger.getLogs({
     userId: "user123",
     limit: 50,
     orderBy: "desc",
   });
 
   // 에러 로그만 조회
-  const errorLogs = await UnifiedLogger.getLogs({
+  const errorLogsResult = await UnifiedLogger.getLogs({
     type: "ERROR",
     level: ["ERROR", "FATAL"],
     startDate: new Date("2023-01-01"),
@@ -157,13 +158,17 @@ async function exampleLogRetrieval() {
   });
 
   // 특정 액션 검색
-  const qrLogs = await UnifiedLogger.getLogs({
+  const qrLogsResult = await UnifiedLogger.getLogs({
     search: "QR 코드",
     type: "QR_GENERATION",
     limit: 100,
   });
 
-  return { userLogs, errorLogs, qrLogs };
+  return {
+    userLogs: userLogsResult.logs,
+    errorLogs: errorLogsResult.logs,
+    qrLogs: qrLogsResult.logs,
+  };
 }
 
 // 10. 로그 통계
@@ -202,7 +207,7 @@ export async function apiRouteExample(request: Request) {
 
     // API 요청 로그 (성공)
     await logApiRequest(
-      request as any,
+      request as NextRequest,
       response,
       "user123",
       Date.now() - startTime,
@@ -213,6 +218,7 @@ export async function apiRouteExample(request: Request) {
     // 에러 로그
     await logError(
       error as Error,
+      request as NextRequest,
       "user123",
       "API_ERROR_001",
       request.headers.get("x-request-id") || undefined,
@@ -226,7 +232,7 @@ export async function apiRouteExample(request: Request) {
 
     // API 요청 로그 (실패)
     await logApiRequest(
-      request as any,
+      request as NextRequest,
       errorResponse,
       "user123",
       Date.now() - startTime,

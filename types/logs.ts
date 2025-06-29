@@ -83,6 +83,7 @@ export interface LogFilterOptions {
   endDate?: Date;
   limit?: number;
   offset?: number;
+  page?: number;
   orderBy?: "asc" | "desc";
   ipAddress?: string;
   search?: string; // 메시지나 액션에서 검색
