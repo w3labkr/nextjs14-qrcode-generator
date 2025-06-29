@@ -7,11 +7,13 @@ Next.js 14를 기반으로 한 현대적인 QR 코드 생성기입니다. TypeSc
 ## 주요 기능
 
 - **다양한 QR 코드 타입**: URL, 텍스트, WiFi, 이메일, SMS, vCard, 위치 정보
-- **사용자 인증**: NextAuth.js v5를 통한 Google OAuth 인증
+- **사용자 인증**: NextAuth.js v5를 통한 Google OAuth 및 GitHub OAuth 인증
 - **데이터베이스**: Supabase PostgreSQL과 Prisma ORM
 - **보안**: Row Level Security(RLS) 적용
 - **반응형 UI**: shadcn/ui 컴포넌트 기반의 모던한 인터페이스
 - **데이터 관리**: QR 코드 히스토리 및 사용자 계정 관리
+- **통합 로깅**: 포괄적인 로깅 시스템으로 API, 인증, 감사, 에러 추적
+- **관리자 기능**: 로그 관리 및 시스템 정리 기능
 
 ## 기술 스택
 
@@ -19,7 +21,7 @@ Next.js 14를 기반으로 한 현대적인 QR 코드 생성기입니다. TypeSc
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui (47개 컴포넌트)
+- **UI Components**: shadcn/ui (48개 컴포넌트)
 - **State Management**: Zustand
 - **Form Handling**: React Hook Form + Zod
 - **Data Fetching**: TanStack Query
@@ -46,7 +48,7 @@ Next.js 14를 기반으로 한 현대적인 QR 코드 생성기입니다. TypeSc
 │   ├── dashboard/        # 대시보드 (보호된 영역)
 │   └── qrcode/           # QR 코드 생성 페이지
 ├── components/            # 재사용 가능한 컴포넌트
-│   └── ui/               # shadcn/ui 컴포넌트 (47개)
+│   └── ui/               # shadcn/ui 컴포넌트 (48개)
 ├── lib/                  # 유틸리티 함수들
 ├── hooks/                # 커스텀 훅 및 Zustand 스토어
 ├── types/                # TypeScript 타입 정의
@@ -56,7 +58,7 @@ Next.js 14를 기반으로 한 현대적인 QR 코드 생성기입니다. TypeSc
 
 ## 주요 패키지
 
-**총 107개 패키지** (76개 dependencies + 31개 devDependencies)
+**총 101개 패키지** (75개 dependencies + 26개 devDependencies)
 
 ### 핵심 Dependencies
 - Next.js 14.2.30

@@ -105,14 +105,15 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 ## Directory Structure
 
 * `app/`: Contains the application's routes, layouts, and pages.
-  * `actions/`: Server actions for data mutations and business logic (account-management, data-management, log-management, qr-code-generator, qr-code-management, template-management).
+  * `actions/`: Server actions for data mutations and business logic (account-management, data-management, log-management, qr-code-generator, qr-code-management, qr-code).
   * `api/`: API routes for client-side data fetching (auth, cron, qrcodes).
   * `auth/`: Authentication-related pages (signin, error).
-  * `dashboard/`: Protected dashboard pages and features (account, dashboard, history, settings).
+  * `dashboard/`: Protected dashboard pages and features (account, dashboard, history, settings, admin).
+    * `admin/`: Administrative functions including log management and cleanup.
   * `qrcode/`: QR code generation main page with components.
     * `components/`: QR code specific components (card-email, card-location, card-preview, card-sms, card-style, card-textarea, card-url, card-vcard, card-wifi, qr-handlers, qrcode-form).
 * `components/`: Contains reusable components.
-  * `ui/`: Contains shadcn/ui components (47 components including accordion, alert-dialog, alert, aspect-ratio, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, data-table, date-picker, dialog, drawer, dropdown-menu, form, hover-card, input-otp, input, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toggle-group, toggle, tooltip).
+  * `ui/`: Contains shadcn/ui components (48 components including accordion, alert-dialog, alert, aspect-ratio, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, data-table, date-picker, dialog, drawer, dropdown-menu, form, hover-card, input-otp, input, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toggle-group, toggle, tooltip).
   * Other utility components (access-denied-alert, address-search, client-only, github-badge, history-button, loading-spinner, log-statistics, new-qr-code-button, tailwind-indicator, unauthenticated, user-nav, user-profile).
 * `lib/`: Contains utility functions and constants.
   * Database connection (prisma.ts), download utilities (download-utils.ts), QR code utilities, auth helpers (auth-helpers.ts, auth-server.ts, auth-utils.ts), error logging (error-logging.ts), API logging (api-logging.ts), unified logging (unified-logging.ts), RLS management (rls-manager.ts, rls-utils.ts), environment validation (env-validation.ts), CSV utilities (csv-utils.ts), log utilities (log-utils.ts, log-cleanup.ts), logging middleware (logging-middleware.ts), logging examples (logging-examples.ts), constants (constants.ts), and general utilities (utils.ts).
@@ -175,15 +176,17 @@ If Copilot's suggestions do not meet expectations, actively modify and provide f
 
 ## Project Current Status
 
-* **Version**: v1.4.53 (as of 2025년 1월 2일)
-* **Package Count**: 107 npm packages (76 dependencies + 31 devDependencies)
-* **UI Components**: 47 shadcn/ui components
+* **Version**: v1.5.5 (as of 2025년 6월 29일)
+* **Package Count**: 101 npm packages (75 dependencies + 26 devDependencies)
+* **UI Components**: 48 shadcn/ui components
 * **QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
-* **Authentication**: NextAuth.js v5.0.0-beta.28 with Google OAuth
+* **Authentication**: NextAuth.js v5.0.0-beta.28 with Google OAuth and GitHub OAuth
 * **Database**: Supabase PostgreSQL with Prisma ORM v6.10.1
-* **Security**: Row Level Security (RLS) implemented
+* **Security**: Row Level Security (RLS) implemented with unified logging system
 * **State Management**: Zustand v5.0.5 stores implemented for global state management
 * **Form Handling**: React Hook Form v7.58.0 with Zod v3.25.64 validation integrated
 * **Query Management**: React Query v5.80.7 for server state management
 * **Code Quality**: ESLint, Prettier, and TypeScript configured with strict rules
 * **Development**: Next.js 14.2.30 with Turbo mode enabled for faster development
+* **Logging**: Comprehensive unified logging system for API, authentication, audit, and error tracking
+* **PWA**: Progressive Web App capabilities with offline support

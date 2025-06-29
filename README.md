@@ -1,447 +1,270 @@
-# 오픈소스 QR 코드 생성기
+# QR Code Generator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Next.js](https://img.shields.io/badge/Next.js-14.2.30-black)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.1-38B2AC)](https://tailwindcss.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-6.10.1-2D3748)](https://prisma.io/)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E)](https://supabase.com/)
-[![React Query](https://img.shields.io/badge/React_Query-5.80.7-FF4154)](https://tanstack.com/query)
-[![Zustand](https://img.shields.io/badge/Zustand-5.0.5-2684FF)](https://github.com/pmndrs/zustand)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2.30-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.4.1-06B6D4?logo=tailwindcss)](https://tailwindcss.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.10.1-2D3748?logo=prisma)](https://www.prisma.io/)
 
-[![GitHub stars](https://img.shields.io/github/stars/w3labkr/nextjs14-qrcode-generator?style=social)](https://github.com/w3labkr/nextjs14-qrcode-generator/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/w3labkr/nextjs14-qrcode-generator?style=social)](https://github.com/w3labkr/nextjs14-qrcode-generator/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/w3labkr/nextjs14-qrcode-generator)](https://github.com/w3labkr/nextjs14-qrcode-generator/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/w3labkr/nextjs14-qrcode-generator)](https://github.com/w3labkr/nextjs14-qrcode-generator/pulls)
-
-> 회원가입이나 로그인 없이 누구나 즉시 사용할 수 있는 강력하고 아름다운 정적 QR 코드 생성기
-
-이 프로젝트는 **Next.js 14**, **Tailwind CSS**, **Shadcn UI**를 사용하여 구축된 오픈소스 QR 코드 생성기입니다. 7가지 유형의 정적 QR 코드를 생성하고, 47개의 UI 컴포넌트를 활용한 풍부한 커스터마이징 옵션을 제공합니다.
-
-![SCREENSHOT](./SCREENSHOT.png)
-
-## 🎯 프로젝트 키워드
-
-`QR Code Generator` `Next.js 14` `React` `TypeScript` `Tailwind CSS` `Shadcn UI` `Prisma ORM` `Supabase` `NextAuth.js` `Google OAuth` `GitHub OAuth` `Progressive Web App` `Open Source` `MIT License` `React Query` `Zustand` `Unified Logging`
-
-## 🌐 라이브 데모
-
-- **🚀 프로덕션**: [Live Demo](https://nextjs14-qrcode-generator.vercel.app) (Vercel에서 호스팅)
-- **📖 스토리북**: [Component Gallery](https://storybook.nextjs14-qrcode-generator.vercel.app) (추후 제공 예정)
+Next.js 14 기반의 현대적이고 강력한 QR 코드 생성기입니다. TypeScript, Tailwind CSS, shadcn/ui를 활용하여 사용자 친화적이고 안전한 QR 코드 생성 경험을 제공합니다.
 
 ## ✨ 주요 기능
 
-### 🎯 다양한 QR 코드 유형 지원 (7가지)
-- **URL/웹사이트**: 웹사이트 링크를 QR 코드로 변환
-- **텍스트**: 일반 텍스트 메시지를 QR 코드로 저장
-- **Wi-Fi**: 네트워크 정보를 포함하여 즉시 Wi-Fi 연결 가능
-- **vCard**: 연락처 정보를 QR 코드로 공유
-- **이메일**: 미리 채워진 이메일 작성창 실행
-- **SMS**: 특정 번호로 문자 메시지 전송
-- **위치**: Google 지도 위치 정보 공유
+### 🎯 다양한 QR 코드 타입 지원
 
-### 🔐 사용자 인증 시스템
-- **Google OAuth**: 안전하고 편리한 소셜 로그인
-- **GitHub OAuth**: 개발자를 위한 GitHub 계정 연동
-- **NextAuth.js v5**: 최신 인증 시스템으로 보안 강화
-- **선택적 로그인**: 로그인 없이도 모든 기본 기능 사용 가능
+- **URL**: 웹사이트 링크
+- **텍스트**: 일반 텍스트 정보
+- **WiFi**: 무선 네트워크 연결 정보
+- **이메일**: 이메일 주소 및 제목, 본문
+- **SMS**: 전화번호 및 메시지
+- **vCard**: 개인 연락처 정보
+- **위치**: 지도 좌표 및 주소
 
-### 📚 QR 코드 히스토리 관리 (로그인 사용자)
-- **자동 저장**: 생성한 모든 QR 코드를 자동으로 데이터베이스에 저장
-- **히스토리 조회**: 시간순으로 정렬된 QR 코드 목록 관리
-- **즐겨찾기**: 자주 사용하는 QR 코드를 즐겨찾기로 표시
-- **재사용**: 이전에 생성한 QR 코드를 쉽게 재다운로드
-- **검색 및 필터링**: QR 코드 유형별 또는 키워드로 검색
+### 🔐 보안 및 인증
 
-### 🎨 고급 커스터마이징 기능
-- **색상 설정**: 전경색, 배경색, 그라데이션 색상 자유 변경
-- **로고 삽입**: 브랜드 로고를 QR 코드 중앙에 추가 (PNG, JPG, SVG 지원)
-- **모양 변경**: QR 코드 패턴과 눈(Eye) 모양 다양하게 변경
-- **프레임 추가**: "스캔해 주세요!" 등의 CTA 문구가 포함된 프레임
-- **실시간 미리보기**: 설정 변경 시 즉시 미리보기 업데이트
+- **NextAuth.js v5**: Google OAuth, GitHub OAuth 지원
+- **Row Level Security (RLS)**: 데이터베이스 수준의 보안
+- **통합 로깅 시스템**: API, 인증, 감사, 에러 추적
 
-### 💾 다중 다운로드 형식
-- **기본 형식** (모든 사용자): PNG, SVG, JPG (최대 1024x1024)
-- **고해상도** (로그인 사용자): 최대 4096x4096 픽셀 인쇄용 품질
-- **벡터 형식**: 무한 확대 가능한 SVG 형식
+### 💎 사용자 경험
 
-### 📱 현대적 사용자 경험
-- **반응형 디자인**: 데스크톱, 태블릿, 모바일 완벽 지원
-- **PWA 지원**: 오프라인 환경에서도 웹 애플리케이션 사용 가능
-- **모바일 터치 최적화**: 터치 디바이스에서 직관적인 조작
-- **다크/라이트 모드**: 사용자 선호에 따른 테마 전환
+- **반응형 디자인**: 모든 디바이스에서 최적화된 UI
+- **shadcn/ui**: 48개의 모던한 UI 컴포넌트
+- **다크/라이트 테마**: 사용자 선호도에 따른 테마 전환
+- **실시간 미리보기**: QR 코드 실시간 생성 및 미리보기
 
-### 🛡️ 보안 및 개인정보보호
-- **Row Level Security**: 데이터베이스 레벨에서 사용자 데이터 보호
-- **최소 데이터 수집**: 서비스 제공에 필요한 최소한의 정보만 수집
-- **GDPR 준수**: 유럽 일반 데이터 보호 규정 준수
+### 📊 데이터 관리
 
-### 📊 종합적 로깅 시스템
-- **API 접근 로그**: 모든 API 요청 추적 및 모니터링
-- **인증 이벤트 로그**: 로그인, 로그아웃, 토큰 갱신 기록
-- **감사 로그**: 데이터 변경 이력 추적 (생성, 수정, 삭제)
-- **에러 로그**: 시스템 오류 자동 기록 및 추적
-- **관리자 활동 로그**: 관리자 작업 투명성 보장
-- **실시간 통계**: 로그 데이터 기반 시스템 상태 모니터링
+- **히스토리 관리**: 생성된 QR 코드 기록 저장
+- **계정 관리**: 사용자 프로필 및 설정
+- **관리자 기능**: 시스템 로그 및 데이터 정리
 
-## 🛠️ 기술 스택
+## 🚀 빠른 시작
 
-### 핵심 프레임워크
+### 필수 요구사항
 
-- **[Next.js 14.2.30](https://nextjs.org/)** - App Router 기반 React 프레임워크
-- **[TypeScript 5.0](https://www.typescriptlang.org/)** - 타입 안전성 보장
-- **[Tailwind CSS 3.4.1](https://tailwindcss.com/)** - 유틸리티 기반 CSS 프레임워크
+- Node.js 18+
+- npm 또는 yarn
+- PostgreSQL 데이터베이스 (Supabase 권장)
 
-### UI 컴포넌트 및 디자인
+### 설치 및 실행
 
-- **[Shadcn UI](https://ui.shadcn.com/)** - 47개의 고품질 React 컴포넌트
-- **[Radix UI](https://www.radix-ui.com/)** - 접근성을 고려한 UI 프리미티브
-- **[Lucide React](https://lucide.dev/)** - 아름다운 SVG 아이콘 라이브러리
-- **[Next Themes](https://github.com/pacocoursey/next-themes)** - 다크/라이트 모드 지원
-
-### 인증 및 데이터베이스
-
-- **[NextAuth.js v5](https://authjs.dev/)** - 차세대 인증 시스템
-- **[Prisma 6.10.1](https://prisma.io/)** - 타입 안전한 ORM
-- **[Supabase PostgreSQL](https://supabase.com/)** - 클라우드 데이터베이스 + Row Level Security
-- **[@auth/prisma-adapter](https://authjs.dev/getting-started/adapters/prisma)** - NextAuth + Prisma 통합
-
-### QR 코드 생성 라이브러리
-
-- **[qr-code-styling](https://qr-code-styling.com/)** - 고급 QR 코드 커스터마이징
-- **[qrcode](https://www.npmjs.com/package/qrcode)** - 빠른 QR 코드 생성
-- **[canvas](https://www.npmjs.com/package/canvas)** - 서버사이드 이미지 렌더링
-
-### 상태 관리 및 폼
-
-- **[Zustand 5.0.5](https://zustand-demo.pmnd.rs/)** - 가벼운 전역 상태 관리
-- **[React Hook Form 7.58.0](https://react-hook-form.com/)** - 성능 최적화된 폼 라이브러리
-- **[Zod 3.25.64](https://zod.dev/)** - TypeScript 스키마 검증
-- **[TanStack Query 5.80.7](https://tanstack.com/query)** - 서버 상태 관리 및 캐싱
-
-### HTTP 클라이언트 및 유틸리티
-
-- **[Axios 1.10.0](https://axios-http.com/)** - HTTP 클라이언트
-- **[es-toolkit 1.39.5](https://es-toolkit.slash.page/)** - 모던 JavaScript 유틸리티
-- **[@toss/utils 1.6.1](https://slash.page/ko/libraries/common/utils/readme-i18n/)** - 한국어 특화 유틸리티
-
-### UI 확장 컴포넌트
-
-- **[TanStack Table 8.21.3](https://tanstack.com/table)** - 강력한 데이터 테이블
-- **[Recharts 2.15.3](https://recharts.org/)** - React 차트 라이브러리
-- **[Sonner 2.0.5](https://sonner.emilkowal.ski/)** - 토스트 알림
-- **[Embla Carousel 8.6.0](https://www.embla-carousel.com/)** - 고성능 캐러셀
-- **[React Day Picker 9.7.0](https://react-day-picker.js.org/)** - 날짜 선택기
-- **[Vaul 1.1.2](https://vaul.emilkowal.ski/)** - 모바일 드로어
-- **[Input OTP 1.4.2](https://input-otp.rodz.dev/)** - OTP 입력 컴포넌트
-
-### 개발 도구
-
-- **[ESLint](https://eslint.org/)** + **[Prettier](https://prettier.io/)** - 코드 품질 및 스타일 관리
-- **[TSX 4.20.3](https://tsx.is/)** - TypeScript 실행 도구
-- **[Turbopack](https://turbo.build/pack)** - Next.js 14 고속 번들러
-
-### 📊 통합 로깅 시스템
-- **UnifiedLogger 클래스** - 모든 로그를 하나의 테이블로 통합 관리
-- **로그 타입**: ACCESS, AUTH, AUDIT, ERROR, ADMIN, QR_GENERATION, SYSTEM
-- **로그 레벨**: DEBUG, INFO, WARN, ERROR, FATAL
-- **성능 측정** - PerformanceLogger를 통한 작업 시간 추적
-- **자동 정리** - 오래된 로그의 자동 삭제로 스토리지 최적화
-- **실시간 모니터링** - 로그 통계 및 필터링 기능
-
-## 🚀 시작하기
-
-### 전제 조건
-
-- **Node.js 18+** 설치 필요
-- **npm** 또는 **yarn** 패키지 매니저
-- **Git** 버전 관리 시스템
-
-### 1. 저장소 복제
+1. **저장소 클론**
 
 ```bash
 git clone https://github.com/w3labkr/nextjs14-qrcode-generator.git
 cd nextjs14-qrcode-generator
 ```
 
-### 2. 종속성 설치
+2. **의존성 설치**
 
 ```bash
 npm install
-# 또는
-yarn install
 ```
 
-### 3. 환경 변수 설정
-
-`.env.example` 파일을 복사하여 `.env.local` 파일을 생성하고 필요한 환경 변수를 설정하세요:
+3. **환경 변수 설정**
 
 ```bash
 cp .env.example .env.local
 ```
 
-#### 필수 환경 변수
+다음 환경 변수를 설정하세요:
 
 ```env
 # 데이터베이스
-DATABASE_URL="postgresql://..."
-DIRECT_URL="postgresql://..."
+DATABASE_URL="your-postgresql-url"
+DIRECT_URL="your-postgresql-direct-url"
 
-# 인증
-AUTH_SECRET="your-32-character-secret-key"
+# NextAuth.js
+NEXTAUTH_SECRET="your-nextauth-secret"
+NEXTAUTH_URL="http://localhost:3000"
 
-# 애플리케이션
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+# OAuth 제공자
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+# Supabase (선택사항)
+NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
+
+# 크론 작업
+CRON_SECRET="your-cron-secret"
 ```
 
-#### 선택적 환경 변수 (고급 기능)
-
-```env
-# Google OAuth (선택)
-AUTH_GOOGLE_ID="your-google-client-id"
-AUTH_GOOGLE_SECRET="your-google-client-secret"
-
-# GitHub OAuth (선택)
-AUTH_GITHUB_ID="your-github-client-id"  
-AUTH_GITHUB_SECRET="your-github-client-secret"
-
-# Supabase (선택)
-NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
-
-# Cron 작업 (선택)
-CRON_SECRET="your-secure-random-string"
-```
-
-자세한 환경 변수 설정 방법은 **[배포 가이드](./docs/DEPLOYMENT.md)**를 참고하세요.
-
-### 4. 데이터베이스 설정
-
-Prisma를 사용하여 데이터베이스 스키마를 설정합니다:
+4. **데이터베이스 설정**
 
 ```bash
-# Prisma 클라이언트 생성
 npx prisma generate
-
-# 데이터베이스 마이그레이션 실행
-npx prisma migrate dev --name init
-
-# (선택사항) Prisma Studio로 데이터베이스 확인
-npx prisma studio
+npx prisma db push
 ```
 
-### 5. 개발 서버 실행
+5. **개발 서버 시작**
 
 ```bash
 npm run dev
-# 또는
-yarn dev
 ```
 
-이제 브라우저에서 `http://localhost:3000`으로 접속하여 애플리케이션을 확인할 수 있습니다.
+애플리케이션이 [http://localhost:3000](http://localhost:3000)에서 실행됩니다.
 
-## 📚 문서 및 가이드
+## 🏗️ 기술 스택
 
-프로젝트의 상세한 정보와 가이드는 다음 문서들을 참고하세요:
+### Frontend
 
-- **[📋 프로젝트 개요](./docs/PROJECT.md)** - 프로젝트 개요, 기술 스택, 설치 방법
-- **[� API 문서](./docs/API.md)** - API 엔드포인트 및 Server Actions 사용법
-- **[🚀 배포 가이드](./docs/DEPLOYMENT.md)** - Vercel, Docker 배포 방법 및 환경 설정
-- **[�️ 개발 가이드](./docs/DEVELOPMENT.md)** - 개발 환경 설정, 코딩 스타일, 테스트 방법
+- **[Next.js 14](https://nextjs.org/)**: React 기반 풀스택 프레임워크 (App Router)
+- **[TypeScript](https://www.typescriptlang.org/)**: 타입 안전성을 위한 정적 타입 언어
+- **[Tailwind CSS](https://tailwindcss.com/)**: 유틸리티 우선 CSS 프레임워크
+- **[shadcn/ui](https://ui.shadcn.com/)**: Radix UI 기반 컴포넌트 라이브러리
+- **[Zustand](https://zustand-demo.pmnd.rs/)**: 경량 상태 관리 라이브러리
+- **[React Hook Form](https://react-hook-form.com/)**: 성능 최적화된 폼 라이브러리
+- **[TanStack Query](https://tanstack.com/query)**: 서버 상태 관리
 
-## 📁 프로젝트 구조
+### Backend
 
-```
-nextjs14-qrcode-generator/
-├── app/                    # Next.js 14 App Router
-│   ├── actions/           # Server Actions (QR 생성, 관리)
-│   ├── api/               # API Routes (인증, QR API)
-│   ├── dashboard/         # 대시보드 (로그인 사용자 전용)
-│   └── qrcode/           # QR 코드 생성 메인 페이지
-│       └── components/   # QR 코드 관련 컴포넌트 (11개)
-├── components/            # React 컴포넌트
-│   ├── ui/               # Shadcn UI 컴포넌트 (47개)
-│   └── ...               # 기타 유틸리티 컴포넌트
-├── hooks/                 # 커스텀 훅 & Zustand 스토어 (3개)
-├── lib/                   # 유틸리티 & 설정
-├── types/                 # TypeScript 타입 정의 (7개)
-├── prisma/                # 데이터베이스 스키마 & 마이그레이션
-└── docs/                  # 프로젝트 문서 (4개)
-```
+- **[Supabase](https://supabase.com/)**: PostgreSQL 데이터베이스 및 백엔드 서비스
+- **[Prisma](https://www.prisma.io/)**: 타입 안전 ORM
+- **[NextAuth.js v5](https://authjs.dev/)**: 인증 라이브러리
+- **[Zod](https://zod.dev/)**: 스키마 검증 라이브러리
 
-## 🎯 사용법
+### QR Code 생성
 
-### 기본 QR 코드 생성 (로그인 불필요)
+- **[qr-code-styling](https://github.com/kozakdenys/qr-code-styling)**: 고급 QR 코드 커스터마이징
+- **[qrcode](https://github.com/soldair/node-qrcode)**: 기본 QR 코드 생성
+- **[canvas](https://github.com/Automattic/node-canvas)**: 서버사이드 캔버스 렌더링
 
-1. **웹사이트 접속**: `http://localhost:3000` 또는 배포된 URL
-2. **QR 코드 유형 선택**: URL, 텍스트, Wi-Fi, vCard, 이메일, SMS, 위치 중 선택
-3. **내용 입력**: 선택한 유형에 맞는 정보 입력
-4. **커스터마이징**: 색상, 로고, 모양, 프레임 등 원하는 스타일 설정
-5. **다운로드**: PNG, SVG, JPG 형식으로 즉시 다운로드
+### 개발 도구
 
-### 고급 기능 사용 (로그인 필요)
+- **[ESLint](https://eslint.org/)**: 코드 품질 검사
+- **[Prettier](https://prettier.io/)**: 코드 포맷팅
+- **[TypeScript](https://www.typescriptlang.org/)**: 정적 타입 검사
 
-1. **Google 로그인**: 우상단 로그인 버튼 클릭
-2. **대시보드 접근**: 로그인 후 자동으로 대시보드로 이동
-3. **히스토리 관리**: 생성한 모든 QR 코드 자동 저장 및 관리
-4. **고해상도 다운로드**: 최대 4096x4096 픽셀 인쇄용 품질
-5. **템플릿 저장**: 자주 사용하는 설정을 템플릿으로 저장
-6. **즐겨찾기**: 중요한 QR 코드를 즐겨찾기로 표시
+## 📱 스크린샷
 
-## 🌐 배포
+![스크린샷](./SCREENSHOT.png)
 
-자세한 배포 방법은 **[배포 가이드](./docs/DEPLOYMENT.md)**를 참고하세요.
+## 📚 문서
 
-### Vercel (권장)
+자세한 문서는 `/docs` 폴더에서 확인할 수 있습니다:
 
-1. GitHub 저장소를 Vercel에 연결
-2. 환경 변수 설정 (DATABASE_URL, AUTH_SECRET 등)
-3. 자동 배포 완료
+- **[프로젝트 개요](docs/PROJECT.md)**: 전체 프로젝트 구조 및 기능
+- **[API 문서](docs/API.md)**: API 엔드포인트 및 Server Actions
+- **[배포 가이드](docs/DEPLOYMENT.md)**: 프로덕션 배포 방법
+- **[개발 가이드](docs/DEVELOPMENT.md)**: 개발 환경 설정 및 가이드라인
+- **[의존성 목록](docs/DEPENDENCIES.md)**: 사용된 라이브러리 및 패키지
+- **[프로젝트 구조](docs/PROJECT_STRUCTURE.md)**: 상세 디렉토리 구조
 
-### 기타 플랫폼
-
-- **Docker**: Dockerfile을 사용한 컨테이너 배포
-- **AWS/GCP**: 정적 호스팅 또는 서버리스 배포
-
-## 🔧 개발 스크립트
+## 🛠️ 개발 스크립트
 
 ```bash
-# 개발 서버 실행 (Turbopack)
+# 개발 서버 (Turbo 모드)
 npm run dev
 
 # 프로덕션 빌드
 npm run build
 
-# 프로덕션 서버 실행
-npm start
+# 프로덕션 서버 시작
+npm run start
 
-# 코드 린팅
+# 린팅
 npm run lint
 
-# 의존성 업데이트
+# 종속성 업데이트
 npm run upgrade:latest
 
-# 캐시 정리 및 재설치
-npm run clean && npm run reinstall
+# 프로젝트 정리
+npm run clean
 
-# 로그 시스템 관련
-npm run logs:test        # 로그 시스템 테스트
-npm run logs:cleanup     # 오래된 로그 정리
-npm run logs:backup      # 로그 백업
-npm run logs:auto-cleanup # API를 통한 자동 로그 정리
-npm run logs:stats       # 로그 정리 통계
+# 로깅 시스템 마이그레이션
+npm run migrate:logging
+
+# 로그 정리
+npm run logs:cleanup
+
+# 로그 백업
+npm run logs:backup
+
+# 로그 통계
+npm run logs:stats
 ```
 
-## 📊 로깅 시스템
+## 🔧 환경 설정
 
-이 프로젝트는 통합된 로깅 시스템을 사용하여 모든 애플리케이션 활동을 관리합니다.
+### 데이터베이스 설정
 
-### 주요 기능
+1. **Supabase 프로젝트 생성** (권장)
+   - [Supabase](https://supabase.com/)에서 새 프로젝트 생성
+   - PostgreSQL 연결 문자열 복사
 
-- **통합 로그 관리**: 모든 로그를 단일 테이블로 통합 관리
-- **다양한 로그 타입**: ACCESS, AUTH, AUDIT, ERROR, ADMIN, QR_GENERATION, SYSTEM
-- **성능 측정**: PerformanceLogger를 통한 작업 시간 추적
-- **자동 정리**: 오래된 로그의 자동 삭제로 스토리지 최적화
-- **보안**: RLS(Row Level Security)를 통한 데이터 보안
-
-자세한 사용법과 API는 **[API 문서](./docs/API.md)**를 참고하세요.
-
-## 🤝 기여 방법
-
-이 프로젝트는 오픈소스이며, 커뮤니티의 기여를 적극 환영합니다! 🎉
-
-### 기여할 수 있는 방법
-
-- **🐛 버그 리포트**: 발견한 문제를 이슈로 등록
-- **💡 기능 제안**: 새로운 아이디어나 개선사항 제안
-- **💻 코드 기여**: 버그 수정, 기능 추가, 코드 개선
-- **📖 문서 개선**: README, 가이드, 주석 등 문서 작성/수정
-- **🎨 디자인**: UI/UX 개선, 새로운 프레임/템플릿 디자인
-- **🌐 번역**: 다국어 지원을 위한 번역 작업
-
-### 기여 프로세스
-
-1. **Fork**: 이 저장소를 포크합니다
-2. **Branch**: 새로운 브랜치를 생성합니다 (`git checkout -b feature/amazing-feature`)
-3. **Commit**: 변경사항을 커밋합니다 (`git commit -m 'feat: add amazing feature'`)
-4. **Push**: 브랜치에 푸시합니다 (`git push origin feature/amazing-feature`)
-5. **Pull Request**: 풀 리퀘스트를 생성합니다
-
-### 개발 환경 설정
+2. **RLS (Row Level Security) 활성화**
 
 ```bash
-# 저장소 포크 후 클론
-git clone https://github.com/YOUR-USERNAME/nextjs14-qrcode-generator.git
-cd nextjs14-qrcode-generator
-
-# 의존성 설치
-npm install
-
-# 환경 변수 설정
-cp .env.example .env.local
-
-# 데이터베이스 설정
-npx prisma generate
-npx prisma migrate dev
-
-# 개발 서버 실행
-npm run dev
+npm run logs:setup-rls
 ```
 
-### 디버그 모드 설정
-
-인증 시스템에서 과도한 로그가 출력되는 경우, 환경 변수를 통해 디버그 모드를 제어할 수 있습니다:
+3. **로깅 시스템 초기화**
 
 ```bash
-# .env.local 파일에 추가하여 인증 디버그 로그 활성화
-AUTH_DEBUG=true
-
-# 또는 비활성화 (기본값)
-AUTH_DEBUG=false
+npm run migrate:logging
 ```
 
-**참고**: NextAuth.js의 기본 디버그 모드는 프로덕션 환경에서 자동으로 비활성화됩니다.
+### OAuth 제공자 설정
 
-### 코딩 스타일 가이드
+#### Google OAuth
 
-- **TypeScript**: 모든 코드는 TypeScript로 작성
-- **ESLint + Prettier**: 자동 포매팅 및 린팅 규칙 준수
-- **Conventional Commits**: 커밋 메시지는 `feat:`, `fix:`, `docs:` 등 규칙 준수
-- **Component**: React 컴포넌트는 함수형 컴포넌트로 작성
-- **Hooks**: 상태 관리는 Zustand, 폼은 React Hook Form 사용
+1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
+2. OAuth 2.0 클라이언트 ID 생성
+3. 승인된 리디렉션 URI 추가: `{your-domain}/api/auth/callback/google`
 
-자세한 기여 가이드라인은 **[개발 가이드](./docs/DEVELOPMENT.md)** 파일을 참고해주세요.
+#### GitHub OAuth
 
-## 📜 라이선스
+1. GitHub Settings > Developer settings > OAuth Apps
+2. 새 OAuth 앱 생성
+3. Authorization callback URL: `{your-domain}/api/auth/callback/github`
 
-이 프로젝트는 **[MIT 라이선스](./LICENSE)**를 따릅니다.
+## 📊 프로젝트 현황
 
-```text
-MIT License - 상업적/비상업적 목적으로 자유롭게 사용, 수정, 배포 가능
-```
+- **버전**: v1.5.5
+- **패키지 수**: 101개 (의존성 75개 + 개발 의존성 26개)
+- **UI 컴포넌트**: 48개 shadcn/ui 컴포넌트
+- **지원 QR 코드 타입**: 7가지
+- **인증**: Google OAuth, GitHub OAuth
+- **보안**: Row Level Security (RLS) 적용
+- **PWA**: Progressive Web App 지원
+
+## 🤝 기여하기
+
+기여를 환영합니다! 다음 단계를 따라주세요:
+
+1. 저장소 포크
+2. 기능 브랜치 생성 (`git checkout -b feature/amazing-feature`)
+3. 변경사항 커밋 (`git commit -m 'Add some amazing feature'`)
+4. 브랜치에 푸시 (`git push origin feature/amazing-feature`)
+5. Pull Request 생성
+
+## 📄 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+## 👨‍💻 개발자
+
+**w3labkr**
+
+- GitHub: [@w3labkr](https://github.com/w3labkr)
 
 ## 🙏 감사의 말
 
-이 프로젝트는 다음 오픈소스 프로젝트들의 도움으로 만들어졌습니다:
+이 프로젝트는 다음 오픈소스 프로젝트들의 도움을 받았습니다:
 
-- **[Next.js](https://nextjs.org/)** - React 기반 풀스택 프레임워크
-- **[Shadcn/ui](https://ui.shadcn.com/)** - 아름다운 재사용 가능한 컴포넌트
-- **[Tailwind CSS](https://tailwindcss.com/)** - 유틸리티 우선 CSS 프레임워크
-- **[Prisma](https://prisma.io/)** - 타입 안전한 데이터베이스 도구
-- **[Supabase](https://supabase.com/)** - 오픈소스 Firebase 대안
-
-## 📞 지원 및 문의
-
-- **🐛 버그 신고**: [GitHub Issues](https://github.com/w3labkr/nextjs14-qrcode-generator/issues)
-- **💬 질문 및 토론**: [GitHub Discussions](https://github.com/w3labkr/nextjs14-qrcode-generator/discussions)
-- **� 문서**: 프로젝트 docs 폴더의 가이드 문서들 참고
+- [Next.js](https://nextjs.org/) - React 기반 풀스택 프레임워크
+- [shadcn/ui](https://ui.shadcn.com/) - 아름다운 UI 컴포넌트 라이브러리
+- [Supabase](https://supabase.com/) - 오픈소스 Firebase 대안
+- [Prisma](https://www.prisma.io/) - 차세대 ORM
+- [Tailwind CSS](https://tailwindcss.com/) - 유틸리티 우선 CSS 프레임워크
 
 ---
 
-## ⭐ 이 프로젝트가 도움이 되었다면 스타를 눌러주세요! ⭐
-
-[![GitHub stars](https://img.shields.io/github/stars/w3labkr/nextjs14-qrcode-generator?style=social)](https://github.com/w3labkr/nextjs14-qrcode-generator/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/w3labkr/nextjs14-qrcode-generator?style=social)](https://github.com/w3labkr/nextjs14-qrcode-generator/network/members)
-
-**Made with ❤️ by the open source community**
+<div align="center">
+  <p>⭐ 이 프로젝트가 도움이 되었다면 스타를 눌러주세요!</p>
+</div>
