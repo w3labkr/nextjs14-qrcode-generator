@@ -320,39 +320,13 @@ export function OAuthConnections({ session }: OAuthConnectionsProps) {
               <ul className="text-sm text-amber-700 space-y-1">
                 <li>• 현재 로그인 중인 계정은 연동 해제할 수 없습니다.</li>
                 <li>• 마지막 연동된 계정은 해제할 수 없습니다.</li>
-                <li>• 연동 해제 시 해당 계정으로는 로그인이 불가능합니다.</li>
+                <li>
+                  • 연동 해제 후에도 해당 계정으로 다시 로그인할 수 있습니다.
+                </li>
+                <li>• 연동 해제는 현재 저장된 연동 정보만 삭제합니다.</li>
                 <li>• 새로운 계정 연동 시 기존 데이터는 유지됩니다.</li>
               </ul>
             </div>
-
-            {process.env.NODE_ENV === "development" && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">개발자 정보</h4>
-                <div className="text-sm text-blue-700 space-y-1">
-                  <p>• GitHub OAuth 설정이 필요합니다.</p>
-                  <p>
-                    • .env.local 파일에 AUTH_GITHUB_ID와 AUTH_GITHUB_SECRET을
-                    설정하세요.
-                  </p>
-                  <p>
-                    • GitHub OAuth 앱 설정:
-                    https://github.com/settings/developers
-                  </p>
-                  <p>
-                    • Authorization callback URL:{" "}
-                    {typeof window !== "undefined"
-                      ? window.location.origin
-                      : "http://localhost:3000"}
-                    /api/auth/callback/github
-                  </p>
-                  <p>
-                    • 현재 세션 프로바이더: {session?.currentProvider || "없음"}
-                  </p>
-                  <p>• 현재 상태 프로바이더: {currentProvider || "없음"}</p>
-                  <p>• 연결된 계정 수: {connectedAccounts.length}</p>
-                </div>
-              </div>
-            )}
           </>
         )}
       </CardContent>
