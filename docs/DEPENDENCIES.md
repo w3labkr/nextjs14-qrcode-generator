@@ -5,7 +5,7 @@
 - [DEPENDENCIES](#dependencies)
   - [Table of Contents](#table-of-contents)
   - [Current Package Summary](#current-package-summary)
-  - [주요 패키지 분석 (v1.4.24)](#주요-패키지-분석-v1424)
+  - [주요 패키지 분석 (v1.4.31)](#주요-패키지-분석-v1431)
     - [Core Framework \& Language](#core-framework--language)
     - [Authentication \& Database](#authentication--database)
     - [QR Code Generation (4개 패키지)](#qr-code-generation-4개-패키지)
@@ -37,7 +37,7 @@
 
 ## Current Package Summary
 
-**Project Version**: v1.4.24 (as of 2025년 6월 29일)
+**Project Version**: v1.4.31 (as of 2025년 6월 29일)
 
 **Total Packages**: 100+ (73 dependencies + 30 devDependencies)
 
@@ -52,9 +52,9 @@
 
 **QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
 
-**File Count**: 171 TypeScript/JavaScript files
+**File Count**: 170+ TypeScript/JavaScript files
 
-## 주요 패키지 분석 (v1.4.24)
+## 주요 패키지 분석 (v1.4.31)
 
 현재 프로젝트에서 사용중인 주요 패키지들을 카테고리별로 정리했습니다:
 

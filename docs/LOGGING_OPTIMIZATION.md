@@ -275,3 +275,16 @@ ALTER TABLE logs_backup_access RENAME TO access_logs;
 3. **분산 로깅 시스템 연동**
 4. **ML 기반 이상 탐지**
 5. **로그 기반 사용자 행동 분석**
+6. **자동 로그 레벨 조정**
+7. **성능 메트릭 기반 자동 알림**
+
+## 프로젝트 통계 (v1.4.31)
+
+- **총 파일 수**: 170+ TypeScript/JavaScript 파일
+- **총 패키지 수**: 100+ npm 패키지
+- **UI 컴포넌트**: 46개 shadcn/ui 컴포넌트
+- **지원 QR 코드 타입**: 7가지
+- **로깅 시스템**: 통합 로깅 시스템 (UnifiedLogger)
+- **데이터베이스**: Supabase PostgreSQL with RLS
+- **인증**: NextAuth.js v5.0.0-beta.28
+- **상태 관리**: Zustand v5.0.5

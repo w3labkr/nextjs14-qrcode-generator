@@ -6,6 +6,8 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.1-38B2AC)](https://tailwindcss.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.10.1-2D3748)](https://prisma.io/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E)](https://supabase.com/)
+[![React Query](https://img.shields.io/badge/React_Query-5.80.7-FF4154)](https://tanstack.com/query)
+[![Zustand](https://img.shields.io/badge/Zustand-5.0.5-2684FF)](https://github.com/pmndrs/zustand)
 
 [![GitHub stars](https://img.shields.io/github/stars/w3labkr/nextjs14-qrcode-generator?style=social)](https://github.com/w3labkr/nextjs14-qrcode-generator/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/w3labkr/nextjs14-qrcode-generator?style=social)](https://github.com/w3labkr/nextjs14-qrcode-generator/network/members)
@@ -20,7 +22,7 @@
 
 ## 🎯 프로젝트 키워드
 
-`QR Code Generator` `Next.js 14` `React` `TypeScript` `Tailwind CSS` `Shadcn UI` `Prisma ORM` `Supabase` `NextAuth.js` `Google OAuth` `GitHub OAuth` `Progressive Web App` `Open Source` `MIT License`
+`QR Code Generator` `Next.js 14` `React` `TypeScript` `Tailwind CSS` `Shadcn UI` `Prisma ORM` `Supabase` `NextAuth.js` `Google OAuth` `GitHub OAuth` `Progressive Web App` `Open Source` `MIT License` `React Query` `Zustand` `Unified Logging`
 
 ## 🌐 라이브 데모
 
@@ -85,35 +87,58 @@
 ## 🛠️ 기술 스택
 
 ### 핵심 프레임워크
+
 - **[Next.js 14.2.30](https://nextjs.org/)** - App Router 기반 React 프레임워크
 - **[TypeScript 5.0](https://www.typescriptlang.org/)** - 타입 안전성 보장
 - **[Tailwind CSS 3.4.1](https://tailwindcss.com/)** - 유틸리티 기반 CSS 프레임워크
 
 ### UI 컴포넌트 및 디자인
+
 - **[Shadcn UI](https://ui.shadcn.com/)** - 46개의 고품질 React 컴포넌트
 - **[Radix UI](https://www.radix-ui.com/)** - 접근성을 고려한 UI 프리미티브
 - **[Lucide React](https://lucide.dev/)** - 아름다운 SVG 아이콘 라이브러리
 - **[Next Themes](https://github.com/pacocoursey/next-themes)** - 다크/라이트 모드 지원
 
 ### 인증 및 데이터베이스
+
 - **[NextAuth.js v5](https://authjs.dev/)** - 차세대 인증 시스템
 - **[Prisma 6.10.1](https://prisma.io/)** - 타입 안전한 ORM
 - **[Supabase PostgreSQL](https://supabase.com/)** - 클라우드 데이터베이스 + Row Level Security
 - **[@auth/prisma-adapter](https://authjs.dev/getting-started/adapters/prisma)** - NextAuth + Prisma 통합
 
 ### QR 코드 생성 라이브러리
+
 - **[qr-code-styling](https://qr-code-styling.com/)** - 고급 QR 코드 커스터마이징
 - **[qrcode](https://www.npmjs.com/package/qrcode)** - 빠른 QR 코드 생성
 - **[canvas](https://www.npmjs.com/package/canvas)** - 서버사이드 이미지 렌더링
 
 ### 상태 관리 및 폼
-- **[Zustand](https://zustand-demo.pmnd.rs/)** - 가벼운 전역 상태 관리
-- **[React Hook Form](https://react-hook-form.com/)** - 성능 최적화된 폼 라이브러리
-- **[Zod](https://zod.dev/)** - TypeScript 스키마 검증
-- **[TanStack Query](https://tanstack.com/query)** - 서버 상태 관리 및 캐싱
+
+- **[Zustand 5.0.5](https://zustand-demo.pmnd.rs/)** - 가벼운 전역 상태 관리
+- **[React Hook Form 7.58.0](https://react-hook-form.com/)** - 성능 최적화된 폼 라이브러리
+- **[Zod 3.25.64](https://zod.dev/)** - TypeScript 스키마 검증
+- **[TanStack Query 5.80.7](https://tanstack.com/query)** - 서버 상태 관리 및 캐싱
+
+### HTTP 클라이언트 및 유틸리티
+
+- **[Axios 1.10.0](https://axios-http.com/)** - HTTP 클라이언트
+- **[es-toolkit 1.39.5](https://es-toolkit.slash.page/)** - 모던 JavaScript 유틸리티
+- **[@toss/utils 1.6.1](https://slash.page/ko/libraries/common/utils/readme-i18n/)** - 한국어 특화 유틸리티
+
+### UI 확장 컴포넌트
+
+- **[TanStack Table 8.21.3](https://tanstack.com/table)** - 강력한 데이터 테이블
+- **[Recharts 2.15.3](https://recharts.org/)** - React 차트 라이브러리
+- **[Sonner 2.0.5](https://sonner.emilkowal.ski/)** - 토스트 알림
+- **[Embla Carousel 8.6.0](https://www.embla-carousel.com/)** - 고성능 캐러셀
+- **[React Day Picker 9.7.0](https://react-day-picker.js.org/)** - 날짜 선택기
+- **[Vaul 1.1.2](https://vaul.emilkowal.ski/)** - 모바일 드로어
+- **[Input OTP 1.4.2](https://input-otp.rodz.dev/)** - OTP 입력 컴포넌트
 
 ### 개발 도구
+
 - **[ESLint](https://eslint.org/)** + **[Prettier](https://prettier.io/)** - 코드 품질 및 스타일 관리
+- **[TSX 4.20.3](https://tsx.is/)** - TypeScript 실행 도구
 - **[Turbopack](https://turbo.build/pack)** - Next.js 14 고속 번들러
 
 ### 📊 통합 로깅 시스템
