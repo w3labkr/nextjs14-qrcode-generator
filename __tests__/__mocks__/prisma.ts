@@ -1,19 +1,32 @@
 export const prisma = {
   qrCode: {
-    findMany: jest.fn(),
-    findUnique: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn(),
-    deleteMany: jest.fn(),
-    count: jest.fn(),
+    findMany: jest.fn().mockResolvedValue([]),
+    findUnique: jest.fn().mockResolvedValue(null),
+    create: jest.fn().mockResolvedValue({}),
+    update: jest.fn().mockResolvedValue({}),
+    delete: jest.fn().mockResolvedValue({}),
+    deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+    count: jest.fn().mockResolvedValue(0),
+    groupBy: jest.fn().mockResolvedValue([]),
   },
   user: {
-    findUnique: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+    findUnique: jest.fn().mockResolvedValue(null),
+    create: jest.fn().mockResolvedValue({}),
+    update: jest.fn().mockResolvedValue({}),
   },
-  $disconnect: jest.fn(),
+  logEntry: {
+    create: jest.fn().mockResolvedValue({}),
+    findMany: jest.fn().mockResolvedValue([]),
+    count: jest.fn().mockResolvedValue(0),
+    deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+  },
+  $disconnect: jest.fn().mockResolvedValue(undefined),
+  $transaction: jest.fn().mockImplementation((callback) => {
+    if (typeof callback === "function") {
+      return callback(prisma);
+    }
+    return Promise.resolve();
+  }),
 };
 
 export default prisma;

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/qrcodes/route";
+import { TEST_USER_ID, TEST_QR_CODE_ID } from "../test-utils";
 
 // Mock dependencies
 jest.mock("@/auth", () => ({
@@ -45,7 +46,7 @@ describe("/api/qrcodes API Route", () => {
         require("@/lib/rls-utils").withAuthenticatedRLS;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       const mockQrCodes = [
@@ -92,7 +93,7 @@ describe("/api/qrcodes API Route", () => {
         require("@/lib/rls-utils").withAuthenticatedRLS;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       const mockQrCodes = [
@@ -148,7 +149,7 @@ describe("/api/qrcodes API Route", () => {
         require("@/lib/rls-utils").withAuthenticatedRLS;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       const mockQrCodes = Array.from({ length: 5 }, (_, i) => ({

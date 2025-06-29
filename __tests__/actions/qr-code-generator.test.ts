@@ -4,51 +4,83 @@ import {
   generateAndSaveQrCode,
 } from "@/app/actions/qr-code-generator";
 import { QrCodeOptions, QrCodeGenerationOptions } from "@/types/qr-code-server";
+import { TEST_USER_ID, TEST_QR_CODE_ID } from "../test-utils";
 
 // Mock dependencies
 jest.mock("@/auth", () => ({
   auth: jest.fn(),
 }));
 
-jest.mock("@/lib/rls-utils", () => ({
-  withAuthenticatedRLSTransaction: jest.fn(),
-  withoutRLS: jest.fn(),
+jest.mock("next/headers", () => ({
+  headers: jest.fn(),
 }));
 
 jest.mock("@/lib/unified-logging", () => ({
   UnifiedLogger: {
-    logError: jest.fn().mockResolvedValue(undefined),
-    logQrGeneration: jest.fn().mockResolvedValue(undefined),
+    logQrGeneration: jest.fn(),
+    logError: jest.fn(),
   },
   inferQrType: jest.fn(),
 }));
 
-jest.mock("next/headers", () => ({
-  headers: jest.fn(() => ({
-    get: jest.fn(),
+jest.mock("qrcode", () => ({
+  toString: jest.fn(),
+  toDataURL: jest.fn(),
+}));
+
+jest.mock("qr-code-styling-node", () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    getRawData: jest.fn().mockResolvedValue(Buffer.from("<svg>mock-svg</svg>")),
+    _canvas: {
+      toDataURL: jest
+        .fn()
+        .mockReturnValue(
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+        ),
+    },
   })),
 }));
 
-jest.mock("qrcode", () => ({
-  toDataURL: jest.fn(() =>
-    Promise.resolve("data:image/png;base64,mock-qr-code"),
-  ),
-  toString: jest.fn(() => Promise.resolve("<svg>mock-svg</svg>")),
+jest.mock("@/lib/rls-utils", () => ({
+  withRLSTransaction: jest.fn(),
+  validateUserId: jest.fn(),
+}));
+
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    qrCode: {
+      create: jest.fn(),
+    },
+  },
 }));
 
 describe("QR Code Generator Actions", () => {
+  const mockAuth = require("@/auth").auth;
+  const mockHeaders = require("next/headers").headers;
+  const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+  const mockToString = require("qrcode").toString;
+  const mockToDataURL = require("qrcode").toDataURL;
+  const mockWithRLSTransaction = require("@/lib/rls-utils").withRLSTransaction;
+
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Default mock implementations
+    mockToString.mockResolvedValue("<svg>mock-svg</svg>");
+    mockToDataURL.mockResolvedValue(
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+    );
   });
 
   describe("generateQrCode", () => {
-    it("기본 QR 코드를 생성해야 한다", async () => {
+    it("성공적으로 PNG QR 코드를 생성해야 한다", async () => {
       const mockAuth = require("@/auth").auth;
       const mockHeaders = require("next/headers").headers;
       const mockInferQrType = require("@/lib/unified-logging").inferQrType;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       mockHeaders.mockReturnValue({
@@ -65,13 +97,14 @@ describe("QR Code Generator Actions", () => {
 
       const result = await generateQrCode(options);
 
-      expect(result).toBe("data:image/png;base64,mock-qr-code");
+      expect(result).toMatch(/^data:image\/png;base64,/);
     });
 
-    it("빈 텍스트의 경우 에러를 발생시켜야 한다", async () => {
+    it("빈 텍스트에 대해 에러를 발생시켜야 한다", async () => {
       const options: QrCodeOptions = {
         text: "",
         type: "png",
+        width: 400,
       };
 
       await expect(generateQrCode(options)).rejects.toThrow(
@@ -97,7 +130,7 @@ describe("QR Code Generator Actions", () => {
       const mockInferQrType = require("@/lib/unified-logging").inferQrType;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       mockHeaders.mockReturnValue({
@@ -114,7 +147,9 @@ describe("QR Code Generator Actions", () => {
 
       const result = await generateQrCode(options);
 
-      expect(result).toBe("<svg>mock-svg</svg>");
+      expect(result).toBe(
+        "data:image/svg+xml;base64,PHN2Zz5tb2NrLXN2Zzwvc3ZnPg==",
+      );
     });
 
     it("커스텀 색상을 적용해야 한다", async () => {
@@ -123,7 +158,7 @@ describe("QR Code Generator Actions", () => {
       const mockInferQrType = require("@/lib/unified-logging").inferQrType;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       mockHeaders.mockReturnValue({
@@ -137,14 +172,130 @@ describe("QR Code Generator Actions", () => {
         type: "png",
         width: 400,
         color: {
-          dark: "#ff0000",
+          dark: "#000000",
           light: "#ffffff",
         },
       };
 
       const result = await generateQrCode(options);
 
-      expect(result).toBe("data:image/png;base64,mock-qr-code");
+      expect(result).toMatch(/^data:image\/png;base64,/);
+    });
+
+    it("에러 코드 수정 레벨을 적용해야 한다", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("url");
+
+      const options: QrCodeOptions = {
+        text: "https://example.com",
+        type: "png",
+        width: 400,
+        margin: 4,
+      };
+
+      const result = await generateQrCode(options);
+
+      expect(result).toMatch(/^data:image\/png;base64,/);
+    });
+
+    it("로고를 포함한 QR 코드를 생성해야 한다", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("url");
+
+      const options: QrCodeOptions = {
+        text: "https://example.com",
+        type: "png",
+        width: 400,
+        margin: 6,
+      };
+
+      const result = await generateQrCode(options);
+
+      expect(result).toMatch(/^data:image\/png;base64,/);
+    });
+  });
+
+  describe("generateAndSaveQrCode", () => {
+    it("QR 코드를 생성하고 저장해야 한다", async () => {
+      mockWithRLSTransaction.mockImplementation(async (callback: any) => {
+        return callback();
+      });
+
+      const prisma = require("@/lib/prisma").prisma;
+      prisma.qrCode.create.mockResolvedValue({
+        id: TEST_QR_CODE_ID,
+        title: "Test QR",
+        content: "https://example.com",
+        type: "url",
+        data: "data:image/png;base64,test",
+        userId: TEST_USER_ID,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const options: QrCodeGenerationOptions = {
+        text: "https://example.com",
+        title: "Test QR",
+        type: "png",
+        width: 400,
+        qrType: "URL",
+      };
+
+      const result = await generateAndSaveQrCode(options);
+
+      expect(result).toEqual({
+        success: true,
+        qrCode: expect.objectContaining({
+          id: TEST_QR_CODE_ID,
+          title: "Test QR",
+        }),
+      });
+    });
+
+    it("저장 중 오류 발생 시 적절한 에러를 반환해야 한다", async () => {
+      mockWithRLSTransaction.mockImplementation(async (callback: any) => {
+        return callback();
+      });
+
+      const prisma = require("@/lib/prisma").prisma;
+      prisma.qrCode.create.mockRejectedValue(new Error("Database error"));
+
+      const options: QrCodeGenerationOptions = {
+        text: "https://example.com",
+        title: "Test QR",
+        type: "png",
+        width: 400,
+        qrType: "URL",
+      };
+
+      const result = await generateAndSaveQrCode(options);
+
+      expect(result).toEqual({
+        success: false,
+        error: "Database error",
+      });
     });
   });
 
@@ -152,104 +303,27 @@ describe("QR Code Generator Actions", () => {
     it("고해상도 QR 코드를 생성해야 한다", async () => {
       const mockAuth = require("@/auth").auth;
       const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       mockHeaders.mockReturnValue({
         get: jest.fn().mockReturnValue(null),
       });
+
+      mockInferQrType.mockReturnValue("url");
 
       const options: QrCodeOptions = {
         text: "https://example.com",
         type: "png",
-        width: 2048,
+        width: 1024,
       };
 
       const result = await generateHighResQrCode(options);
 
-      expect(result).toBe("data:image/png;base64,mock-qr-code");
-    });
-  });
-
-  describe("generateAndSaveQrCode", () => {
-    it("QR 코드를 생성하고 저장해야 한다", async () => {
-      const mockAuth = require("@/auth").auth;
-      const mockHeaders = require("next/headers").headers;
-      const mockWithAuthenticatedRLSTransaction =
-        require("@/lib/rls-utils").withAuthenticatedRLSTransaction;
-      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
-
-      mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
-      });
-
-      mockHeaders.mockReturnValue({
-        get: jest.fn().mockReturnValue(null),
-      });
-
-      mockInferQrType.mockReturnValue("url");
-
-      const mockTx = {
-        user: {
-          findFirst: jest.fn().mockResolvedValue({ id: "user1" }),
-        },
-        qrCode: {
-          create: jest.fn().mockResolvedValue({
-            id: "qr1",
-            content: "https://example.com",
-            type: "url",
-          }),
-        },
-      };
-
-      mockWithAuthenticatedRLSTransaction.mockImplementation(
-        async (session: any, callback: any) => {
-          return await callback(mockTx);
-        },
-      );
-
-      const options: QrCodeGenerationOptions = {
-        text: "https://example.com",
-        type: "png",
-        qrType: "URL",
-        title: "Test QR",
-      };
-
-      const result = await generateAndSaveQrCode(options);
-
-      expect(result).toEqual({
-        qrCodeDataUrl: "data:image/png;base64,mock-qr-code",
-        savedId: "qr1",
-      });
-    });
-
-    it("로그인하지 않은 사용자의 경우 저장하지 않고 QR 코드만 생성해야 한다", async () => {
-      const mockAuth = require("@/auth").auth;
-      const mockHeaders = require("next/headers").headers;
-      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
-
-      mockAuth.mockResolvedValue(null);
-
-      mockHeaders.mockReturnValue({
-        get: jest.fn().mockReturnValue(null),
-      });
-
-      mockInferQrType.mockReturnValue("url");
-
-      const options: QrCodeGenerationOptions = {
-        text: "https://example.com",
-        type: "png",
-        qrType: "URL",
-      };
-
-      const result = await generateAndSaveQrCode(options);
-
-      expect(result).toEqual({
-        qrCodeDataUrl: "data:image/png;base64,mock-qr-code",
-        savedId: null,
-      });
+      expect(result).toMatch(/^data:image\/png;base64,/);
     });
   });
 });

@@ -7,6 +7,7 @@ import {
   getQrCodeStats,
   saveQrCode,
 } from "@/app/actions/qr-code-management";
+import { TEST_USER_ID, TEST_QR_CODE_ID } from "../test-utils";
 
 // Mock dependencies
 jest.mock("@/auth", () => ({
@@ -48,13 +49,21 @@ jest.mock("@/lib/prisma", () => ({
       delete: jest.fn(),
       deleteMany: jest.fn(),
       count: jest.fn(),
+      groupBy: jest.fn(),
     },
+    $transaction: jest.fn(),
   },
 }));
 
 describe("QR Code Management Actions", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // 모든 테스트에서 기본적인 인증된 사용자 설정
+    const mockAuth = require("@/auth").auth;
+    mockAuth.mockResolvedValue({
+      user: { id: TEST_USER_ID, email: "test@example.com" },
+    });
   });
 
   describe("getUserQrCodes", () => {
@@ -63,7 +72,7 @@ describe("QR Code Management Actions", () => {
       const mockWithRLS = require("@/lib/rls-utils").withRLS;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       const mockQrCodes = [
@@ -107,7 +116,7 @@ describe("QR Code Management Actions", () => {
       const mockAuth = require("@/auth").auth;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       // withRLSTransaction mock 추가 필요
@@ -146,7 +155,7 @@ describe("QR Code Management Actions", () => {
       const mockAuth = require("@/auth").auth;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       const mockWithRLSTransaction = jest.fn();
@@ -178,7 +187,7 @@ describe("QR Code Management Actions", () => {
         require("@/lib/rls-utils").withAuthenticatedRLSTransaction;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       const mockTx = {
@@ -210,7 +219,7 @@ describe("QR Code Management Actions", () => {
         require("@/lib/rls-utils").withAuthenticatedRLSTransaction;
 
       mockAuth.mockResolvedValue({
-        user: { id: "user1", email: "test@example.com" },
+        user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
       const mockStats = {
