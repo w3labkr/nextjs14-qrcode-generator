@@ -23,12 +23,10 @@ export class RLSManager {
    */
   static async setUserContext(userId: string, isAdmin: boolean = false) {
     try {
-      console.log("RLS 컨텍스트 설정:", { userId, isAdmin });
       await Promise.all([
         prisma.$executeRaw`SET app.current_user_id = ${userId}`,
         prisma.$executeRaw`SET app.is_admin = ${isAdmin}`,
       ]);
-      console.log("RLS 컨텍스트 설정 완료");
     } catch (error) {
       console.error("RLS 컨텍스트 설정 실패:", error);
       throw error;
