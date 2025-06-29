@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import Link from "next/link";
 import { QR_CODE_TYPES } from "@/lib/constants";
-import { truncateContent, getTypeLabel } from "@/lib/utils";
+import { truncateContent, getTypeLabel, getTypeColor } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface RecentQrCodesProps {
   recentQrCodes: any[];
@@ -53,8 +54,11 @@ export function RecentQrCodes({ recentQrCodes }: RecentQrCodesProps) {
                       {qrCode.title || "제목 없음"}
                     </h4>
                     <Badge
-                      variant="secondary"
-                      className="text-xs flex-shrink-0"
+                      variant="outline"
+                      className={cn(
+                        "border-0 text-xs flex-shrink-0",
+                        getTypeColor(qrCode.type),
+                      )}
                     >
                       {getTypeLabel(qrCode.type)}
                     </Badge>
