@@ -116,10 +116,20 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
       });
 
       if (!response.ok) {
-        throw new Error("CSV 내보내기에 실패했습니다");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+            `HTTP ${response.status}: 서버 오류가 발생했습니다`,
+        );
       }
 
       const blob = await response.blob();
+
+      // 파일이 비어있는지 확인
+      if (blob.size === 0) {
+        throw new Error("내보낼 데이터가 없습니다");
+      }
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.style.display = "none";
@@ -138,7 +148,10 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
       console.error("CSV 내보내기 실패:", error);
       toast({
         title: "내보내기 실패",
-        description: "CSV 파일 생성 중 오류가 발생했습니다.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "CSV 파일 생성 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     }

@@ -16,6 +16,19 @@ interface TemplateCsvData {
   updatedAt: string;
 }
 
+interface LogCsvData {
+  id: string;
+  userId: string;
+  type: string;
+  level: string;
+  action: string;
+  message: string;
+  details: string;
+  ipAddress: string;
+  userAgent: string;
+  createdAt: string;
+}
+
 export function convertQrCodesToCSV(qrCodes: any[]): string {
   if (!qrCodes || qrCodes.length === 0) {
     return "type,title,content,settings,isFavorite,createdAt,updatedAt\n";
@@ -78,6 +91,48 @@ export function convertTemplatesToCSV(templates: any[]): string {
   ];
 
   return csvContent.join("\n");
+}
+
+export function convertLogsToCSV(logs: any[]): string {
+  if (!logs || logs.length === 0) {
+    return "id,userId,type,level,action,message,details,ipAddress,userAgent,createdAt\n";
+  }
+
+  const headers = [
+    "id",
+    "userId",
+    "type",
+    "level",
+    "action",
+    "message",
+    "details",
+    "ipAddress",
+    "userAgent",
+    "createdAt",
+  ];
+
+  const csvContent = [
+    headers.join(","),
+    ...logs.map((log) => {
+      const row = [
+        escapeCSVValue(log.id || ""),
+        escapeCSVValue(log.userId || ""),
+        escapeCSVValue(log.type || ""),
+        escapeCSVValue(log.level || ""),
+        escapeCSVValue(log.action || ""),
+        escapeCSVValue(log.message || ""),
+        escapeCSVValue(JSON.stringify(log.details || {})),
+        escapeCSVValue(log.ipAddress || ""),
+        escapeCSVValue(log.userAgent || ""),
+        escapeCSVValue(
+          log.createdAt ? new Date(log.createdAt).toISOString() : "",
+        ),
+      ];
+      return row.join(",");
+    }),
+  ].join("\n");
+
+  return csvContent;
 }
 
 export function parseQrCodesFromCSV(csvContent: string): any[] {

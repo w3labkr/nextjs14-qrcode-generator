@@ -217,7 +217,6 @@ export function DataTable<TData, TValue>({
               disabled={!pagination.canPreviousPage}
             >
               <ChevronsLeft className="h-4 w-4" />
-              처음
             </Button>
             <Button
               variant="outline"
@@ -226,7 +225,6 @@ export function DataTable<TData, TValue>({
               disabled={!pagination.canPreviousPage}
             >
               <ChevronLeft className="h-4 w-4" />
-              이전
             </Button>
             <div className="flex items-center space-x-1">
               <span className="text-sm">
@@ -239,7 +237,6 @@ export function DataTable<TData, TValue>({
               onClick={() => pagination.onPageChange(pagination.pageIndex + 1)}
               disabled={!pagination.canNextPage}
             >
-              다음
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button
@@ -248,7 +245,6 @@ export function DataTable<TData, TValue>({
               onClick={() => pagination.onPageChange(pagination.pageCount - 1)}
               disabled={!pagination.canNextPage}
             >
-              마지막
               <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>
