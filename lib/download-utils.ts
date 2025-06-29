@@ -324,7 +324,7 @@ const downloadAsImage = async (
 // 개발환경에서 디버깅 로그를 출력하는 함수
 const logDebugInfo = (format: string, qrSettings: any) => {
   if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-    console.log("Download QR Code - Format:", format, "Settings:", qrSettings);
+    // QR 코드 생성을 위한 설정 준비
   }
 };
 
@@ -369,7 +369,7 @@ export const downloadQrCode = async (
       error.message.includes("SVG")
     ) {
       try {
-        console.log("PNG로 직접 생성 재시도...");
+        // PNG로 직접 생성 재시도
         const pngSettings = parseQrSettings(settings, content, "png");
 
         const retryResponse = await axios.post("/api/qrcodes/generate", {

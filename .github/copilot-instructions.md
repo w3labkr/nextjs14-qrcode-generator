@@ -116,12 +116,12 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * `ui/`: Contains shadcn/ui components (48 components including accordion, alert-dialog, alert, aspect-ratio, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, data-table, date-picker, dialog, drawer, dropdown-menu, form, hover-card, input-otp, input, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toggle-group, toggle, tooltip).
   * Other utility components (access-denied-alert, address-search, client-only, github-badge, history-button, loading-spinner, log-statistics, new-qr-code-button, tailwind-indicator, unauthenticated, user-nav, user-profile).
 * `lib/`: Contains utility functions and constants.
-  * Database connection (prisma.ts), download utilities (download-utils.ts), QR code utilities, auth helpers (auth-helpers.ts, auth-server.ts, auth-utils.ts), error logging (error-logging.ts), API logging (api-logging.ts), unified logging (unified-logging.ts), RLS management (rls-manager.ts, rls-utils.ts), environment validation (env-validation.ts), CSV utilities (csv-utils.ts), log utilities (log-utils.ts, log-cleanup.ts), logging middleware (logging-middleware.ts), logging examples (logging-examples.ts), constants (constants.ts), and general utilities (utils.ts).
+  * Database connection (prisma.ts), download utilities (download-utils.ts), QR code utilities, auth helpers (auth-helpers.ts, auth-server.ts, auth-utils.ts), API logging (api-logging.ts), unified logging (unified-logging.ts), RLS management (rls-manager.ts, rls-utils.ts), environment validation (env-validation.ts), CSV utilities (csv-utils.ts), log utilities (log-utils.ts, log-cleanup.ts), logging middleware (logging-middleware.ts), constants (constants.ts), and general utilities (utils.ts).
   * `supabase/`: Supabase client and related utilities.
 * `hooks/`: Contains custom hooks and Zustand stores.
   * Custom hooks for mobile detection (`use-mobile.tsx`), remember me functionality (`use-remember-me.ts`), token refresh (`use-token-refresh.ts`), and toast notifications (`use-toast.ts`).
 * `types/`: Contains TypeScript type definitions.
-  * Type definitions for QR codes, data management, environment, authentication, RLS, logs, etc.
+  * Type definitions for QR codes, environment, authentication, RLS, logs, etc.
 * `public/`: Contains static assets.
   * PWA manifest, service worker, fonts, screenshots, etc.
 * `prisma/`: Contains database schema and migrations.
@@ -137,7 +137,6 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * `scripts/`: Contains utility scripts.
   * `backup-logs.sql`: SQL script for backing up log data.
   * `cleanup-old-logs.sql`: SQL script for cleaning up old log entries.
-  * `migrate-logging-system.sh`: Shell script for migrating the logging system.
   * `setup-rls.sh`: RLS setup script.
   * `setup-unified-rls.sql`: SQL script for unified RLS setup.
   * `test-unified-logging.ts`: TypeScript script for testing the unified logging system.
@@ -162,7 +161,6 @@ The project includes several npm scripts for development and maintenance:
   * `npm run upgrade:latest` - Updates all packages to latest versions
   * `npm run reinstall` - Clean reinstall of all packages
 * **Logging System**:
-  * `npm run migrate:logging` - Migrates the logging system
   * `npm run logs:test` - Tests the unified logging system
   * `npm run logs:cleanup` - Cleans up old log entries
   * `npm run logs:backup` - Backs up log data

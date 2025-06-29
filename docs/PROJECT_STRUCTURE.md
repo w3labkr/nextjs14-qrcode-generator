@@ -194,11 +194,9 @@ ui/
 #### 로깅 시스템
 - `unified-logging.ts` - 통합 로깅 시스템
 - `api-logging.ts` - API 요청 로깅
-- `error-logging.ts` - 에러 로깅
 - `log-cleanup.ts` - 로그 정리 기능
 - `log-utils.ts` - 로그 유틸리티
 - `logging-middleware.ts` - 로깅 미들웨어
-- `logging-examples.ts` - 로깅 사용 예제
 
 #### 보안 및 RLS
 - `rls-manager.ts` - Row Level Security 매니저
@@ -232,13 +230,11 @@ Supabase 클라이언트 및 관련 유틸리티들
 시스템 관리 및 유지보수를 위한 스크립트들:
 - `backup-logs.sql` - 로그 데이터 백업 SQL
 - `cleanup-old-logs.sql` - 오래된 로그 정리 SQL
-- `migrate-logging-system.sh` - 로깅 시스템 마이그레이션
 - `setup-rls.sh` - RLS 설정 스크립트
 - `setup-unified-rls.sql` - 통합 RLS 설정 SQL
 - `test-unified-logging.ts` - 통합 로깅 시스템 테스트
 
 ### `types/` - TypeScript 타입 정의
-- `data-manager.ts` - 데이터 관리 타입
 - `environment.d.ts` - 환경 변수 타입
 - `logs.ts` - 로깅 시스템 타입
 - `next-auth.d.ts` - NextAuth.js 타입 확장

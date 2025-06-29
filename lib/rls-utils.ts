@@ -128,7 +128,6 @@ export async function testRLS(userId: string) {
 
     // 사용자의 QR 코드만 조회되는지 확인
     const qrCodes = await db.qrCode.findMany();
-    console.log(`User ${userId} can access ${qrCodes.length} QR codes`);
 
     return {
       qrCodesCount: qrCodes.length,
@@ -258,8 +257,6 @@ export async function measureRLSPerformance<T>(
     const db = await withRLS(userId);
     const result = await queryFn(db);
     const executionTime = Date.now() - startTime;
-
-    console.log(`RLS Query executed in ${executionTime}ms for user ${userId}`);
 
     return {
       result,
