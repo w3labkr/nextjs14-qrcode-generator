@@ -362,28 +362,38 @@ export function LogCleanupManager() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="flex items-center space-x-2">
-                    {options.dryRun ? (
-                      <Info className="h-5 w-5 text-blue-500" />
-                    ) : (
-                      <AlertTriangle className="h-5 w-5 text-red-500" />
-                    )}
-                    <span>
-                      {options.dryRun ? "시뮬레이션 실행" : "로그 삭제 확인"}
-                    </span>
+                  <AlertDialogTitle>
+                    {options.dryRun ? "시뮬레이션 실행" : "로그 삭제 확인"}
                   </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {options.dryRun
-                      ? "삭제될 로그 수를 확인합니다. 실제 삭제는 수행되지 않습니다."
-                      : "선택한 조건에 맞는 로그가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다."}
-                    <div className="mt-2 space-y-1 text-sm">
-                      <div>• 기준 날짜: {options.beforeDate}</div>
-                      {options.logTypes.length > 0 && (
-                        <div>• 로그 타입: {options.logTypes.join(", ")}</div>
-                      )}
-                      {options.logLevels.length > 0 && (
-                        <div>• 로그 레벨: {options.logLevels.join(", ")}</div>
-                      )}
+                  <AlertDialogDescription asChild>
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {options.dryRun ? (
+                          <Info className="h-5 w-5 text-blue-500" />
+                        ) : (
+                          <AlertTriangle className="h-5 w-5 text-red-500" />
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <div>
+                          {options.dryRun
+                            ? "삭제될 로그 수를 확인합니다. 실제 삭제는 수행되지 않습니다."
+                            : "선택한 조건에 맞는 로그가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다."}
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          <div>• 기준 날짜: {options.beforeDate}</div>
+                          {options.logTypes.length > 0 && (
+                            <div>
+                              • 로그 타입: {options.logTypes.join(", ")}
+                            </div>
+                          )}
+                          {options.logLevels.length > 0 && (
+                            <div>
+                              • 로그 레벨: {options.logLevels.join(", ")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
