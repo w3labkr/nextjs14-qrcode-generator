@@ -340,7 +340,6 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-    size: 40,
   },
   {
     accessorKey: "id",
@@ -353,7 +352,18 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
         </div>
       );
     },
-    size: 80,
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="생성일시" />
+    ),
+    cell: ({ row }) => {
+      const date = row.getValue("createdAt") as Date;
+      if (!date) return <span className="text-muted-foreground">-</span>;
+
+      return format(new Date(date), "yyyy-MM-dd HH:mm:ss", { locale: ko });
+    },
   },
   {
     accessorKey: "type",
@@ -400,7 +410,6 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
         </div>
       );
     },
-    size: 100,
   },
   {
     accessorKey: "level",
@@ -418,27 +427,6 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
         </div>
       );
     },
-    size: 100,
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="생성일시" />
-    ),
-    cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
-      if (!date) return <span className="text-muted-foreground">-</span>;
-
-      return (
-        <div className="text-sm">
-          <div>{format(new Date(date), "yyyy-MM-dd", { locale: ko })}</div>
-          <div className="text-xs text-muted-foreground">
-            {format(new Date(date), "HH:mm:ss", { locale: ko })}
-          </div>
-        </div>
-      );
-    },
-    size: 120,
   },
   {
     id: "actions",
@@ -487,6 +475,5 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
     },
     enableSorting: false,
     enableHiding: false,
-    size: 50,
   },
 ];
