@@ -25,8 +25,8 @@ import { Search, RefreshCw, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
-import { DataTable } from "@/components/ui/data-table";
 import { adminLogsColumns } from "./logs-columns";
+import { AdminLogsDataTable } from "./admin-logs-data-table";
 
 interface AdminLogsContentProps {
   initialData?: ApplicationLogData[];
@@ -157,21 +157,6 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
     }
   };
 
-  // 페이지 변경 핸들러
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page + 1);
-  };
-
-  // 페이지네이션 객체
-  const paginationConfig = {
-    pageIndex: currentPage - 1,
-    pageSize: limit,
-    pageCount: totalPages,
-    onPageChange: handlePageChange,
-    canPreviousPage: currentPage > 1,
-    canNextPage: currentPage < totalPages,
-  };
-
   useEffect(() => {
     fetchLogs();
   }, [currentPage, limit, typeFilter, levelFilter, searchValue, dateRange]);
@@ -210,16 +195,12 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
         <CardContent>
           {/* 상단 필터 바 */}
           <div className="flex flex-col lg:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <Input
-                placeholder="로그 검색 (액션, 메시지, 사용자 ID...)"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="max-w-md"
-              />
-            </div>
-
             <div className="flex items-center space-x-2">
+              <DatePickerWithRange
+                date={dateRange}
+                onDateChange={setDateRange}
+              />
+
               <Select value={typeFilter} onValueChange={setTypeFilter}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="유형 선택" />
@@ -247,35 +228,22 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                   <SelectItem value="FATAL">치명적</SelectItem>
                 </SelectContent>
               </Select>
-
-              <DatePickerWithRange
-                date={dateRange}
-                onDateChange={setDateRange}
-              />
-
-              <Select
-                value={limit.toString()}
-                onValueChange={(value) => setLimit(parseInt(value))}
-              >
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10개</SelectItem>
-                  <SelectItem value="25">25개</SelectItem>
-                  <SelectItem value="50">50개</SelectItem>
-                  <SelectItem value="100">100개</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
           {/* 데이터 테이블 */}
-          <DataTable
+          <AdminLogsDataTable
             columns={adminLogsColumns}
             data={logs}
             loading={loading}
-            pagination={paginationConfig}
+            totalCount={totalCount}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            limit={limit}
+            onLimitChange={setLimit}
+            searchValue={searchValue}
+            onSearchChange={setSearchValue}
           />
         </CardContent>
       </Card>

@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Eye,
-  ArrowUpDown,
   MoreHorizontal,
   Copy,
   Download,
@@ -35,6 +34,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { DataTableColumnHeader } from "./data-table-column-header";
 
 const LOG_TYPE_LABELS = {
   ACCESS: "접근",
@@ -309,18 +309,9 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
   },
   {
     accessorKey: "level",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2"
-        >
-          상태
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="상태" />
+    ),
     cell: ({ row }) => {
       const log = row.original;
       const level = log.level || "INFO";
@@ -338,18 +329,9 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
   {
     accessorKey: "level",
     id: "priority",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2"
-        >
-          우선순위
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="우선순위" />
+    ),
     cell: ({ row }) => {
       const level = (row.getValue("level") as string) || "INFO";
 
@@ -364,18 +346,9 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2"
-        >
-          생성일시
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="생성일시" />
+    ),
     cell: ({ row }) => {
       const date = row.getValue("createdAt") as Date;
       if (!date) return <span className="text-muted-foreground">-</span>;
