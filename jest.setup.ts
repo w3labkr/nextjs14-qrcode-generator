@@ -1,5 +1,33 @@
 import "@testing-library/jest-dom";
 
+// Add missing DOM APIs for jsdom
+Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
+  value: jest.fn(() => false),
+  writable: true,
+});
+
+Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+  value: jest.fn(),
+  writable: true,
+});
+
+Object.defineProperty(HTMLElement.prototype, "releasePointerCapture", {
+  value: jest.fn(),
+  writable: true,
+});
+
+Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
+  value: jest.fn(),
+  writable: true,
+});
+
+// ResizeObserver Mock
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
 // Mock next/navigation
 jest.mock("next/navigation", () => ({
   useRouter() {
@@ -108,12 +136,33 @@ process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
 const originalError = console.error;
 beforeAll(() => {
   console.error = (...args) => {
+    const message = args[0]?.toString() || "";
+
+    // Skip React warnings
     if (
-      typeof args[0] === "string" &&
-      args[0].includes("Warning: ReactDOM.render is no longer supported")
+      message.includes("Warning: ReactDOM.render is no longer supported") ||
+      message.includes("Warning: An update to") ||
+      message.includes("ReactDOMTestUtils.act") ||
+      message.includes("useLayoutEffect does nothing on the server") ||
+      message.includes("Component definition is missing display name")
     ) {
       return;
     }
+
+    // Skip Radix UI pointer capture warnings
+    if (
+      message.includes("hasPointerCapture is not a function") ||
+      message.includes("scrollIntoView is not a function") ||
+      message.includes("Uncaught [TypeError")
+    ) {
+      return;
+    }
+
+    // Skip specific error patterns
+    if (message.includes("Consider adding an error boundary")) {
+      return;
+    }
+
     originalError.call(console, ...args);
   };
 });
@@ -121,3 +170,50 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError;
 });
+
+// Mock Next.js runtime APIs for API route testing
+global.Request = class MockRequest {
+  public method: string;
+  public url: string;
+  public headers: Headers;
+
+  constructor(input: string | Request, init?: RequestInit) {
+    this.method = init?.method || "GET";
+    this.url = typeof input === "string" ? input : input.url;
+    this.headers = new Headers(init?.headers);
+  }
+
+  static mockImplementation = jest.fn();
+} as any;
+
+global.Response = class MockResponse {
+  public status: number;
+  public statusText: string;
+  public headers: Headers;
+
+  constructor(body?: any, init?: ResponseInit) {
+    this.status = init?.status || 200;
+    this.statusText = init?.statusText || "OK";
+    this.headers = new Headers(init?.headers);
+  }
+
+  static json = jest.fn(
+    (data: any, init?: ResponseInit) =>
+      new MockResponse(JSON.stringify(data), init),
+  );
+  static mockImplementation = jest.fn();
+} as any;
+
+global.Headers = class MockHeaders extends Map {
+  get(name: string) {
+    return super.get(name.toLowerCase());
+  }
+
+  set(name: string, value: string) {
+    return super.set(name.toLowerCase(), value);
+  }
+
+  has(name: string) {
+    return super.has(name.toLowerCase());
+  }
+} as any;
