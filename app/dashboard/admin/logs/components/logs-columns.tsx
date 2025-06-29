@@ -46,6 +46,21 @@ const LOG_TYPE_LABELS = {
   SYSTEM: "시스템",
 } as const;
 
+const ACTION_LABELS = {
+  VIEW_LOGS: "시스템 로그 조회",
+  LOGIN: "로그인",
+  LOGOUT: "로그아웃",
+  QR_CODE_GENERATED: "QR 코드 생성",
+  QR_CODE_DOWNLOADED: "QR 코드 다운로드",
+  USER_CREATED: "사용자 생성",
+  USER_UPDATED: "사용자 정보 수정",
+  USER_DELETED: "사용자 삭제",
+  EXPORT_LOGS: "로그 내보내기",
+  DELETE_LOGS: "로그 삭제",
+  REFRESH: "토큰 갱신",
+  API_ACCESS: "API 접근",
+} as const;
+
 const LOG_LEVEL_COLORS = {
   DEBUG: "bg-gray-100 text-gray-800 border-gray-200",
   INFO: "bg-blue-100 text-blue-800 border-blue-200",
@@ -54,27 +69,85 @@ const LOG_LEVEL_COLORS = {
   FATAL: "bg-red-200 text-red-900 border-red-300",
 } as const;
 
-const getStatusIcon = (level: string) => {
-  switch (level) {
-    case "ERROR":
-    case "FATAL":
-      return <XCircle className="h-4 w-4 text-red-500" />;
-    case "WARN":
-      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-    case "INFO":
-      return <Info className="h-4 w-4 text-blue-500" />;
-    case "DEBUG":
-      return <Activity className="h-4 w-4 text-gray-500" />;
-    default:
+const getStatusIcon = (type: string, level: string) => {
+  // 오류 레벨 우선 처리
+  if (level === "ERROR" || level === "FATAL") {
+    return <XCircle className="h-4 w-4 text-red-500" />;
+  }
+  if (level === "WARN") {
+    return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+  }
+
+  // 타입별 아이콘
+  switch (type) {
+    case "SYSTEM":
+    case "ADMIN":
       return <CheckCircle className="h-4 w-4 text-green-500" />;
+    case "AUTH":
+      return <CheckCircle className="h-4 w-4 text-blue-500" />;
+    case "ACCESS":
+      return <Info className="h-4 w-4 text-blue-500" />;
+    case "QR_GENERATION":
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    case "AUDIT":
+      return <Info className="h-4 w-4 text-gray-500" />;
+    default:
+      return level === "DEBUG" ? (
+        <Activity className="h-4 w-4 text-gray-500" />
+      ) : (
+        <CheckCircle className="h-4 w-4 text-green-500" />
+      );
   }
 };
 
-const getStatusText = (type: string, level: string) => {
+const getStatusText = (type: string, level: string, action?: string) => {
+  // 로그 레벨에 따른 상태 결정
   if (level === "ERROR" || level === "FATAL") return "오류";
   if (level === "WARN") return "경고";
-  if (type === "SYSTEM") return "완료";
-  return "진행중";
+
+  // 액션별 세부 상태 결정
+  if (action) {
+    switch (action) {
+      case "VIEW_LOGS":
+        return "로그 조회됨";
+      case "LOGIN":
+        return "로그인됨";
+      case "LOGOUT":
+        return "로그아웃됨";
+      case "QR_CODE_GENERATED":
+        return "QR 생성됨";
+      case "QR_CODE_DOWNLOADED":
+        return "QR 다운로드됨";
+      case "USER_CREATED":
+        return "사용자 생성됨";
+      case "USER_UPDATED":
+        return "사용자 수정됨";
+      case "USER_DELETED":
+        return "사용자 삭제됨";
+      case "EXPORT_LOGS":
+        return "로그 내보내기됨";
+      case "DELETE_LOGS":
+        return "로그 삭제됨";
+    }
+  }
+
+  // 타입별 기본 상태 결정
+  switch (type) {
+    case "SYSTEM":
+      return "완료";
+    case "ADMIN":
+      return "실행됨";
+    case "AUTH":
+      return "인증됨";
+    case "ACCESS":
+      return "접근됨";
+    case "QR_GENERATION":
+      return "생성됨";
+    case "AUDIT":
+      return "기록됨";
+    default:
+      return "정상";
+  }
 };
 
 const getPriorityText = (level: string) => {
@@ -296,7 +369,9 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
             <Badge variant="outline" className="text-xs">
               {LOG_TYPE_LABELS[logType] || logType}
             </Badge>
-            <span className="font-medium text-sm">{action}</span>
+            <span className="font-medium text-sm">
+              {ACTION_LABELS[action as keyof typeof ACTION_LABELS] || action}
+            </span>
           </div>
           {log.message && (
             <p className="text-xs text-muted-foreground line-clamp-2 max-w-[400px]">
@@ -316,11 +391,12 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
       const log = row.original;
       const level = log.level || "INFO";
       const type = log.type;
+      const action = log.action;
 
       return (
         <div className="flex items-center space-x-2">
-          {getStatusIcon(level)}
-          <span className="text-sm">{getStatusText(type, level)}</span>
+          {getStatusIcon(type, level)}
+          <span className="text-sm">{getStatusText(type, level, action)}</span>
         </div>
       );
     },
