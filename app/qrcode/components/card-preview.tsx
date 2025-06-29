@@ -78,7 +78,7 @@ export function CardPreview() {
       const qrResult = await generateQrCode({
         text: result.text,
         type: (values.previewExportFormat || "png") as "png" | "svg" | "jpg",
-        width: 256,
+        width: 1024,
         color: {
           dark: values.styleForegroundColor || "#000000",
           light: values.styleBackgroundColor || "#ffffff",
@@ -111,7 +111,7 @@ export function CardPreview() {
               dark: values.styleForegroundColor || "#000000",
               light: values.styleBackgroundColor || "#ffffff",
             },
-            width: 256,
+            width: 1024,
             logo: values.styleLogo || undefined,
             frameOptions:
               values.styleBorderStyle !== "none"

@@ -49,11 +49,11 @@ export function UserNav() {
     checkAdminStatus();
   }, [session]);
 
-  if (status !== "authenticated") {
+  if (status === "loading") {
     return <div className="h-8 w-8 animate-pulse bg-gray-200 rounded-full" />;
   }
 
-  if (!session) {
+  if (status === "unauthenticated" || !session) {
     return (
       <div className="flex gap-2">
         <Button

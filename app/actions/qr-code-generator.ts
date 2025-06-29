@@ -16,7 +16,7 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
     const {
       text,
       type = "png",
-      width = 400,
+      width = 1024,
       margin = 0,
       color,
       logo,
@@ -165,7 +165,7 @@ async function generateStyledQrCode(options: QrCodeOptions): Promise<string> {
   const {
     text,
     type = "png",
-    width = 400,
+    width = 1024,
     margin = 0,
     color,
     logo,
