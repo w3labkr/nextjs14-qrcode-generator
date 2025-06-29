@@ -24,7 +24,6 @@ model User {
   updatedAt DateTime @updatedAt
 
   qrCodes         QrCode[]
-  templates       QrTemplate[]
   applicationLogs ApplicationLog[]
 
   @@map("users")
@@ -92,22 +91,6 @@ model QrCode {
   @@index([userId, createdAt])
   @@index([userId, type])
   @@map("qr_codes")
-}
-
-// 사용자 템플릿 테이블
-model QrTemplate {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String // 템플릿 이름
-  settings  String // 색상, 로고, 모양 등 설정 (JSON 문자열)
-  isDefault Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("qr_templates")
 }
 
 // 통합 로그 테이블 (모든 로그를 하나의 테이블로 관리)
@@ -179,14 +162,7 @@ enum AuthAction {
 // CREATE POLICY qr_codes_user_policy ON qr_codes
 //   USING (user_id = current_setting('app.current_user_id')::text);
 
-// 3. QrTemplate 테이블 RLS 활성화
-// ALTER TABLE qr_templates ENABLE ROW LEVEL SECURITY;
-
-// 4. QrTemplate 접근 정책 생성 (사용자는 자신의 템플릿만 접근 가능)
-// CREATE POLICY qr_templates_user_policy ON qr_templates
-//   USING (user_id = current_setting('app.current_user_id')::text);
-
-// 5. User 테이블 RLS 활성화 (필요시)
+// 3. User 테이블 RLS 활성화 (필요시)
 // ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
 // 6. User 접근 정책 생성 (사용자는 자신의 정보만 접근 가능)
@@ -218,7 +194,7 @@ enum AuthAction {
 //     OR type = 'SYSTEM' -- 시스템 로그는 모든 사용자가 조회 가능
 //   );
 
-// 13. ApplicationLog 관리자 전용 정책 (민감한 로그 타입)
+// 11. ApplicationLog 관리자 전용 정책 (민감한 로그 타입)
 // CREATE POLICY application_logs_admin_only_policy ON application_logs
 //   FOR SELECT
 //   USING (

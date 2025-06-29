@@ -31,8 +31,7 @@ export default function AllDataJSONExportButton({
         dataType: "all-data",
         summary: {
           qrCodesCount: data.data.qrCodes.length,
-          templatesCount: data.data.templates.length,
-          totalCount: data.data.qrCodes.length + data.data.templates.length,
+          totalCount: data.data.qrCodes.length,
         },
       };
 
@@ -44,10 +43,9 @@ export default function AllDataJSONExportButton({
 
       // 사용자에게 다운로드 시작 알림
       toast.success(
-        `전체 데이터 JSON 다운로드가 시작되었습니다! (QR 코드: ${data.data.qrCodes.length}개, 템플릿: ${data.data.templates.length}개)`,
+        `전체 데이터 JSON 다운로드가 시작되었습니다! (QR 코드: ${data.data.qrCodes.length}개)`,
         {
-          description:
-            "모든 QR 코드와 템플릿 데이터가 JSON 파일로 다운로드됩니다.",
+          description: "모든 QR 코드 데이터가 JSON 파일로 다운로드됩니다.",
         },
       );
 

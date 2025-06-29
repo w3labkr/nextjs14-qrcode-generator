@@ -71,22 +71,5 @@ export interface ImportData {
     settings?: any;
     isFavorite?: boolean;
   }>;
-  templates?: Array<{
-    name: string;
-    settings?: any;
-    isDefault?: boolean;
-  }>;
   replaceExisting?: boolean;
-}
-
-export interface TemplateData {
-  name: string;
-  settings: QrCodeOptions;
-  isDefault?: boolean;
-}
-
-export interface TemplateUpdateData {
-  name?: string;
-  settings?: QrCodeOptions;
-  isDefault?: boolean;
 }

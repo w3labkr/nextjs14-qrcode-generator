@@ -130,13 +130,8 @@ export async function testRLS(userId: string) {
     const qrCodes = await db.qrCode.findMany();
     console.log(`User ${userId} can access ${qrCodes.length} QR codes`);
 
-    // 사용자의 템플릿만 조회되는지 확인
-    const templates = await db.qrTemplate.findMany();
-    console.log(`User ${userId} can access ${templates.length} templates`);
-
     return {
       qrCodesCount: qrCodes.length,
-      templatesCount: templates.length,
     };
   } catch (error) {
     console.error("RLS test failed:", error);

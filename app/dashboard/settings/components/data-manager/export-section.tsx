@@ -3,9 +3,7 @@
 import SectionHeader from "./section-header";
 import AllDataJSONExportButton from "./all-data-json-export-button";
 import QrCodesJSONExportButton from "./qr-codes-json-export-button";
-import TemplatesJSONExportButton from "./templates-json-export-button";
 import QrCodesCSVExportButton from "./qr-codes-csv-export-button";
-import TemplatesCSVExportButton from "./templates-csv-export-button";
 import DownloadTroubleshootDialog from "./download-troubleshoot-dialog";
 
 export default function ExportSection() {
@@ -32,8 +30,6 @@ export default function ExportSection() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <QrCodesJSONExportButton />
             <QrCodesCSVExportButton />
-            <TemplatesJSONExportButton />
-            <TemplatesCSVExportButton />
           </div>
         </div>
       </div>

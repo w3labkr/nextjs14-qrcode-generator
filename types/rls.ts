@@ -28,7 +28,6 @@ export interface RLSSession {
  */
 export interface RLSTestResult {
   qrCodesCount: number;
-  templatesCount: number;
   success: boolean;
   userId: string;
   timestamp: string;

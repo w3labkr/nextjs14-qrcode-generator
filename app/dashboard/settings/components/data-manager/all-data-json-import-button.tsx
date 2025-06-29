@@ -40,7 +40,7 @@ export default function AllDataJSONImportButton({
       const importData = JSON.parse(fileContent);
 
       // 데이터 구조 검증
-      if (!importData.qrCodes && !importData.templates) {
+      if (!importData.qrCodes) {
         toast.error("올바른 데이터 형식이 아닙니다.");
         return;
       }
@@ -48,12 +48,11 @@ export default function AllDataJSONImportButton({
       // 데이터 가져오기 실행
       const result = await importUserData({
         qrCodes: importData.qrCodes || [],
-        templates: importData.templates || [],
         replaceExisting: false,
       });
 
       toast.success(`데이터 가져오기가 완료되었습니다!`, {
-        description: `QR 코드: ${result.imported.qrCodes}개, 템플릿: ${result.imported.templates}개`,
+        description: `QR 코드: ${result.imported.qrCodes}개`,
       });
 
       // 파일 입력 초기화

@@ -40,11 +40,6 @@ export interface QrCodeState {
   isGeneratingHighRes: boolean;
 }
 
-export interface TemplateState {
-  templateApplied: boolean;
-  defaultTemplateLoaded: boolean;
-}
-
 export interface QrCodePreviewCardProps {
   qrCode: string;
   frameOptions: FrameOptions;

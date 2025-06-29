@@ -34,7 +34,6 @@ export async function deleteAccount() {
 
       // 관련 데이터 삭제 (RLS로 자동 필터링)
       const deletedQrCodes = await tx.qrCode.deleteMany({});
-      const deletedTemplates = await tx.qrTemplate.deleteMany({});
       const deletedSessions = await tx.session.deleteMany({});
       const deletedAccounts = await tx.account.deleteMany({});
 
@@ -47,7 +46,6 @@ export async function deleteAccount() {
         userId,
         userEmail: user.email,
         deletedQrCodes: deletedQrCodes.count,
-        deletedTemplates: deletedTemplates.count,
         deletedSessions: deletedSessions.count,
         deletedAccounts: deletedAccounts.count,
       });

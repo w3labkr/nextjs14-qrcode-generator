@@ -64,7 +64,6 @@ export default function QrCodesJSONImportButton({
       // QR 코드만 가져오기 실행
       const result = await importUserData({
         qrCodes: qrCodes,
-        templates: [],
         replaceExisting: false,
       });
 

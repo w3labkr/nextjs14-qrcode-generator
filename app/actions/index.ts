@@ -20,23 +20,12 @@ export {
   getQrCodeStats,
 } from "./qr-code-management";
 
-// Template Management
-export {
-  getUserTemplates,
-  saveTemplate,
-  updateTemplate,
-  deleteTemplate,
-  getDefaultTemplate,
-} from "./template-management";
-
 // Data Management
 export {
   exportUserData,
   exportQrCodes,
-  exportTemplates,
   importUserData,
   importQrCodes,
-  importTemplates,
 } from "./data-management";
 
 // Account Management
