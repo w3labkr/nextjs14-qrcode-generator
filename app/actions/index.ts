@@ -21,12 +21,7 @@ export {
 } from "./qr-code-management";
 
 // Data Management
-export {
-  exportUserData,
-  exportQrCodes,
-  importUserData,
-  importQrCodes,
-} from "./data-management";
+export { exportUserData, importUserData } from "./data-management";
 
 // Account Management
 export { deleteAccount } from "./account-management";

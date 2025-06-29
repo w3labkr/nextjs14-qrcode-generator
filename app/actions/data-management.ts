@@ -60,53 +60,6 @@ export async function exportUserData() {
   return exportData;
 }
 
-export async function exportQrCodes() {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  const db = await withAuthenticatedRLS(session);
-
-  const qrCodes = await db.qrCode.findMany({
-    select: {
-      type: true,
-      title: true,
-      content: true,
-      settings: true,
-      isFavorite: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  const exportData = {
-    version: "1.0",
-    exportedAt: new Date().toISOString(),
-    dataType: "qrcodes",
-    user: {
-      id: session.user.id,
-      email: session.user.email,
-    },
-    data: {
-      qrCodes: qrCodes.map((qr: any) => ({
-        ...qr,
-        settings: JSON.parse(qr.settings || "{}"),
-      })),
-    },
-    statistics: {
-      totalQrCodes: qrCodes.length,
-      favoriteQrCodes: qrCodes.filter((qr: any) => qr.isFavorite).length,
-    },
-  };
-
-  return exportData;
-}
-
 export async function importUserData(data: ImportData) {
   const session = await auth();
 
@@ -183,69 +136,6 @@ export async function importUserData(data: ImportData) {
       total: {
         qrCodes: qrCodes.length,
       },
-    };
-  });
-}
-
-export async function importQrCodes(qrCodes: any[], replaceExisting = false) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  return await withAuthenticatedRLSTransaction(session, async (tx) => {
-    if (replaceExisting) {
-      await tx.qrCode.deleteMany({});
-    }
-
-    let importedCount = 0;
-
-    for (const qrCode of qrCodes) {
-      try {
-        if (!qrCode.content || typeof qrCode.content !== "string") {
-          console.warn("QR 코드 컨텐츠가 유효하지 않음:", qrCode);
-          continue;
-        }
-
-        const validTypes = [
-          "URL",
-          "TEXTAREA",
-          "WIFI",
-          "EMAIL",
-          "SMS",
-          "VCARD",
-          "LOCATION",
-        ];
-        let qrType = qrCode.type;
-
-        if (!qrType || !validTypes.includes(qrType.toUpperCase())) {
-          qrType = inferQrCodeType(qrCode.content);
-        }
-
-        await tx.qrCode.create({
-          data: {
-            userId: session.user!.id,
-            type: qrType,
-            title: qrCode.title || null,
-            content: qrCode.content,
-            settings:
-              typeof qrCode.settings === "string"
-                ? qrCode.settings
-                : JSON.stringify(qrCode.settings || {}),
-            isFavorite: Boolean(qrCode.isFavorite),
-          },
-        });
-        importedCount++;
-      } catch (error) {
-        console.error("QR 코드 가져오기 오류:", error);
-      }
-    }
-
-    return {
-      success: true,
-      imported: importedCount,
-      total: qrCodes.length,
     };
   });
 }
