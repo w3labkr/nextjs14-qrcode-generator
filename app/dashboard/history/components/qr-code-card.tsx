@@ -15,7 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Heart, Download, Trash2, QrCode } from "lucide-react";
+import { Heart, Download, Trash2, QrCode, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import {
@@ -42,6 +42,7 @@ interface QrCodeCardProps {
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => void;
   onDownload: (qrCode: QrCodeData) => void;
+  onEditTitle: (id: string, currentTitle: string | null) => void;
 }
 
 export function QrCodeCard({
@@ -49,6 +50,7 @@ export function QrCodeCard({
   onToggleFavorite,
   onDelete,
   onDownload,
+  onEditTitle,
 }: QrCodeCardProps) {
   // 안전한 데이터 검증
   if (!qrCode || !qrCode.id) {
@@ -86,8 +88,12 @@ export function QrCodeCard({
                 </Button>
               </div>
             </div>
-            <CardTitle className="text-base line-clamp-2">
+            <CardTitle
+              className="text-base line-clamp-2 group-hover:line-clamp-none transition-all duration-200 cursor-pointer flex items-center gap-2"
+              onClick={() => onEditTitle(qrCode.id, qrCode.title)}
+            >
               {qrCode.title || "제목 없음"}
+              <Edit className="h-3 w-3 opacity-0 group-hover:opacity-50 hover:opacity-100 transition-opacity" />
             </CardTitle>
             <CardDescription className="text-sm">
               {(() => {

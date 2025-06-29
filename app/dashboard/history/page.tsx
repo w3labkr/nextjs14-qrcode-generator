@@ -9,6 +9,7 @@ import { SearchAndFilters } from "./components/search-and-filters";
 import { QrCodeGrid } from "./components/qr-code-grid";
 import { Pagination } from "./components/pagination";
 import { DeleteConfirmDialog } from "./components/delete-confirm-dialog";
+import { EditTitleDialog } from "./components/edit-title-dialog";
 
 interface QrCodeData {
   id: string;
@@ -45,6 +46,12 @@ export default function QrCodeHistoryPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [qrCodeToDelete, setQrCodeToDelete] = useState<string | null>(null);
+  const [editTitleDialogOpen, setEditTitleDialogOpen] = useState(false);
+  const [qrCodeToEdit, setQrCodeToEdit] = useState<{
+    id: string;
+    title: string | null;
+  } | null>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   const fetchQrCodes = async () => {
     if (!session?.user?.id) return;
@@ -156,6 +163,38 @@ export default function QrCodeHistoryPage() {
     }
   };
 
+  const handleEditTitle = (qrCodeId: string, currentTitle: string | null) => {
+    setQrCodeToEdit({ id: qrCodeId, title: currentTitle });
+    setEditTitleDialogOpen(true);
+  };
+
+  const updateQrCodeTitle = async (newTitle: string) => {
+    if (!qrCodeToEdit) return;
+
+    try {
+      setIsEditingTitle(true);
+      await axios.patch(`/api/qrcodes/${qrCodeToEdit.id}`, {
+        title: newTitle || null,
+      });
+
+      setQrCodes((prev) =>
+        prev.map((qr) =>
+          qr.id === qrCodeToEdit.id ? { ...qr, title: newTitle || null } : qr,
+        ),
+      );
+      toast.success("제목이 업데이트되었습니다.");
+    } catch (error: any) {
+      console.error("제목 수정 실패:", error);
+      const errorMessage =
+        error.response?.data?.error || "제목 수정에 실패했습니다.";
+      toast.error(errorMessage);
+    } finally {
+      setIsEditingTitle(false);
+      setEditTitleDialogOpen(false);
+      setQrCodeToEdit(null);
+    }
+  };
+
   const handlePageChange = (newPage: number) => {
     setPagination((prev) => ({ ...prev, page: newPage }));
   };
@@ -187,6 +226,7 @@ export default function QrCodeHistoryPage() {
           setQrCodeToDelete(id);
           setDeleteDialogOpen(true);
         }}
+        onEditTitle={handleEditTitle}
       />
 
       <Pagination pagination={pagination} onPageChange={handlePageChange} />
@@ -195,6 +235,14 @@ export default function QrCodeHistoryPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={() => qrCodeToDelete && deleteQrCode(qrCodeToDelete)}
+      />
+
+      <EditTitleDialog
+        open={editTitleDialogOpen}
+        onOpenChange={setEditTitleDialogOpen}
+        onConfirm={updateQrCodeTitle}
+        currentTitle={qrCodeToEdit?.title || ""}
+        loading={isEditingTitle}
       />
     </>
   );
