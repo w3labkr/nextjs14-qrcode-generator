@@ -22,7 +22,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -31,31 +30,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Settings2,
 } from "lucide-react";
 import { ApplicationLogData } from "@/types/logs";
-
-const getColumnDisplayName = (columnId: string): string => {
-  const columnNames: Record<string, string> = {
-    id: "로그 ID",
-    type: "제목",
-    level: "상태",
-    priority: "우선순위",
-    createdAt: "생성일시",
-    actions: "작업",
-  };
-  return columnNames[columnId] || columnId;
-};
 
 interface AdminLogsDataTableProps {
   columns: ColumnDef<ApplicationLogData>[];
@@ -67,8 +47,10 @@ interface AdminLogsDataTableProps {
   onPageChange: (page: number) => void;
   limit: number;
   onLimitChange: (limit: number) => void;
-  searchValue?: string;
-  onSearchChange?: (value: string) => void;
+  columnVisibility: VisibilityState;
+  onColumnVisibilityChange: (
+    updater: VisibilityState | ((old: VisibilityState) => VisibilityState),
+  ) => void;
 }
 
 export function AdminLogsDataTable({
@@ -81,15 +63,13 @@ export function AdminLogsDataTable({
   onPageChange,
   limit,
   onLimitChange,
-  searchValue = "",
-  onSearchChange,
+  columnVisibility,
+  onColumnVisibilityChange,
 }: AdminLogsDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
@@ -100,7 +80,7 @@ export function AdminLogsDataTable({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: onColumnVisibilityChange,
     onRowSelectionChange: setRowSelection,
     manualPagination: true,
     pageCount: totalPages,
@@ -121,50 +101,6 @@ export function AdminLogsDataTable({
 
   return (
     <div className="w-full">
-      {/* 테이블 상단 컨트롤 */}
-      <div className="flex items-center justify-between py-4">
-        <div className="flex items-center space-x-4">
-          {/* 검색 필드 */}
-          {onSearchChange && (
-            <Input
-              placeholder="로그 검색 (액션, 메시지, 사용자 ID...)"
-              value={searchValue}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-80"
-            />
-          )}
-        </div>
-
-        {/* 컬럼 가시성 토글 */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="ml-auto">
-              <Settings2 className="mr-2 h-4 w-4" />
-              보기
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[150px]">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {getColumnDisplayName(column.id)}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       {/* 테이블 */}
       <div className="rounded-md border">
         <Table>

@@ -34,7 +34,7 @@ export function DatePickerWithRange({
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
+              "w-[120px] justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
@@ -49,7 +49,7 @@ export function DatePickerWithRange({
                 format(date.from, "yyyy-MM-dd", { locale: ko })
               )
             ) : (
-              <span>날짜 범위 선택</span>
+              <span>날짜 선택</span>
             )}
           </Button>
         </PopoverTrigger>

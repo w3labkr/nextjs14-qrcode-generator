@@ -20,14 +20,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DatePickerWithRange } from "@/components/ui/date-picker";
 import { DateRange } from "react-day-picker";
-import { Search, RefreshCw, Download } from "lucide-react";
+import { Search, RefreshCw, Download, Settings2 } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { adminLogsColumns } from "./logs-columns";
 import { AdminLogsDataTable } from "./admin-logs-data-table";
+import { VisibilityState } from "@tanstack/react-table";
 
 interface AdminLogsContentProps {
   initialData?: ApplicationLogData[];
@@ -43,6 +50,18 @@ const LOG_TYPE_LABELS = {
   SYSTEM: "시스템",
 };
 
+const getColumnDisplayName = (columnId: string): string => {
+  const columnNames: Record<string, string> = {
+    id: "로그 ID",
+    type: "제목",
+    level: "상태",
+    priority: "우선순위",
+    createdAt: "생성일시",
+    actions: "작업",
+  };
+  return columnNames[columnId] || columnId;
+};
+
 export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
   const [logs, setLogs] = useState<ApplicationLogData[]>(initialData);
   const [loading, setLoading] = useState(false);
@@ -54,6 +73,7 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
   const [levelFilter, setLevelFilter] = useState("ALL");
   const [limit, setLimit] = useState(10);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const { toast } = useToast();
 
   // 로그 데이터 가져오기
@@ -219,6 +239,48 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="flex items-center space-x-2 lg:ml-auto">
+              {/* 검색 필드 */}
+              <Input
+                placeholder="로그 검색 (액션, 메시지, 사용자 ID...)"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="w-80"
+              />
+
+              {/* 컬럼 가시성 토글 */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    보기
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[150px]">
+                  {adminLogsColumns
+                    .filter((column) => column.id && column.id !== "actions")
+                    .map((column) => {
+                      const columnId = column.id!;
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={columnId}
+                          className="capitalize"
+                          checked={columnVisibility[columnId] !== false}
+                          onCheckedChange={(value) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [columnId]: value,
+                            }))
+                          }
+                        >
+                          {getColumnDisplayName(columnId)}
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           {/* 데이터 테이블 */}
@@ -232,8 +294,8 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
             onPageChange={setCurrentPage}
             limit={limit}
             onLimitChange={setLimit}
-            searchValue={searchValue}
-            onSearchChange={setSearchValue}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={setColumnVisibility}
           />
         </CardContent>
       </Card>
