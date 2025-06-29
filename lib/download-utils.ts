@@ -363,12 +363,20 @@ export const downloadQrCode = async (
   format: string = "png",
 ) => {
   try {
-    const { generateQrCode } = await import("@/app/actions/qr-code-generator");
     const qrSettings = parseQrSettings(settings, content, format);
 
     logDebugInfo(format, qrSettings);
 
-    const qrCodeDataUrl = await generateQrCode(qrSettings);
+    // API 엔드포인트를 통해 QR 코드 생성
+    const response = await axios.post("/api/qrcodes/generate", {
+      settings: qrSettings,
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.error || "QR 코드 생성에 실패했습니다.");
+    }
+
+    const qrCodeDataUrl = response.data.dataUrl;
     const filename = generateFileName(title, type, format);
 
     if (format === "svg") {
@@ -389,16 +397,25 @@ export const downloadQrCode = async (
     ) {
       try {
         console.log("PNG로 직접 생성 재시도...");
-        const { generateQrCode } = await import(
-          "@/app/actions/qr-code-generator"
-        );
         const pngSettings = parseQrSettings(settings, content, "png");
 
-        const pngDataUrl = await generateQrCode(pngSettings);
+        const retryResponse = await axios.post("/api/qrcodes/generate", {
+          settings: pngSettings,
+        });
+
+        if (!retryResponse.data.success) {
+          throw new Error(
+            retryResponse.data.error || "QR 코드 생성에 실패했습니다.",
+          );
+        }
+
+        const pngDataUrl = retryResponse.data.dataUrl;
         const filename = generateFileName(title, type, "png");
 
-        const response = await axios.get(pngDataUrl, { responseType: "blob" });
-        downloadFile(response.data, filename);
+        const downloadResponse = await axios.get(pngDataUrl, {
+          responseType: "blob",
+        });
+        downloadFile(downloadResponse.data, filename);
 
         return { success: true };
       } catch (retryError) {
