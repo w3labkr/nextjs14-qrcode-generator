@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,11 +33,8 @@ export function LogStatistics() {
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        const response = await fetch("/api/admin/logs/statistics");
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
+        const response = await axios.get("/api/admin/logs/statistics");
+        setStats(response.data);
       } catch (error) {
         console.error("통계 데이터 가져오기 실패:", error);
       } finally {

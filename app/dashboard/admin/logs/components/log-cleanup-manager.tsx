@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -95,11 +96,8 @@ export function LogCleanupManager() {
   // 통계 데이터 가져오기
   const fetchStats = async () => {
     try {
-      const response = await fetch("/api/admin/logs/cleanup");
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.stats);
-      }
+      const response = await axios.get("/api/admin/logs/cleanup");
+      setStats(response.data.stats);
     } catch (error) {
       console.error("통계 조회 실패:", error);
     } finally {
@@ -111,17 +109,8 @@ export function LogCleanupManager() {
   const executeCleanup = async () => {
     setCleanupLoading(true);
     try {
-      const response = await fetch("/api/admin/logs/cleanup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(options),
-      });
-
-      if (!response.ok) {
-        throw new Error("로그 정리 실패");
-      }
-
-      const data = await response.json();
+      const response = await axios.post("/api/admin/logs/cleanup", options);
+      const data = response.data;
 
       toast({
         title: options.dryRun ? "정리 시뮬레이션 완료" : "로그 정리 완료",
@@ -132,9 +121,13 @@ export function LogCleanupManager() {
       await fetchStats();
     } catch (error) {
       console.error("로그 정리 실패:", error);
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || error.message
+        : "로그 정리에 실패했습니다.";
+
       toast({
         title: "오류",
-        description: "로그 정리에 실패했습니다.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

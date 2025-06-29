@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { ApplicationLogData } from "@/types/logs";
 import {
   Card,
@@ -59,40 +60,32 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/admin/logs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          page: currentPage,
-          limit,
-          type: typeFilter === "ALL" ? undefined : typeFilter,
-          level: levelFilter === "ALL" ? undefined : levelFilter,
-          search: searchValue || undefined,
-          startDate: dateRange?.from,
-          endDate: dateRange?.to,
-          orderBy: "desc",
-        }),
+      const response = await axios.post("/api/admin/logs", {
+        page: currentPage,
+        limit,
+        type: typeFilter === "ALL" ? undefined : typeFilter,
+        level: levelFilter === "ALL" ? undefined : levelFilter,
+        search: searchValue || undefined,
+        startDate: dateRange?.from,
+        endDate: dateRange?.to,
+        orderBy: "desc",
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error || "로그 데이터를 가져오는데 실패했습니다",
-        );
-      }
-
-      const data = await response.json();
+      const data = response.data;
       setLogs(data.logs || []);
       setTotalCount(data.totalCount || 0);
       setTotalPages(Math.ceil((data.totalCount || 0) / limit));
     } catch (error) {
       console.error("로그 가져오기 실패:", error);
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || error.message
+        : error instanceof Error
+          ? error.message
+          : "로그 데이터를 가져오는데 실패했습니다.";
+
       toast({
         title: "오류",
-        description:
-          error instanceof Error
-            ? error.message
-            : "로그 데이터를 가져오는데 실패했습니다.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -103,27 +96,21 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
   // CSV 내보내기
   const exportToCsv = async () => {
     try {
-      const response = await fetch("/api/admin/logs/export", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const response = await axios.post(
+        "/api/admin/logs/export",
+        {
           type: typeFilter === "ALL" ? undefined : typeFilter,
           level: levelFilter === "ALL" ? undefined : levelFilter,
           search: searchValue || undefined,
           startDate: dateRange?.from,
           endDate: dateRange?.to,
-        }),
-      });
+        },
+        {
+          responseType: "blob",
+        },
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error ||
-            `HTTP ${response.status}: 서버 오류가 발생했습니다`,
-        );
-      }
-
-      const blob = await response.blob();
+      const blob = response.data;
 
       // 파일이 비어있는지 확인
       if (blob.size === 0) {
@@ -146,12 +133,15 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
       });
     } catch (error) {
       console.error("CSV 내보내기 실패:", error);
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || error.message
+        : error instanceof Error
+          ? error.message
+          : "CSV 파일 생성 중 오류가 발생했습니다.";
+
       toast({
         title: "내보내기 실패",
-        description:
-          error instanceof Error
-            ? error.message
-            : "CSV 파일 생성 중 오류가 발생했습니다.",
+        description: errorMessage,
         variant: "destructive",
       });
     }

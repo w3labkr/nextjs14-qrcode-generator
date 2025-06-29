@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -34,11 +35,8 @@ export function UserNav() {
     const checkAdminStatus = async () => {
       if (session?.user?.email) {
         try {
-          const response = await fetch("/api/admin/check");
-          if (response.ok) {
-            const data = await response.json();
-            setIsAdmin(data.isAdmin);
-          }
+          const response = await axios.get("/api/admin/check");
+          setIsAdmin(response.data.isAdmin);
         } catch (error) {
           console.error("관리자 권한 확인 실패:", error);
           setIsAdmin(false);
