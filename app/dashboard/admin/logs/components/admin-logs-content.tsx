@@ -263,9 +263,6 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
             data={logs}
             loading={loading}
             pagination={paginationConfig}
-            searchKey="action"
-            searchPlaceholder="로그 검색..."
-            onSearchChange={setSearchValue}
           />
         </CardContent>
       </Card>
