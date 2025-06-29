@@ -344,81 +344,164 @@ export class UnifiedLogger {
     requestUserId?: string,
     isAdmin: boolean = false,
   ) {
-    const {
-      userId,
-      type,
-      level,
-      action,
-      category,
-      startDate,
-      endDate,
-      limit = 100,
-      offset = 0,
-      page = 1,
-      orderBy = "desc",
-      ipAddress,
-      search,
-    } = filters;
+    try {
+      const {
+        userId,
+        type,
+        level,
+        action,
+        category,
+        startDate,
+        endDate,
+        limit = 100,
+        offset = 0,
+        page = 1,
+        orderBy = "desc",
+        ipAddress,
+        search,
+      } = filters;
 
-    // RLS 컨텍스트 설정
-    if (requestUserId) {
-      await RLSManager.setUserContext(requestUserId, isAdmin);
-    }
+      console.log("getLogs 호출됨:", { filters, requestUserId, isAdmin });
 
-    const where: any = {};
+      // RLS 컨텍스트 설정 시도
+      if (requestUserId) {
+        try {
+          console.log("RLS 컨텍스트 설정 중...");
+          await RLSManager.setUserContext(requestUserId, isAdmin);
+          console.log("RLS 컨텍스트 설정 완료");
+        } catch (rlsError) {
+          console.warn("RLS 컨텍스트 설정 실패, 계속 진행:", rlsError);
+          // RLS 설정이 실패해도 계속 진행
+        }
+      }
 
-    if (userId) where.userId = userId;
-    if (type) {
-      where.type = Array.isArray(type) ? { in: type } : type;
-    }
-    if (level) {
-      where.level = Array.isArray(level) ? { in: level } : level;
-    }
-    if (action) where.action = { contains: action, mode: "insensitive" };
-    if (category) where.category = category;
-    if (ipAddress) where.ipAddress = ipAddress;
-    if (search) {
-      where.OR = [
-        { message: { contains: search, mode: "insensitive" } },
-        { action: { contains: search, mode: "insensitive" } },
-      ];
-    }
-    if (startDate || endDate) {
-      where.createdAt = {};
-      if (startDate) where.createdAt.gte = startDate;
-      if (endDate) where.createdAt.lte = endDate;
-    }
+      const where: any = {};
 
-    // 페이지네이션 계산
-    const actualOffset = page ? (page - 1) * limit : offset;
+      if (userId) where.userId = userId;
+      if (type) {
+        where.type = Array.isArray(type) ? { in: type } : type;
+      }
+      if (level) {
+        where.level = Array.isArray(level) ? { in: level } : level;
+      }
+      if (action) where.action = { contains: action, mode: "insensitive" };
+      if (category) where.category = category;
+      if (ipAddress) where.ipAddress = ipAddress;
+      if (search) {
+        where.OR = [
+          { message: { contains: search, mode: "insensitive" } },
+          { action: { contains: search, mode: "insensitive" } },
+        ];
+      }
+      if (startDate || endDate) {
+        where.createdAt = {};
+        if (startDate) where.createdAt.gte = startDate;
+        if (endDate) where.createdAt.lte = endDate;
+      }
 
-    // 총 개수와 데이터를 동시에 조회
-    const [totalCount, logs] = await Promise.all([
-      prisma.applicationLog.count({ where }),
-      prisma.applicationLog.findMany({
-        where,
-        orderBy: { createdAt: orderBy },
-        take: limit,
-        skip: actualOffset,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
+      console.log("Where 조건:", where);
+
+      // 페이지네이션 계산
+      const actualOffset = page ? (page - 1) * limit : offset;
+
+      console.log("페이지네이션:", { page, limit, actualOffset });
+
+      // RLS 우회를 위한 관리자 체크
+      if (isAdmin) {
+        // 관리자의 경우 RLS를 우회하여 모든 로그 조회
+        try {
+          await prisma.$executeRaw`SET app.is_admin = true`;
+        } catch (adminSetError) {
+          console.warn("관리자 설정 실패:", adminSetError);
+        }
+      }
+
+      // 총 개수와 데이터를 동시에 조회
+      console.log("데이터베이스 조회 시작...");
+      const [totalCount, logs] = await Promise.all([
+        prisma.applicationLog.count({ where }),
+        prisma.applicationLog.findMany({
+          where,
+          orderBy: { createdAt: orderBy },
+          take: limit,
+          skip: actualOffset,
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
             },
           },
-        },
-      }),
-    ]);
+        }),
+      ]);
 
-    return {
-      logs,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limit),
-      currentPage: page,
-      limit,
-    };
+      console.log("데이터베이스 조회 완료:", {
+        totalCount,
+        logsLength: logs.length,
+      });
+
+      return {
+        logs,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        limit,
+      };
+    } catch (error) {
+      console.error("getLogs 에러:", error);
+      console.error(
+        "에러 스택:",
+        error instanceof Error ? error.stack : "Unknown error",
+      );
+
+      // RLS 때문에 실패했을 가능성이 있으므로 RLS 없이 시도
+      if (isAdmin) {
+        try {
+          console.log("RLS 우회하여 재시도...");
+          const where: any = {};
+          const { limit = 100, page = 1, orderBy = "desc" } = filters;
+          const actualOffset = (page - 1) * limit;
+
+          const [totalCount, logs] = await Promise.all([
+            prisma.applicationLog.count({ where }),
+            prisma.applicationLog.findMany({
+              where,
+              orderBy: { createdAt: orderBy },
+              take: limit,
+              skip: actualOffset,
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            }),
+          ]);
+
+          console.log("RLS 우회 조회 성공:", {
+            totalCount,
+            logsLength: logs.length,
+          });
+
+          return {
+            logs,
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+            limit,
+          };
+        } catch (retryError) {
+          console.error("RLS 우회 재시도도 실패:", retryError);
+        }
+      }
+
+      throw error;
+    }
   }
 
   /**

@@ -22,10 +22,17 @@ export class RLSManager {
    * 사용자와 관리자 권한을 동시에 설정합니다
    */
   static async setUserContext(userId: string, isAdmin: boolean = false) {
-    await Promise.all([
-      prisma.$executeRaw`SET app.current_user_id = ${userId}`,
-      prisma.$executeRaw`SET app.is_admin = ${isAdmin}`,
-    ]);
+    try {
+      console.log("RLS 컨텍스트 설정:", { userId, isAdmin });
+      await Promise.all([
+        prisma.$executeRaw`SET app.current_user_id = ${userId}`,
+        prisma.$executeRaw`SET app.is_admin = ${isAdmin}`,
+      ]);
+      console.log("RLS 컨텍스트 설정 완료");
+    } catch (error) {
+      console.error("RLS 컨텍스트 설정 실패:", error);
+      throw error;
+    }
   }
 
   /**

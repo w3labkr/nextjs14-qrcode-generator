@@ -73,10 +73,19 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
       });
 
       if (!response.ok) {
-        throw new Error("로그 데이터를 가져오는데 실패했습니다");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API 응답 에러:", {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+        });
+        throw new Error(
+          errorData.error || "로그 데이터를 가져오는데 실패했습니다",
+        );
       }
 
       const data = await response.json();
+      console.log("로그 데이터 응답:", data);
       setLogs(data.logs || []);
       setTotalCount(data.totalCount || 0);
       setTotalPages(Math.ceil((data.totalCount || 0) / (filters.limit || 50)));
@@ -84,7 +93,10 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
       console.error("로그 가져오기 실패:", error);
       toast({
         title: "오류",
-        description: "로그 데이터를 가져오는데 실패했습니다.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "로그 데이터를 가져오는데 실패했습니다.",
         variant: "destructive",
       });
     } finally {
