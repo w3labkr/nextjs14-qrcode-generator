@@ -57,15 +57,12 @@ export function EditTitleDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">
-              제목
-            </Label>
+          <div className="space-y-2">
+            <Label htmlFor="title">제목</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="col-span-3"
               placeholder="제목을 입력하세요"
               maxLength={100}
               disabled={loading}
