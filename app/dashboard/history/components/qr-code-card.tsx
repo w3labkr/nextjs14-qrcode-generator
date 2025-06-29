@@ -1,6 +1,5 @@
 "use client";
 
-import { QR_CODE_TYPES } from "@/lib/constants";
 import {
   Card,
   CardContent,
@@ -19,7 +18,13 @@ import {
 import { Heart, Download, Trash2, QrCode } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { cn, getTypeLabel, getTypeColor } from "@/lib/utils";
+import {
+  cn,
+  getTypeLabel,
+  getTypeColor,
+  getContentPreview,
+  getQrCodeColor,
+} from "@/lib/utils";
 
 interface QrCodeData {
   id: string;
@@ -50,46 +55,6 @@ export function QrCodeCard({
     console.warn("Invalid qrCode data:", qrCode);
     return null;
   }
-
-  const getContentPreview = (content: string, type: string) => {
-    if (!content || typeof content !== "string") return "내용 없음";
-
-    if (type === "WIFI") {
-      try {
-        const wifiData = JSON.parse(content);
-        return `SSID: ${wifiData.ssid || "알 수 없음"}`;
-      } catch {
-        return content.substring(0, 50) + "...";
-      }
-    }
-    return content.length > 50 ? content.substring(0, 50) + "..." : content;
-  };
-
-  const getQrCodeColor = (settings: any) => {
-    try {
-      let parsedSettings = settings;
-
-      // settings가 문자열인 경우 파싱
-      if (typeof settings === "string") {
-        try {
-          parsedSettings = JSON.parse(settings);
-        } catch {
-          return "#6b7280"; // 파싱 실패시 기본 회색
-        }
-      }
-
-      // 다양한 형태의 전경색 설정 확인
-      if (parsedSettings?.color?.dark) {
-        return parsedSettings.color.dark;
-      }
-      if (parsedSettings?.foregroundColor) {
-        return parsedSettings.foregroundColor;
-      }
-    } catch {
-      // settings 파싱에 실패한 경우 기본 색상 반환
-    }
-    return "#6b7280"; // 기본 회색
-  };
 
   return (
     <Card className="group hover:shadow-lg transition-shadow relative">

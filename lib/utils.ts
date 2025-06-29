@@ -125,3 +125,54 @@ export function getTypeColor(type: string): string {
 
   return qrCodeType?.color || "bg-gray-100 text-gray-800";
 }
+
+/**
+ * QR 코드 내용의 미리보기 텍스트를 생성합니다.
+ * @param content - QR 코드 내용
+ * @param type - QR 코드 타입
+ * @returns 미리보기 텍스트
+ */
+export function getContentPreview(content: string, type: string): string {
+  if (!content || typeof content !== "string") return "내용 없음";
+
+  if (type === "WIFI") {
+    try {
+      const wifiData = JSON.parse(content);
+      return `SSID: ${wifiData.ssid || "알 수 없음"}`;
+    } catch {
+      return content.substring(0, 50) + "...";
+    }
+  }
+  return content.length > 50 ? content.substring(0, 50) + "..." : content;
+}
+
+/**
+ * QR 코드 설정에서 색상을 추출합니다.
+ * @param settings - QR 코드 설정 객체
+ * @returns 추출된 색상 (기본값: #6b7280)
+ */
+export function getQrCodeColor(settings: any): string {
+  try {
+    let parsedSettings = settings;
+
+    // settings가 문자열인 경우 파싱
+    if (typeof settings === "string") {
+      try {
+        parsedSettings = JSON.parse(settings);
+      } catch {
+        return "#6b7280"; // 파싱 실패시 기본 회색
+      }
+    }
+
+    // 다양한 형태의 전경색 설정 확인
+    if (parsedSettings?.color?.dark) {
+      return parsedSettings.color.dark;
+    }
+    if (parsedSettings?.foregroundColor) {
+      return parsedSettings.foregroundColor;
+    }
+  } catch {
+    // settings 파싱에 실패한 경우 기본 색상 반환
+  }
+  return "#6b7280"; // 기본 회색
+}
