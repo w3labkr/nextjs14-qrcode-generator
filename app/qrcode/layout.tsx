@@ -1,9 +1,10 @@
 import { UserNav } from "@/components/user-nav";
 import { GithubBadge } from "@/components/github-badge";
+import { HistoryButton } from "@/components/history-button";
 import { COPYRIGHT_TEXT } from "@/lib/constants";
 import { appConfig } from "@/config/app";
 
-export default function QrCodeLayout2({
+export default function QrCodeLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -22,7 +23,10 @@ export default function QrCodeLayout2({
                 </span>
               </h1>
             </div>
-            <UserNav />
+            <div className="flex items-center gap-2">
+              <HistoryButton />
+              <UserNav />
+            </div>
           </div>
         </div>
         <div className="flex flex-col gap-4 mb-8">
