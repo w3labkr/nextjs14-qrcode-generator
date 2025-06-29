@@ -37,8 +37,10 @@ export async function withRLS(userId: string) {
   validateUserId(userId);
 
   try {
-    // PostgreSQL 세션에 현재 사용자 ID 설정 (SQL 인젝션 방지를 위한 매개변수화된 쿼리 사용)
-    await prisma.$executeRaw`SET app.current_user_id = ${userId}`;
+    // PostgreSQL 세션에 현재 사용자 ID 설정
+    // SET 명령어는 매개변수 바인딩을 지원하지 않으므로 $executeRawUnsafe 사용
+    // validateUserId로 이미 검증했으므로 안전함
+    await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
     return prisma;
   } catch (error) {
     console.error("Failed to set RLS context:", error);
@@ -57,11 +59,15 @@ export async function withRLSFull(userId: string, userEmail?: string) {
 
   try {
     // PostgreSQL 세션에 현재 사용자 ID 설정
-    await prisma.$executeRaw`SET app.current_user_id = ${userId}`;
+    await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
 
     // 이메일이 제공된 경우 설정 (verification_tokens 테이블용)
     if (userEmail) {
-      await prisma.$executeRaw`SET app.current_user_email = ${userEmail}`;
+      // 이메일 특수문자 이스케이프 처리
+      const escapedEmail = userEmail.replace(/'/g, "''");
+      await prisma.$executeRawUnsafe(
+        `SET app.current_user_email = '${escapedEmail}'`,
+      );
     }
 
     return prisma;
@@ -76,9 +82,9 @@ export async function withRLSFull(userId: string, userEmail?: string) {
  */
 export async function resetRLS() {
   try {
-    await prisma.$executeRaw`RESET app.current_user_id`;
-    await prisma.$executeRaw`RESET app.current_user_email`;
-    await prisma.$executeRaw`RESET app.is_admin`;
+    await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
+    await prisma.$executeRawUnsafe(`RESET app.current_user_email`);
+    await prisma.$executeRawUnsafe(`RESET app.is_admin`);
   } catch (error) {
     console.error("Failed to reset RLS context:", error);
     throw new Error("Failed to reset RLS context");
@@ -145,9 +151,9 @@ export async function testRLS(userId: string) {
 export async function withoutRLS() {
   try {
     // RLS 정책을 우회하기 위해 설정 제거
-    await prisma.$executeRaw`RESET app.current_user_id`;
-    await prisma.$executeRaw`RESET app.current_user_email`;
-    await prisma.$executeRaw`RESET app.is_admin`;
+    await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
+    await prisma.$executeRawUnsafe(`RESET app.current_user_email`);
+    await prisma.$executeRawUnsafe(`RESET app.is_admin`);
     return prisma;
   } catch (error) {
     console.error("Failed to reset RLS for admin access:", error);

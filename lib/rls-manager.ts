@@ -8,14 +8,14 @@ export class RLSManager {
    * 현재 사용자 ID를 설정합니다
    */
   static async setCurrentUser(userId: string) {
-    await prisma.$executeRaw`SET app.current_user_id = ${userId}`;
+    await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
   }
 
   /**
    * 관리자 권한을 설정합니다
    */
   static async setAdminMode(isAdmin: boolean = true) {
-    await prisma.$executeRaw`SET app.is_admin = ${isAdmin}`;
+    await prisma.$executeRawUnsafe(`SET app.is_admin = ${isAdmin}`);
   }
 
   /**
@@ -24,8 +24,8 @@ export class RLSManager {
   static async setUserContext(userId: string, isAdmin: boolean = false) {
     try {
       await Promise.all([
-        prisma.$executeRaw`SET app.current_user_id = ${userId}`,
-        prisma.$executeRaw`SET app.is_admin = ${isAdmin}`,
+        prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`),
+        prisma.$executeRawUnsafe(`SET app.is_admin = ${isAdmin}`),
       ]);
     } catch (error) {
       console.error("RLS 컨텍스트 설정 실패:", error);
@@ -38,9 +38,9 @@ export class RLSManager {
    */
   static async clearContext() {
     await Promise.all([
-      prisma.$executeRaw`RESET app.current_user_id`,
-      prisma.$executeRaw`RESET app.current_user_email`,
-      prisma.$executeRaw`RESET app.is_admin`,
+      prisma.$executeRawUnsafe(`RESET app.current_user_id`),
+      prisma.$executeRawUnsafe(`RESET app.current_user_email`),
+      prisma.$executeRawUnsafe(`RESET app.is_admin`),
     ]);
   }
 
