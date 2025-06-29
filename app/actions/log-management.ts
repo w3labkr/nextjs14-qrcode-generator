@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { withAuthenticatedRLS } from "@/lib/rls-utils";
 import { UnifiedLogger } from "@/lib/unified-logging";
 import type {
   LogType,
@@ -178,6 +179,9 @@ export async function getLogsAction(filters: LogFilterOptions = {}) {
       return { success: false, error: "인증이 필요합니다" };
     }
 
+    // RLS 컨텍스트 설정
+    await withAuthenticatedRLS(session);
+
     // 관리자가 아닌 경우 자신의 로그만 조회 가능
     if (!userIsAdmin) {
       filters.userId = userId;
@@ -205,6 +209,9 @@ export async function getLogStatsAction(
     if (!userId) {
       return { success: false, error: "인증이 필요합니다" };
     }
+
+    // RLS 컨텍스트 설정
+    await withAuthenticatedRLS(session);
 
     // 관리자가 아닌 경우 자신의 로그 통계만 조회 가능
     if (!userIsAdmin) {

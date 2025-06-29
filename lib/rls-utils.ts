@@ -37,8 +37,8 @@ export async function withRLS(userId: string) {
   validateUserId(userId);
 
   try {
-    // PostgreSQL 세션에 현재 사용자 ID 설정
-    await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
+    // PostgreSQL 세션에 현재 사용자 ID 설정 (SQL 인젝션 방지를 위한 매개변수화된 쿼리 사용)
+    await prisma.$executeRaw`SET app.current_user_id = ${userId}`;
     return prisma;
   } catch (error) {
     console.error("Failed to set RLS context:", error);
@@ -57,13 +57,11 @@ export async function withRLSFull(userId: string, userEmail?: string) {
 
   try {
     // PostgreSQL 세션에 현재 사용자 ID 설정
-    await prisma.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
+    await prisma.$executeRaw`SET app.current_user_id = ${userId}`;
 
     // 이메일이 제공된 경우 설정 (verification_tokens 테이블용)
     if (userEmail) {
-      await prisma.$executeRawUnsafe(
-        `SET app.current_user_email = '${userEmail}'`,
-      );
+      await prisma.$executeRaw`SET app.current_user_email = ${userEmail}`;
     }
 
     return prisma;
@@ -78,7 +76,9 @@ export async function withRLSFull(userId: string, userEmail?: string) {
  */
 export async function resetRLS() {
   try {
-    await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
+    await prisma.$executeRaw`RESET app.current_user_id`;
+    await prisma.$executeRaw`RESET app.current_user_email`;
+    await prisma.$executeRaw`RESET app.is_admin`;
   } catch (error) {
     console.error("Failed to reset RLS context:", error);
     throw new Error("Failed to reset RLS context");
@@ -145,7 +145,9 @@ export async function testRLS(userId: string) {
 export async function withoutRLS() {
   try {
     // RLS 정책을 우회하기 위해 설정 제거
-    await prisma.$executeRawUnsafe(`RESET app.current_user_id`);
+    await prisma.$executeRaw`RESET app.current_user_id`;
+    await prisma.$executeRaw`RESET app.current_user_email`;
+    await prisma.$executeRaw`RESET app.is_admin`;
     return prisma;
   } catch (error) {
     console.error("Failed to reset RLS for admin access:", error);
@@ -258,16 +260,17 @@ export async function measureRLSPerformance<T>(
     const result = await queryFn(db);
     const executionTime = Date.now() - startTime;
 
-    return {
-      result,
-      executionTime,
-    };
+    // 성능 로그 기록 (느린 쿼리 감지)
+    if (executionTime > 1000) {
+      console.warn(
+        `Slow RLS query detected: ${executionTime}ms for user ${userId}`,
+      );
+    }
+
+    return { result, executionTime };
   } catch (error) {
     const executionTime = Date.now() - startTime;
-    console.error(
-      `RLS Query failed after ${executionTime}ms for user ${userId}:`,
-      error,
-    );
+    console.error(`RLS query failed after ${executionTime}ms:`, error);
     throw error;
   }
 }
@@ -277,8 +280,75 @@ export async function measureRLSPerformance<T>(
  * @returns 현재 사용자 ID 또는 null
  */
 export function getRlsUserId(): string | null {
-  // 이 함수는 실제로는 세션에서 사용자 ID를 가져와야 합니다.
-  // 현재는 임시로 null을 반환합니다.
-  // 실제 구현에서는 NextAuth session이나 다른 방법으로 사용자 ID를 가져와야 합니다.
+  // 이 함수는 실제로는 데이터베이스 쿼리가 필요하지만,
+  // 현재 컨텍스트에서는 getCurrentRLSContext()를 사용하는 것이 좋습니다.
+  console.warn(
+    "getRlsUserId() is deprecated. Use getCurrentRLSContext() instead.",
+  );
   return null;
+}
+
+/**
+ * RLS 정책 검증 함수
+ * 데이터베이스의 모든 RLS 정책이 올바르게 설정되어 있는지 확인
+ */
+export async function validateRLSPolicies() {
+  try {
+    const policies = await prisma.$queryRaw<
+      Array<{
+        schemaname: string;
+        tablename: string;
+        policyname: string;
+        permissive: string;
+        roles: string[];
+        cmd: string;
+        qual: string;
+        with_check: string;
+      }>
+    >`
+      SELECT
+        schemaname,
+        tablename,
+        policyname,
+        permissive,
+        roles,
+        cmd,
+        qual,
+        with_check
+      FROM pg_policies
+      WHERE schemaname = 'public'
+      ORDER BY tablename, policyname
+    `;
+
+    const expectedTables = [
+      "qr_codes",
+      "users",
+      "accounts",
+      "sessions",
+      "application_logs",
+    ];
+    const missingPolicies = [];
+
+    for (const table of expectedTables) {
+      const tablePolicies = policies.filter((p: any) => p.tablename === table);
+      if (tablePolicies.length === 0) {
+        missingPolicies.push(table);
+      }
+    }
+
+    return {
+      success: true,
+      policies,
+      missingPolicies,
+      totalPolicies: policies.length,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Failed to validate RLS policies:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      timestamp: new Date().toISOString(),
+    };
+  }
 }

@@ -38,8 +38,9 @@ export class RLSManager {
    */
   static async clearContext() {
     await Promise.all([
-      prisma.$executeRaw`SET app.current_user_id = ''`,
-      prisma.$executeRaw`SET app.is_admin = false`,
+      prisma.$executeRaw`RESET app.current_user_id`,
+      prisma.$executeRaw`RESET app.current_user_email`,
+      prisma.$executeRaw`RESET app.is_admin`,
     ]);
   }
 
@@ -175,6 +176,94 @@ export class RLSManager {
       await this.clearContext();
     }
   }
+
+  /**
+   * RLS 컨텍스트 안전성 검증
+   * 현재 설정된 컨텍스트가 유효한지 확인
+   */
+  static async validateContext() {
+    try {
+      const context = await this.getCurrentContext();
+
+      // 사용자 ID가 설정되어 있는지 확인
+      if (!context.userId) {
+        return {
+          valid: false,
+          error: "No user context set",
+          context,
+        };
+      }
+
+      // 사용자 ID 형식 검증
+      const cuidRegex = /^c[0-9a-z]{24}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+      if (!cuidRegex.test(context.userId) && !uuidRegex.test(context.userId)) {
+        return {
+          valid: false,
+          error: "Invalid user ID format",
+          context,
+        };
+      }
+
+      return {
+        valid: true,
+        context,
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+        context: null,
+      };
+    }
+  }
+
+  /**
+   * RLS 성능 벤치마크 실행
+   */
+  static async benchmarkRLS() {
+    const testUserId = "test-user-id-" + Date.now();
+    const iterations = 100;
+    const results = {
+      setContext: 0,
+      clearContext: 0,
+      queryWithRLS: 0,
+    };
+
+    try {
+      // 컨텍스트 설정 성능 테스트
+      const setStartTime = Date.now();
+      for (let i = 0; i < iterations; i++) {
+        await this.setUserContext(testUserId, false);
+      }
+      results.setContext = Date.now() - setStartTime;
+
+      // 컨텍스트 클리어 성능 테스트
+      const clearStartTime = Date.now();
+      for (let i = 0; i < iterations; i++) {
+        await this.clearContext();
+      }
+      results.clearContext = Date.now() - clearStartTime;
+
+      return {
+        success: true,
+        results: {
+          setContextAvg: results.setContext / iterations,
+          clearContextAvg: results.clearContext / iterations,
+        },
+        iterations,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    } finally {
+      await this.clearContext();
+    }
+  }
 }
 
 /**
@@ -186,3 +275,5 @@ export const setUserContext = RLSManager.setUserContext;
 export const clearRLSContext = RLSManager.clearContext;
 export const withUserContext = RLSManager.withUserContext;
 export const withAdminContext = RLSManager.withAdminContext;
+export const validateRLSContext = RLSManager.validateContext;
+export const benchmarkRLS = RLSManager.benchmarkRLS;
