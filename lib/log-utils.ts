@@ -5,11 +5,13 @@ import type {
   AuditLogData,
   ErrorLogData,
   AdminActionLogData,
+  QrGenerationLogData,
   LogFilterOptions,
   AccessLogFilterOptions,
   AuthLogFilterOptions,
   AuditLogFilterOptions,
   AdminActionLogFilterOptions,
+  QrGenerationLogFilterOptions,
   AuthAction,
 } from "@/types/logs";
 
@@ -126,6 +128,31 @@ export async function createAdminActionLog(
     });
   } catch (error) {
     console.error("관리자 액션 로그 생성 실패:", error);
+    throw error;
+  }
+}
+
+// QR 코드 생성 로그 생성
+export async function createQrGenerationLog(
+  data: Omit<QrGenerationLogData, "id" | "createdAt">,
+) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return null;
+  }
+
+  try {
+    return await prisma.qrGenerationLog.create({
+      data: {
+        userId: data.userId,
+        qrType: data.qrType,
+        content: data.content,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+      },
+    });
+  } catch (error) {
+    console.error("QR 코드 생성 로그 생성 실패:", error);
     throw error;
   }
 }
@@ -314,6 +341,44 @@ export async function getAdminActionLogs(
   }
 }
 
+// QR 코드 생성 로그 조회
+export async function getQrGenerationLogs(
+  options: QrGenerationLogFilterOptions = {},
+) {
+  try {
+    const where: any = {};
+
+    if (options.userId) where.userId = options.userId;
+    if (options.qrType) where.qrType = options.qrType;
+    if (options.startDate || options.endDate) {
+      where.createdAt = {};
+      if (options.startDate) where.createdAt.gte = options.startDate;
+      if (options.endDate) where.createdAt.lte = options.endDate;
+    }
+
+    return await prisma.qrGenerationLog.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: options.orderBy === "asc" ? "asc" : "desc",
+      },
+      take: options.limit || 50,
+      skip: options.offset || 0,
+    });
+  } catch (error) {
+    console.error("QR 코드 생성 로그 조회 실패:", error);
+    throw error;
+  }
+}
+
 // 로그 통계 조회 (관리자만)
 export async function getLogStatistics() {
   try {
@@ -323,15 +388,18 @@ export async function getLogStatistics() {
       auditLogCount,
       errorLogCount,
       adminActionLogCount,
+      qrGenerationLogCount,
       todayAccessLogs,
       todayAuthLogs,
       todayErrorLogs,
+      todayQrGenerationLogs,
     ] = await Promise.all([
       prisma.accessLog.count(),
       prisma.authLog.count(),
       prisma.auditLog.count(),
       prisma.errorLog.count(),
       prisma.adminActionLog.count(),
+      prisma.qrGenerationLog.count(),
       prisma.accessLog.count({
         where: {
           createdAt: {
@@ -353,6 +421,13 @@ export async function getLogStatistics() {
           },
         },
       }),
+      prisma.qrGenerationLog.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          },
+        },
+      }),
     ]);
 
     return {
@@ -362,11 +437,13 @@ export async function getLogStatistics() {
         auditLogs: auditLogCount,
         errorLogs: errorLogCount,
         adminActionLogs: adminActionLogCount,
+        qrGenerationLogs: qrGenerationLogCount,
       },
       today: {
         accessLogs: todayAccessLogs,
         authLogs: todayAuthLogs,
         errorLogs: todayErrorLogs,
+        qrGenerationLogs: todayQrGenerationLogs,
       },
     };
   } catch (error) {

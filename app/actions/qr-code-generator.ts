@@ -6,9 +6,12 @@ import { auth } from "@/auth";
 import { withAuthenticatedRLSTransaction, withoutRLS } from "@/lib/rls-utils";
 import { QrCodeOptions, QrCodeGenerationOptions } from "@/types/qr-code-server";
 import { createErrorLog } from "@/lib/log-utils";
+import { logQrGenerationEvent, inferQrType } from "@/lib/logging-middleware";
+import { headers } from "next/headers";
 
 export async function generateQrCode(options: QrCodeOptions): Promise<string> {
   const session = await auth();
+  const headersList = headers();
 
   try {
     const {
@@ -29,6 +32,37 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
 
     if (width < 100 || width > 4096) {
       throw new Error("QR code width must be between 100px and 4096px.");
+    }
+
+    // QR 코드 생성 로그 기록 (로그인하지 않은 사용자 포함)
+    try {
+      const userAgent = headersList.get("user-agent") || undefined;
+      const forwardedFor = headersList.get("x-forwarded-for");
+      const cfConnectingIp = headersList.get("cf-connecting-ip");
+      const realIp = headersList.get("x-real-ip");
+
+      const ipAddress =
+        forwardedFor?.split(",")[0].trim() ||
+        cfConnectingIp ||
+        realIp ||
+        "unknown";
+
+      // QR 타입 추론 (옵션에서 제공되지 않는 경우)
+      const qrType = inferQrType(text);
+
+      await logQrGenerationEvent(
+        qrType,
+        text,
+        undefined, // NextRequest 객체가 없으므로 undefined
+        session?.user?.id || null,
+        {
+          ipAddress,
+          userAgent,
+        },
+      );
+    } catch (logError) {
+      console.error("QR 생성 로그 기록 실패:", logError);
+      // 로그 실패가 QR 생성을 방해하지 않도록 함
     }
 
     // 고급 스타일링이 필요한 경우 qr-code-styling 사용

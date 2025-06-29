@@ -42,6 +42,16 @@ export interface AdminActionLogData {
   createdAt?: Date;
 }
 
+export interface QrGenerationLogData {
+  id?: string;
+  userId?: string | null;
+  qrType: string;
+  content: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  createdAt?: Date;
+}
+
 // 로그 필터링 옵션
 export interface LogFilterOptions {
   userId?: string;
@@ -73,4 +83,9 @@ export interface AuditLogFilterOptions extends LogFilterOptions {
 // 관리자 액션 로그 필터링 옵션
 export interface AdminActionLogFilterOptions extends LogFilterOptions {
   action?: string;
+}
+
+// QR 코드 생성 로그 필터링 옵션
+export interface QrGenerationLogFilterOptions extends LogFilterOptions {
+  qrType?: string;
 }

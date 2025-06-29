@@ -23,13 +23,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  qrCodes         QrCode[]
-  templates       QrTemplate[]
-  accessLogs      AccessLog[]
-  authLogs        AuthLog[]
-  auditLogs       AuditLog[]
-  errorLogs       ErrorLog[]
-  adminActionLogs AdminActionLog[]
+  qrCodes          QrCode[]
+  templates        QrTemplate[]
+  qrGenerationLogs QrGenerationLog[]
+  accessLogs       AccessLog[]
+  authLogs         AuthLog[]
+  auditLogs        AuditLog[]
+  errorLogs        ErrorLog[]
+  adminActionLogs  AdminActionLog[]
 
   @@map("users")
 }
@@ -190,6 +191,24 @@ model AdminActionLog {
   @@index([adminId, createdAt])
   @@index([createdAt])
   @@map("admin_action_logs")
+}
+
+// QR 코드 생성 로그 테이블 (로그인하지 않은 사용자 포함)
+model QrGenerationLog {
+  id        String   @id @default(cuid())
+  userId    String? // 로그인한 사용자의 경우만
+  qrType    String // URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION
+  content   String // QR 코드에 포함된 실제 데이터 (개인정보는 해싱하여 저장)
+  ipAddress String? // 클라이언트 IP 주소
+  userAgent String? // 사용자 에이전트
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([qrType, createdAt])
+  @@index([createdAt])
+  @@map("qr_generation_logs")
 }
 
 // 인증 액션 열거형
