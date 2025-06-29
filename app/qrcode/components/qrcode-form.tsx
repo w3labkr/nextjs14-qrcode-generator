@@ -130,7 +130,7 @@ export function QrcodeForm() {
       <form
         noValidate
         onSubmit={handleSubmit(onSubmit)}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto"
+        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
       >
         <div>
           <Tabs
