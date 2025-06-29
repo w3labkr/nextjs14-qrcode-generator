@@ -33,7 +33,7 @@ export function CardVCard() {
           명함 정보를 입력하세요. 이름, 전화번호, 이메일 중 하나는 필수입니다.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FieldVcardFullName />
         <FieldVcardPhoneNumber />
         <FieldVcardEmail />
@@ -164,7 +164,7 @@ function FieldVcardWebsite() {
       control={control}
       name="vcardWebsite"
       render={({ field }) => (
-        <FormItem className="col-span-2">
+        <FormItem className="col-span-1 md:col-span-2">
           <FormLabel>
             웹사이트 <span className="text-xs">(선택)</span>
           </FormLabel>
@@ -190,7 +190,7 @@ function FieldVcardAddress() {
       control={control}
       name="vcardAddress"
       render={({ field }) => (
-        <FormItem className="col-span-2">
+        <FormItem className="col-span-1 md:col-span-2">
           <FormLabel>
             주소 <span className="text-xs">(선택)</span>
           </FormLabel>
