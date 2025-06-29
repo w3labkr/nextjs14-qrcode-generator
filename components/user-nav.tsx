@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { UserProfile } from "@/components/user-profile";
+import { createAuthLogAction } from "@/app/actions";
 
 export function UserNav() {
   const { data: session, status } = useSession();
@@ -82,8 +83,21 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
-          onSelect={(event) => {
+          onSelect={async (event) => {
             event.preventDefault();
+
+            // 로그아웃 로그 기록
+            try {
+              if (session?.user?.id) {
+                await createAuthLogAction({
+                  userId: session.user.id,
+                  action: "LOGOUT",
+                });
+              }
+            } catch (error) {
+              console.error("로그아웃 로그 기록 실패:", error);
+            }
+
             signOut({ callbackUrl: "/" });
           }}
         >

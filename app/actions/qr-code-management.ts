@@ -9,6 +9,7 @@ import {
   SaveQrCodeData,
 } from "@/types/qr-code-server";
 import { generateQrCode } from "./qr-code-generator";
+import { createAuditLog, createErrorLog } from "@/lib/log-utils";
 
 export async function getUserQrCodes(page = 1, limit = 10) {
   const session = await auth();
@@ -55,30 +56,49 @@ export async function toggleQrCodeFavorite(qrCodeId: string) {
 
   const userId = session.user.id; // 타입 안전성을 위해 미리 추출
 
-  return await withRLSTransaction(userId, async (tx) => {
-    const qrCode = await tx.qrCode.findFirst({
-      where: {
-        id: qrCodeId,
-        userId: userId, // 현재 사용자의 QR 코드만 조회
-      },
+  try {
+    return await withRLSTransaction(userId, async (tx) => {
+      const qrCode = await tx.qrCode.findFirst({
+        where: {
+          id: qrCodeId,
+          userId: userId, // 현재 사용자의 QR 코드만 조회
+        },
+      });
+
+      if (!qrCode) {
+        throw new Error("QR Code not found");
+      }
+
+      const updatedQrCode = await tx.qrCode.update({
+        where: {
+          id: qrCodeId,
+          userId: userId, // 현재 사용자의 QR 코드만 수정
+        },
+        data: {
+          isFavorite: !qrCode.isFavorite,
+        },
+      });
+
+      // 감사 로그 기록
+      await createAuditLog({
+        userId,
+        action: updatedQrCode.isFavorite
+          ? "FAVORITE_QR_CODE"
+          : "UNFAVORITE_QR_CODE",
+        tableName: "qr_codes",
+        recordId: qrCodeId,
+      });
+
+      return updatedQrCode;
     });
-
-    if (!qrCode) {
-      throw new Error("QR Code not found");
-    }
-
-    const updatedQrCode = await tx.qrCode.update({
-      where: {
-        id: qrCodeId,
-        userId: userId, // 현재 사용자의 QR 코드만 수정
-      },
-      data: {
-        isFavorite: !qrCode.isFavorite,
-      },
+  } catch (error) {
+    // 에러 로그 기록
+    await createErrorLog({
+      userId,
+      errorMessage: `QR 코드 즐겨찾기 토글 실패: ${error instanceof Error ? error.message : String(error)}`,
     });
-
-    return updatedQrCode;
-  });
+    throw error;
+  }
 }
 
 export async function deleteQrCode(qrCodeId: string) {
@@ -90,40 +110,57 @@ export async function deleteQrCode(qrCodeId: string) {
 
   const userId = session.user.id; // 타입 안전성을 위해 미리 추출
 
-  return await withRLSTransaction(userId, async (tx) => {
-    const qrCode = await tx.qrCode.findFirst({
-      where: {
-        id: qrCodeId,
-        userId: userId, // 현재 사용자의 QR 코드만 조회
-      },
+  try {
+    return await withRLSTransaction(userId, async (tx) => {
+      const qrCode = await tx.qrCode.findFirst({
+        where: {
+          id: qrCodeId,
+          userId: userId, // 현재 사용자의 QR 코드만 조회
+        },
+      });
+
+      if (!qrCode) {
+        throw new Error("QR Code not found");
+      }
+
+      await tx.qrCode.delete({
+        where: {
+          id: qrCodeId,
+          userId: userId, // 현재 사용자의 QR 코드만 삭제
+        },
+      });
+
+      // 감사 로그 기록
+      await createAuditLog({
+        userId,
+        action: "DELETE_QR_CODE",
+        tableName: "qr_codes",
+        recordId: qrCodeId,
+      });
+
+      return { success: true };
     });
-
-    if (!qrCode) {
-      throw new Error("QR Code not found");
-    }
-
-    await tx.qrCode.delete({
-      where: {
-        id: qrCodeId,
-        userId: userId, // 현재 사용자의 QR 코드만 삭제
-      },
+  } catch (error) {
+    // 에러 로그 기록
+    await createErrorLog({
+      userId,
+      errorMessage: `QR 코드 삭제 실패: ${error instanceof Error ? error.message : String(error)}`,
     });
-
-    return { success: true };
-  });
+    throw error;
+  }
 }
 
 export async function updateQrCode(
   qrCodeId: string,
   options: QrCodeGenerationOptions,
 ) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return { success: false, error: "Unauthorized" };
-    }
-
     const existingQrCode = await prisma.qrCode.findFirst({
       where: {
         id: qrCodeId,
@@ -158,6 +195,14 @@ export async function updateQrCode(
       },
     });
 
+    // 감사 로그 기록
+    await createAuditLog({
+      userId: session.user.id,
+      action: "UPDATE_QR_CODE",
+      tableName: "qr_codes",
+      recordId: qrCodeId,
+    });
+
     return {
       success: true,
       qrCodeDataUrl,
@@ -165,6 +210,13 @@ export async function updateQrCode(
     };
   } catch (error) {
     console.error("Error updating QR code:", error);
+
+    // 에러 로그 기록
+    await createErrorLog({
+      userId: session?.user?.id,
+      errorMessage: `QR 코드 업데이트 실패: ${error instanceof Error ? error.message : String(error)}`,
+    });
+
     return { success: false, error: "Failed to update QR code" };
   }
 }
@@ -188,6 +240,14 @@ export async function saveQrCode(data: SaveQrCodeData) {
       },
     });
 
+    // 감사 로그 기록
+    await createAuditLog({
+      userId: session.user.id,
+      action: "CREATE_QR_CODE",
+      tableName: "qr_codes",
+      recordId: savedQrCode.id,
+    });
+
     return {
       success: true,
       qrCode: {
@@ -197,6 +257,13 @@ export async function saveQrCode(data: SaveQrCodeData) {
     };
   } catch (error) {
     console.error("QR 코드 저장 실패:", error);
+
+    // 에러 로그 기록
+    await createErrorLog({
+      userId: undefined, // session을 못 가져온 경우를 대비
+      errorMessage: `QR 코드 저장 실패: ${error instanceof Error ? error.message : String(error)}`,
+    });
+
     return {
       success: false,
       error:

@@ -2,18 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { withAuthenticatedRLS } from "@/lib/rls-utils";
 import { Prisma } from "@prisma/client";
+import { logApiRequest, logError } from "@/lib/logging-middleware";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  try {
-    const session = await auth();
+  const session = await auth();
 
+  try {
     if (!session?.user?.id) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: "인증이 필요합니다." },
         { status: 401 },
       );
+
+      // API 접근 로그 기록
+      await logApiRequest(request, response, null);
+
+      return response;
     }
 
     const { searchParams } = new URL(request.url);
@@ -86,7 +92,7 @@ export async function GET(request: NextRequest) {
       settings: qrCode.settings ? JSON.parse(qrCode.settings) : {},
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       qrCodes: formattedQrCodes,
       pagination: {
         total,
@@ -95,11 +101,28 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     });
+
+    // API 접근 로그 기록
+    await logApiRequest(request, response, session.user.id);
+
+    return response;
   } catch (error) {
     console.error("QR 코드 목록 조회 실패:", error);
-    return NextResponse.json(
+
+    // 에러 로그 기록
+    await logError(error as Error, session?.user?.id, {
+      method: request.method,
+      path: request.nextUrl.pathname,
+    });
+
+    const errorResponse = NextResponse.json(
       { error: "QR 코드 목록을 불러오는데 실패했습니다." },
       { status: 500 },
     );
+
+    // 에러 응답도 로깅
+    await logApiRequest(request, errorResponse, session?.user?.id);
+
+    return errorResponse;
   }
 }

@@ -5,8 +5,11 @@ import { createCanvas, loadImage } from "canvas";
 import { auth } from "@/auth";
 import { withAuthenticatedRLSTransaction, withoutRLS } from "@/lib/rls-utils";
 import { QrCodeOptions, QrCodeGenerationOptions } from "@/types/qr-code-server";
+import { createErrorLog } from "@/lib/log-utils";
 
 export async function generateQrCode(options: QrCodeOptions): Promise<string> {
+  const session = await auth();
+
   try {
     const {
       text,
@@ -107,6 +110,13 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
     });
   } catch (error) {
     console.error("Error generating QR code:", error);
+
+    // 에러 로그 기록
+    await createErrorLog({
+      userId: session?.user?.id,
+      errorMessage: `QR 코드 생성 실패: ${error instanceof Error ? error.message : String(error)} | 옵션: ${JSON.stringify(options)}`,
+    });
+
     if (error instanceof Error) {
       throw new Error(`Failed to generate QR code: ${error.message}`);
     }

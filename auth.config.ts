@@ -10,6 +10,7 @@ import {
   validateAuthEnvironment,
   logAuthEnvironment,
 } from "@/lib/env-validation";
+import { createAuthLog, createErrorLog } from "@/lib/log-utils";
 
 // 확장된 JWT 타입 정의
 interface ExtendedJWT extends JWT {
@@ -106,6 +107,16 @@ export default {
   debug: false, // 디버그 모드 비활성화
   events: {
     async signIn({ user, account, profile }) {
+      // 로그인 성공 로그 기록
+      try {
+        await createAuthLog({
+          userId: user.id,
+          action: "LOGIN",
+        });
+      } catch (error) {
+        console.error("로그인 로그 기록 실패:", error);
+      }
+
       // 환경 변수 검증 로그 (필요시에만 활성화)
       if (process.env.AUTH_DEBUG === "true") {
         logAuthEnvironment();
@@ -115,6 +126,10 @@ export default {
           email: user.email,
         });
       }
+    },
+    async signOut() {
+      // 로그아웃 로그 기록은 클라이언트에서 처리
+      console.log("사용자가 로그아웃했습니다");
     },
   },
   callbacks: {
@@ -312,11 +327,36 @@ export default {
       // 액세스 토큰 갱신 시도
       try {
         const refreshedToken = await refreshAccessToken(extendedToken);
+
+        // 토큰 갱신 성공 로그
+        try {
+          await createAuthLog({
+            userId: refreshedToken.sub || undefined,
+            action: "REFRESH",
+          });
+        } catch (logError) {
+          console.error("토큰 갱신 로그 기록 실패:", logError);
+        }
+
         if (process.env.AUTH_DEBUG === "true") {
           console.log("토큰 갱신 성공");
         }
         return refreshedToken;
       } catch (error) {
+        // 토큰 갱신 실패 로그
+        try {
+          await createAuthLog({
+            userId: extendedToken.sub || undefined,
+            action: "FAIL",
+          });
+          await createErrorLog({
+            userId: extendedToken.sub || undefined,
+            errorMessage: `토큰 갱신 실패: ${error instanceof Error ? error.message : String(error)}`,
+          });
+        } catch (logError) {
+          console.error("토큰 갱신 실패 로그 기록 실패:", logError);
+        }
+
         if (process.env.AUTH_DEBUG === "true") {
           console.error("토큰 갱신 실패:", error);
         }
