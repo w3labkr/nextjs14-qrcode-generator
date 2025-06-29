@@ -7,6 +7,9 @@ import type { LogFilterOptions } from "@/types/logs";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 
+// 동적 렌더링 강제 설정
+export const dynamic = "force-dynamic";
+
 /**
  * 관리자 권한 확인
  */

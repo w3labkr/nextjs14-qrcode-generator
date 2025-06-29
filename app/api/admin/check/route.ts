@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getAdminEmails } from "@/lib/env-validation";
 
+// 동적 렌더링 강제 설정
+export const dynamic = "force-dynamic";
+
 /**
  * 관리자 권한 확인 API
  */

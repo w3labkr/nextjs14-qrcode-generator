@@ -5,6 +5,9 @@ import { UnifiedLogger } from "@/lib/unified-logging";
 import { getAdminEmails } from "@/lib/env-validation";
 import type { LogFilterOptions } from "@/types/logs";
 
+// 동적 렌더링 강제 설정
+export const dynamic = "force-dynamic";
+
 /**
  * 관리자 권한 확인
  */
