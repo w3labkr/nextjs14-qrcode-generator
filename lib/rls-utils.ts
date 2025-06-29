@@ -278,3 +278,14 @@ export async function measureRLSPerformance<T>(
     throw error;
   }
 }
+
+/**
+ * 현재 RLS 컨텍스트에서 사용자 ID를 가져옵니다.
+ * @returns 현재 사용자 ID 또는 null
+ */
+export function getRlsUserId(): string | null {
+  // 이 함수는 실제로는 세션에서 사용자 ID를 가져와야 합니다.
+  // 현재는 임시로 null을 반환합니다.
+  // 실제 구현에서는 NextAuth session이나 다른 방법으로 사용자 ID를 가져와야 합니다.
+  return null;
+}

@@ -23,8 +23,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  qrCodes   QrCode[]
-  templates QrTemplate[]
+  qrCodes         QrCode[]
+  templates       QrTemplate[]
+  accessLogs      AccessLog[]
+  authLogs        AuthLog[]
+  auditLogs       AuditLog[]
+  errorLogs       ErrorLog[]
+  adminActionLogs AdminActionLog[]
 
   @@map("users")
 }
@@ -109,6 +114,95 @@ model QrTemplate {
   @@map("qr_templates")
 }
 
+// API 접근 로그 테이블
+model AccessLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  method     String // GET, POST, PUT, DELETE, etc.
+  path       String // API 경로
+  statusCode Int // HTTP 상태 코드
+  userAgent  String? // 사용자 에이전트
+  ipAddress  String? // IP 주소
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("access_logs")
+}
+
+// 인증/로그인 로그 테이블
+model AuthLog {
+  id        String     @id @default(cuid())
+  userId    String?
+  action    AuthAction // 인증 액션 타입
+  createdAt DateTime   @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("auth_logs")
+}
+
+// 감사 로그 테이블 (데이터 변경 이력)
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String // 수행된 액션
+  tableName String // 변경된 테이블명
+  recordId  String? // 변경된 레코드 ID
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([tableName, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// 에러 로그 테이블
+model ErrorLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  errorMessage String // 에러 메시지
+  createdAt    DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("error_logs")
+}
+
+// 관리자 활동 로그 테이블
+model AdminActionLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String // 수행된 관리자 액션
+  detail    String? // 상세 정보
+  createdAt DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, createdAt])
+  @@index([createdAt])
+  @@map("admin_action_logs")
+}
+
+// 인증 액션 열거형
+enum AuthAction {
+  LOGIN
+  LOGOUT
+  REFRESH
+  REVOKE
+  FAIL
+
+  @@map("auth_action")
+}
+
 // RLS (Row Level Security) 설정
 // 이 SQL은 Prisma migrate 후 수동으로 실행해야 합니다.
 
@@ -147,7 +241,43 @@ model QrTemplate {
 // CREATE POLICY sessions_user_policy ON sessions
 //   USING (user_id = current_setting('app.current_user_id')::text);
 
+// 11. AccessLog 테이블 RLS 활성화 (선택적 - 관리자만 접근)
+// ALTER TABLE access_logs ENABLE ROW LEVEL SECURITY;
+
+// 12. AccessLog 접근 정책 생성 (사용자는 자신의 로그만 접근 가능)
+// CREATE POLICY access_logs_user_policy ON access_logs
+//   USING (user_id = current_setting('app.current_user_id')::text OR current_setting('app.is_admin')::boolean = true);
+
+// 13. AuthLog 테이블 RLS 활성화 (선택적 - 관리자만 접근)
+// ALTER TABLE auth_logs ENABLE ROW LEVEL SECURITY;
+
+// 14. AuthLog 접근 정책 생성 (사용자는 자신의 로그만 접근 가능)
+// CREATE POLICY auth_logs_user_policy ON auth_logs
+//   USING (user_id = current_setting('app.current_user_id')::text OR current_setting('app.is_admin')::boolean = true);
+
+// 15. AuditLog 테이블 RLS 활성화 (관리자만 접근)
+// ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
+// 16. AuditLog 접근 정책 생성 (관리자만 접근 가능)
+// CREATE POLICY audit_logs_admin_policy ON audit_logs
+//   USING (current_setting('app.is_admin')::boolean = true);
+
+// 17. ErrorLog 테이블 RLS 활성화 (관리자만 접근)
+// ALTER TABLE error_logs ENABLE ROW LEVEL SECURITY;
+
+// 18. ErrorLog 접근 정책 생성 (관리자만 접근 가능)
+// CREATE POLICY error_logs_admin_policy ON error_logs
+//   USING (current_setting('app.is_admin')::boolean = true);
+
+// 19. AdminActionLog 테이블 RLS 활성화 (관리자만 접근)
+// ALTER TABLE admin_action_logs ENABLE ROW LEVEL SECURITY;
+
+// 20. AdminActionLog 접근 정책 생성 (관리자만 접근 가능)
+// CREATE POLICY admin_action_logs_admin_policy ON admin_action_logs
+//   USING (current_setting('app.is_admin')::boolean = true);
+
 // RLS 사용 시 주의사항:
 // - 애플리케이션에서 DB 연결 시 current_setting('app.current_user_id')를 설정해야 함
 // - 예: SET app.current_user_id = 'user_id_value';
+// - 관리자 권한이 필요한 경우: SET app.is_admin = true;
 // - Prisma Client에서는 $executeRaw나 $queryRaw로 설정 가능
