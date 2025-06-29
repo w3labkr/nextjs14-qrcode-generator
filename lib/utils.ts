@@ -97,9 +97,13 @@ export function truncateContent(
  * @returns 타입의 한국어 표시명
  */
 export function getTypeLabel(type: string): string {
+  // 타입 정규화: 데이터베이스의 "TEXT"를 "TEXTAREA"로 매핑
+  const normalizedType =
+    type.toUpperCase() === "TEXT" ? "TEXTAREA" : type.toUpperCase();
+
   // QR_CODE_TYPES에서 해당 타입의 displayName을 찾기
   const qrCodeType = Object.values(QR_CODE_TYPES).find(
-    (qrType) => qrType.label === type.toUpperCase(),
+    (qrType) => qrType.label === normalizedType,
   );
   return qrCodeType?.displayName || type;
 }
@@ -110,9 +114,14 @@ export function getTypeLabel(type: string): string {
  * @returns 타입의 색상 클래스
  */
 export function getTypeColor(type: string): string {
+  // 타입 정규화: 데이터베이스의 "TEXT"를 "TEXTAREA"로 매핑
+  const normalizedType =
+    type.toUpperCase() === "TEXT" ? "TEXTAREA" : type.toUpperCase();
+
   // QR_CODE_TYPES에서 해당 타입의 color를 찾기
   const qrCodeType = Object.values(QR_CODE_TYPES).find(
-    (qrType) => qrType.label === type.toUpperCase(),
+    (qrType) => qrType.label === normalizedType,
   );
+
   return qrCodeType?.color || "bg-gray-100 text-gray-800";
 }

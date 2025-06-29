@@ -99,8 +99,8 @@ export function QrCodeCard({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <Badge
-                  variant="secondary"
-                  className={getTypeColor(qrCode.type)}
+                  variant="outline"
+                  className={cn("border-0", getTypeColor(qrCode.type))}
                 >
                   {getTypeLabel(qrCode.type)}
                 </Badge>
