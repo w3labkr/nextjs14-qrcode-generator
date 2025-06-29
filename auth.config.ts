@@ -5,6 +5,7 @@ import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 import axios from "axios";
 import { appConfig } from "@/config/app";
+import { prisma } from "@/lib/prisma";
 import {
   validateAuthEnvironment,
   logAuthEnvironment,
@@ -116,10 +117,65 @@ export default {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // OAuth 제공자의 경우 항상 로그인 허용
-      if (account?.provider === "google" || account?.provider === "github") {
-        return true;
+      if (!account || !user.email) return false;
+
+      // OAuth 제공자의 경우 계정 연결 처리
+      if (account.provider === "google" || account.provider === "github") {
+        try {
+          // 같은 이메일로 기존 사용자 확인
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+            include: { accounts: true },
+          });
+
+          if (existingUser) {
+            // 같은 제공자로 이미 연결된 계정이 있는지 확인
+            const hasAccountWithProvider = existingUser.accounts.some(
+              (existingAccount) =>
+                existingAccount.provider === account.provider,
+            );
+
+            // 같은 제공자로 계정이 없으면 새 계정 연결
+            if (!hasAccountWithProvider) {
+              await prisma.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  refresh_token: account.refresh_token,
+                },
+              });
+
+              // 사용자 정보 업데이트 (필요한 경우)
+              if (profile?.name && !existingUser.name) {
+                await prisma.user.update({
+                  where: { id: existingUser.id },
+                  data: { name: profile.name },
+                });
+              }
+
+              if (profile?.image && !existingUser.image) {
+                await prisma.user.update({
+                  where: { id: existingUser.id },
+                  data: { image: profile.image },
+                });
+              }
+            }
+          }
+
+          return true;
+        } catch (error) {
+          console.error("계정 연결 처리 중 오류:", error);
+          return false;
+        }
       }
+
       return true;
     },
     async jwt({ token, user, account, trigger, session }) {
