@@ -25,7 +25,7 @@ export const GoogleSignInButton = ({
       type="button"
     >
       <GoogleIcon />
-      Google로 로그인
+      구글 로그인
     </Button>
   );
 };

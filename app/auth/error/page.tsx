@@ -12,9 +12,11 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const errorMessages = {
-  Configuration: "Google OAuth 설정에 문제가 있습니다.",
+  Configuration: "OAuth 설정에 문제가 있습니다.",
   AccessDenied: "접근이 거부되었습니다.",
   Verification: "인증에 실패했습니다.",
+  OAuthAccountNotLinked:
+    "이미 다른 방법으로 가입된 계정입니다. 동일한 이메일로 다른 소셜 로그인을 사용해보세요.",
   Default: "알 수 없는 오류가 발생했습니다.",
 };
 

@@ -1,5 +1,6 @@
 import { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 import axios from "axios";
@@ -85,6 +86,15 @@ export default {
         },
       },
     }),
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+      authorization: {
+        params: {
+          scope: "read:user user:email",
+        },
+      },
+    }),
   ],
   pages: {
     signIn: "/auth/signin",
@@ -105,6 +115,13 @@ export default {
     },
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // OAuth 제공자의 경우 항상 로그인 허용
+      if (account?.provider === "google" || account?.provider === "github") {
+        return true;
+      }
+      return true;
+    },
     async jwt({ token, user, account, trigger, session }) {
       const extendedToken = token as ExtendedJWT;
 

@@ -20,5 +20,6 @@ export const {
   jwt: {
     maxAge: appConfig.session.sessionMaxAgeRemember, // JWT 토큰 최대 만료 시간
   },
+  trustHost: true, // 다중 호스트 환경에서 신뢰할 수 있는 호스트로 설정
   ...authConfig,
 });

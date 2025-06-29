@@ -20,7 +20,7 @@
 
 ## 🎯 프로젝트 키워드
 
-`QR Code Generator` `Next.js 14` `React` `TypeScript` `Tailwind CSS` `Shadcn UI` `Prisma ORM` `Supabase` `NextAuth.js` `Google OAuth` `Progressive Web App` `Open Source` `MIT License`
+`QR Code Generator` `Next.js 14` `React` `TypeScript` `Tailwind CSS` `Shadcn UI` `Prisma ORM` `Supabase` `NextAuth.js` `Google OAuth` `GitHub OAuth` `Progressive Web App` `Open Source` `MIT License`
 
 ## 🌐 라이브 데모
 
@@ -40,6 +40,7 @@
 
 ### 🔐 사용자 인증 시스템
 - **Google OAuth**: 안전하고 편리한 소셜 로그인
+- **GitHub OAuth**: 개발자를 위한 GitHub 계정 연동
 - **NextAuth.js v5**: 최신 인증 시스템으로 보안 강화
 - **선택적 로그인**: 로그인 없이도 모든 기본 기능 사용 가능
 
@@ -168,6 +169,16 @@ cp .env.example .env.local
    AUTH_GOOGLE_SECRET="your-google-client-secret"
    ```
 
+**GitHub OAuth 소셜 로그인**:
+
+1. [GitHub Developer Settings](https://github.com/settings/developers)에서 OAuth App 생성
+2. Authorization callback URL에 `http://localhost:3000/api/auth/callback/github` 추가
+
+   ```bash
+   AUTH_GITHUB_ID="your-github-client-id"
+   AUTH_GITHUB_SECRET="your-github-client-secret"
+   ```
+
 **Supabase 데이터베이스 비활성화 방지 (Vercel 배포 시)**:
 
 Vercel Pro 플랜에서 크론잡을 사용하여 Supabase 프로젝트 비활성화를 방지할 수 있습니다:
@@ -176,7 +187,7 @@ Vercel Pro 플랜에서 크론잡을 사용하여 Supabase 프로젝트 비활�
    CRON_SECRET="your-secure-random-string-here"
    ```
 
-자세한 설정 방법은 [docs/CRON_SETUP.md](./docs/CRON_SETUP.md)를 참조하세요.
+자세한 설정 방법은 [docs/CRON.md](./docs/CRON.md)를 참조하세요.
 
 ### 4. 데이터베이스 설정
 

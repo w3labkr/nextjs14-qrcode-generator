@@ -5,6 +5,8 @@ export function validateAuthEnvironment() {
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
     AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
+    AUTH_GITHUB_ID: process.env.AUTH_GITHUB_ID,
+    AUTH_GITHUB_SECRET: process.env.AUTH_GITHUB_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   };
 
@@ -19,14 +21,14 @@ export function validateAuthEnvironment() {
 
   // Google OAuth ID 형식 검증
   const googleId = process.env.AUTH_GOOGLE_ID;
-  if (googleId && !googleId.endsWith('.apps.googleusercontent.com')) {
+  if (googleId && !googleId.endsWith(".apps.googleusercontent.com")) {
     console.error("❌ Google OAuth ID 형식이 올바르지 않습니다");
     return false;
   }
 
   // NEXTAUTH_URL 형식 검증
   const nextAuthUrl = process.env.NEXTAUTH_URL;
-  if (nextAuthUrl && !nextAuthUrl.startsWith('http')) {
+  if (nextAuthUrl && !nextAuthUrl.startsWith("http")) {
     console.error("❌ NEXTAUTH_URL이 http/https로 시작하지 않습니다");
     return false;
   }
@@ -37,9 +39,26 @@ export function validateAuthEnvironment() {
 
 export function logAuthEnvironment() {
   console.log("🔧 인증 환경 변수 상태:");
-  console.log("- AUTH_SECRET:", process.env.AUTH_SECRET ? "✅ 설정됨" : "❌ 누락");
-  console.log("- AUTH_GOOGLE_ID:", process.env.AUTH_GOOGLE_ID ? "✅ 설정됨" : "❌ 누락");
-  console.log("- AUTH_GOOGLE_SECRET:", process.env.AUTH_GOOGLE_SECRET ? "✅ 설정됨" : "❌ 누락");
+  console.log(
+    "- AUTH_SECRET:",
+    process.env.AUTH_SECRET ? "✅ 설정됨" : "❌ 누락",
+  );
+  console.log(
+    "- AUTH_GOOGLE_ID:",
+    process.env.AUTH_GOOGLE_ID ? "✅ 설정됨" : "❌ 누락",
+  );
+  console.log(
+    "- AUTH_GOOGLE_SECRET:",
+    process.env.AUTH_GOOGLE_SECRET ? "✅ 설정됨" : "❌ 누락",
+  );
+  console.log(
+    "- AUTH_GITHUB_ID:",
+    process.env.AUTH_GITHUB_ID ? "✅ 설정됨" : "❌ 누락",
+  );
+  console.log(
+    "- AUTH_GITHUB_SECRET:",
+    process.env.AUTH_GITHUB_SECRET ? "✅ 설정됨" : "❌ 누락",
+  );
   console.log("- NEXTAUTH_URL:", process.env.NEXTAUTH_URL || "❌ 누락");
   console.log("- NODE_ENV:", process.env.NODE_ENV);
 }
