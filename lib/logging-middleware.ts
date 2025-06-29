@@ -14,6 +14,11 @@ export async function logApiRequest(
   response: Response,
   userId?: string | null,
 ) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return;
+  }
+
   try {
     await createAccessLog({
       userId,
@@ -32,6 +37,11 @@ export async function logApiRequest(
  * 인증 이벤트 로그를 기록하는 헬퍼
  */
 export async function logAuthEvent(action: AuthAction, userId?: string | null) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return;
+  }
+
   try {
     await createAuthLog({
       userId,
@@ -50,6 +60,11 @@ export async function logError(
   userId?: string | null,
   context?: Record<string, any>,
 ) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return;
+  }
+
   try {
     const errorMessage = typeof error === "string" ? error : error.message;
     const fullErrorMessage = context

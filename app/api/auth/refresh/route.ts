@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { withApiLogging } from "@/lib/api-logging";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
+const handlePOST = async (req: NextRequest) => {
   try {
     // 현재 세션 확인
     const session = await auth();
@@ -28,8 +29,12 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
-}
+};
 
-export async function GET(req: NextRequest) {
-  return POST(req);
-}
+export const POST = withApiLogging(handlePOST);
+
+const handleGET = async (req: NextRequest) => {
+  return handlePOST(req);
+};
+
+export const GET = withApiLogging(handleGET);

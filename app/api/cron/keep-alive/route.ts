@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withApiLogging } from "@/lib/api-logging";
 
 // 이 라우트는 동적이어야 함 (헤더를 사용하므로)
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
+const handleGET = async (request: NextRequest) => {
   try {
     // Authorization 헤더에서 크론 시크릿 확인
     const authHeader = request.headers.get("authorization");
@@ -35,4 +36,6 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+};
+
+export const GET = withApiLogging(handleGET);

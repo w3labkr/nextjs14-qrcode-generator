@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { withAuthenticatedRLSTransaction } from "@/lib/rls-utils";
+import { withAuthenticatedApiLogging } from "@/lib/api-logging";
 
 export const dynamic = "force-dynamic";
 
@@ -8,10 +9,10 @@ interface Params {
   id: string;
 }
 
-export async function POST(
+const handlePOST = async (
   request: NextRequest,
   { params }: { params: Params },
-) {
+) => {
   try {
     const session = await auth();
 
@@ -64,4 +65,6 @@ export async function POST(
       { status: 500 },
     );
   }
-}
+};
+
+export const POST = withAuthenticatedApiLogging(handlePOST);

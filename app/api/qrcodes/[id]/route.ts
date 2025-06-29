@@ -4,6 +4,7 @@ import {
   withAuthenticatedRLS,
   withAuthenticatedRLSTransaction,
 } from "@/lib/rls-utils";
+import { withAuthenticatedApiLogging } from "@/lib/api-logging";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +12,10 @@ interface Params {
   id: string;
 }
 
-export async function GET(
+const handleGET = async (
   request: NextRequest,
   { params }: { params: Params },
-) {
+) => {
   try {
     const session = await auth();
 
@@ -52,12 +53,14 @@ export async function GET(
       { status: 500 },
     );
   }
-}
+};
 
-export async function PATCH(
+export const GET = withAuthenticatedApiLogging(handleGET);
+
+const handlePATCH = async (
   request: NextRequest,
   { params }: { params: Params },
-) {
+) => {
   try {
     const session = await auth();
 
@@ -114,12 +117,14 @@ export async function PATCH(
       { status: 500 },
     );
   }
-}
+};
 
-export async function DELETE(
+export const PATCH = withAuthenticatedApiLogging(handlePATCH);
+
+const handleDELETE = async (
   request: NextRequest,
   { params }: { params: Params },
-) {
+) => {
   try {
     const session = await auth();
 
@@ -163,4 +168,6 @@ export async function DELETE(
       { status: 500 },
     );
   }
-}
+};
+
+export const DELETE = withAuthenticatedApiLogging(handleDELETE);

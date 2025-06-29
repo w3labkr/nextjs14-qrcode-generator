@@ -17,6 +17,11 @@ import type {
 export async function createAccessLog(
   data: Omit<AccessLogData, "id" | "createdAt">,
 ) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return null;
+  }
+
   try {
     return await prisma.accessLog.create({
       data: {
@@ -38,6 +43,11 @@ export async function createAccessLog(
 export async function createAuthLog(
   data: Omit<AuthLogData, "id" | "createdAt">,
 ) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return null;
+  }
+
   try {
     return await prisma.authLog.create({
       data: {
@@ -55,6 +65,11 @@ export async function createAuthLog(
 export async function createAuditLog(
   data: Omit<AuditLogData, "id" | "createdAt">,
 ) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return null;
+  }
+
   try {
     return await prisma.auditLog.create({
       data: {
@@ -74,6 +89,11 @@ export async function createAuditLog(
 export async function createErrorLog(
   data: Omit<ErrorLogData, "id" | "createdAt">,
 ) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return null;
+  }
+
   try {
     return await prisma.errorLog.create({
       data: {
@@ -91,6 +111,11 @@ export async function createErrorLog(
 export async function createAdminActionLog(
   data: Omit<AdminActionLogData, "id" | "createdAt">,
 ) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return null;
+  }
+
   try {
     return await prisma.adminActionLog.create({
       data: {
