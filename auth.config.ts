@@ -5,12 +5,6 @@ import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 import axios from "axios";
 import { appConfig } from "@/config/app";
-import { prisma } from "@/lib/prisma";
-import {
-  validateAuthEnvironment,
-  logAuthEnvironment,
-} from "@/lib/env-validation";
-import { createAuthLog, createErrorLog } from "@/lib/log-utils";
 
 // 확장된 JWT 타입 정의
 interface ExtendedJWT extends JWT {
@@ -107,19 +101,19 @@ export default {
   debug: false, // 디버그 모드 비활성화
   events: {
     async signIn({ user, account, profile }) {
-      // 로그인 성공 로그 기록
-      try {
-        await createAuthLog({
-          userId: user.id,
-          action: "LOGIN",
-        });
-      } catch (error) {
-        console.error("로그인 로그 기록 실패:", error);
+      // 서버 환경에서만 로그 기록
+      if (typeof window === "undefined") {
+        try {
+          // 동적 import로 서버 전용 함수 호출
+          const { handleSignIn } = await import("@/lib/auth-server");
+          await handleSignIn(user, account, profile);
+        } catch (error) {
+          console.error("로그인 로그 기록 실패:", error);
+        }
       }
 
-      // 환경 변수 검증 로그 (필요시에만 활성화)
+      // 환경 변수 검증 로그 (개발 환경에서만)
       if (process.env.AUTH_DEBUG === "true") {
-        logAuthEnvironment();
         console.log("로그인 시도:", {
           provider: account?.provider,
           userId: user.id,
@@ -136,9 +130,17 @@ export default {
     async signIn({ user, account, profile }) {
       if (!account || !user.email) return false;
 
-      // OAuth 제공자의 경우 계정 연결 처리
-      if (account.provider === "google" || account.provider === "github") {
+      // OAuth 제공자의 경우 서버 환경에서만 계정 연결 처리
+      if (
+        (account.provider === "google" || account.provider === "github") &&
+        typeof window === "undefined"
+      ) {
         try {
+          // 동적 import로 서버 전용 prisma 접근
+          const { prisma } = await import("@/lib/prisma");
+
+          if (!prisma) return true; // prisma가 없으면 기본 동작
+
           // 같은 이메일로 기존 사용자 확인
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email },
@@ -148,7 +150,7 @@ export default {
           if (existingUser) {
             // 같은 제공자로 이미 연결된 계정이 있는지 확인
             const hasAccountWithProvider = existingUser.accounts.some(
-              (existingAccount) =>
+              (existingAccount: any) =>
                 existingAccount.provider === account.provider,
             );
 
@@ -328,14 +330,17 @@ export default {
       try {
         const refreshedToken = await refreshAccessToken(extendedToken);
 
-        // 토큰 갱신 성공 로그
-        try {
-          await createAuthLog({
-            userId: refreshedToken.sub || undefined,
-            action: "REFRESH",
-          });
-        } catch (logError) {
-          console.error("토큰 갱신 로그 기록 실패:", logError);
+        // 서버 환경에서만 토큰 갱신 성공 로그
+        if (typeof window === "undefined") {
+          try {
+            const { createAuthLog } = await import("@/lib/log-utils");
+            await createAuthLog({
+              userId: refreshedToken.sub || undefined,
+              action: "REFRESH",
+            });
+          } catch (logError) {
+            console.error("토큰 갱신 로그 기록 실패:", logError);
+          }
         }
 
         if (process.env.AUTH_DEBUG === "true") {
@@ -343,18 +348,23 @@ export default {
         }
         return refreshedToken;
       } catch (error) {
-        // 토큰 갱신 실패 로그
-        try {
-          await createAuthLog({
-            userId: extendedToken.sub || undefined,
-            action: "FAIL",
-          });
-          await createErrorLog({
-            userId: extendedToken.sub || undefined,
-            errorMessage: `토큰 갱신 실패: ${error instanceof Error ? error.message : String(error)}`,
-          });
-        } catch (logError) {
-          console.error("토큰 갱신 실패 로그 기록 실패:", logError);
+        // 서버 환경에서만 토큰 갱신 실패 로그
+        if (typeof window === "undefined") {
+          try {
+            const { createAuthLog, createErrorLog } = await import(
+              "@/lib/log-utils"
+            );
+            await createAuthLog({
+              userId: extendedToken.sub || undefined,
+              action: "FAIL",
+            });
+            await createErrorLog({
+              userId: extendedToken.sub || undefined,
+              errorMessage: `토큰 갱신 실패: ${error instanceof Error ? error.message : String(error)}`,
+            });
+          } catch (logError) {
+            console.error("토큰 갱신 실패 로그 기록 실패:", logError);
+          }
         }
 
         if (process.env.AUTH_DEBUG === "true") {

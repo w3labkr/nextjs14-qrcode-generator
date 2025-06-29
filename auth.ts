@@ -1,8 +1,22 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
 import { appConfig } from "@/config/app";
 import authConfig from "./auth.config";
+
+// 서버 환경에서만 실행되는 인증 설정
+let prismaAdapter: any = undefined;
+
+// 서버 환경에서만 Prisma adapter 초기화
+if (typeof window === "undefined") {
+  try {
+    const { prisma } = require("@/lib/prisma");
+    if (prisma) {
+      prismaAdapter = PrismaAdapter(prisma);
+    }
+  } catch (error) {
+    console.warn("Prisma adapter 초기화 실패:", error);
+  }
+}
 
 export const {
   handlers: { GET, POST },
@@ -10,7 +24,7 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: prismaAdapter,
   session: {
     strategy: "jwt",
     // 기본 세션 만료 시간 (기억하기 설정에 따라 동적으로 결정)
