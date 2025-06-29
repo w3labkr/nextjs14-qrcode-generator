@@ -1,19 +1,38 @@
-# 프로젝트 구조 및 아키텍처
+# 프로젝트 개요 및 구조
 
-## 개요
-
-이 문서는 Next.js 14 QR 코드 생성기 프로젝트의 전체적인 구조와 아키텍처를 설명합니다.
-
-## 프로젝트 정보
+## 📊 프로젝트 통계 (v1.4.31)
 
 - **버전**: v1.4.31
 - **마지막 업데이트**: 2025년 6월 29일
 - **총 파일 수**: 170+ TypeScript/JavaScript 파일
 - **총 패키지 수**: 100+ npm 패키지 (73 dependencies + 30 devDependencies)
 
-## 디렉토리 구조
+## 🧩 주요 구성 요소
 
-```
+### UI 컴포넌트
+
+- **46개 shadcn/ui 컴포넌트**: Radix UI 기반의 고품질 컴포넌트
+- **7가지 QR 코드 타입**: URL, 텍스트, Wi-Fi, vCard, 이메일, SMS, 위치
+
+### 기술 스택
+
+- **Frontend**: Next.js 14.2.30, React 18, TypeScript 5
+- **UI**: Tailwind CSS 3.4.1, shadcn/ui, Radix UI
+- **인증**: NextAuth.js v5.0.0-beta.28 (Google OAuth)
+- **데이터베이스**: Supabase PostgreSQL + Prisma ORM 6.10.1
+- **상태 관리**: Zustand 5.0.5, React Query 5.80.7
+- **폼 관리**: React Hook Form 7.58.0 + Zod 3.25.64
+
+### 고급 기능
+
+- **통합 로깅 시스템**: UnifiedLogger 클래스로 모든 로그 통합 관리
+- **Row Level Security**: 데이터베이스 레벨 보안
+- **PWA 지원**: Progressive Web App 기능
+- **성능 최적화**: Turbopack, 이미지 최적화, 코드 분할
+
+## 📁 프로젝트 구조
+
+```text
 nextjs14-qrcode-generator/
 ├── app/                          # Next.js 14 App Router
 │   ├── api/                      # API Routes
@@ -98,11 +117,10 @@ nextjs14-qrcode-generator/
 │   ├── CRON.md                   # 크론 작업 문서
 │   ├── DEPENDENCIES.md           # 의존성 문서
 │   ├── LOGGING.md                # 로깅 시스템 문서
-│   ├── LOGGING_OPTIMIZATION.md   # 로깅 최적화 문서
 │   ├── PRD.md                    # 제품 요구사항 문서
 │   ├── RLS.md                    # Row Level Security 문서
 │   ├── SECURITY.md               # 보안 가이드
-│   └── PROJECT_STRUCTURE.md      # 프로젝트 구조 (이 문서)
+│   └── PROJECT.md                # 프로젝트 구조 (이 문서)
 ├── hooks/                        # 커스텀 훅
 │   ├── use-mobile.tsx            # 모바일 감지 훅
 │   ├── use-remember-me.ts        # 로그인 유지 훅
@@ -169,21 +187,24 @@ nextjs14-qrcode-generator/
 └── vercel.json                   # Vercel 배포 설정
 ```
 
-## 아키텍처 개요
+## 🎯 아키텍처 개요
 
 ### 1. Frontend 아키텍처
 
 #### Next.js 14 App Router
+
 - **App Router** 사용으로 파일 기반 라우팅
 - **Server Components**와 **Client Components** 혼합 사용
 - **Server Actions**를 통한 서버 사이드 데이터 뮤테이션
 
 #### 상태 관리
+
 - **Zustand**: 전역 상태 관리 (가벼운 Redux 대안)
 - **React Hook Form**: 폼 상태 관리
 - **TanStack Query**: 서버 상태 관리 및 캐싱
 
 #### UI 컴포넌트 시스템
+
 - **shadcn/ui**: 46개의 재사용 가능한 UI 컴포넌트
 - **Radix UI**: 접근성이 보장된 UI 프리미티브
 - **Tailwind CSS**: 유틸리티 기반 스타일링
@@ -191,16 +212,19 @@ nextjs14-qrcode-generator/
 ### 2. Backend 아키텍처
 
 #### 데이터베이스
+
 - **Supabase PostgreSQL**: 클라우드 데이터베이스
 - **Prisma ORM**: 타입 안전한 데이터베이스 접근
 - **Row Level Security (RLS)**: 데이터베이스 레벨 보안
 
 #### 인증 시스템
+
 - **NextAuth.js v5**: 최신 인증 시스템
 - **Google OAuth**: 소셜 로그인
 - **@auth/prisma-adapter**: NextAuth와 Prisma 통합
 
 #### 로깅 시스템
+
 - **UnifiedLogger**: 통합 로깅 시스템
 - **ApplicationLog 테이블**: 모든 로그를 하나의 테이블로 통합
 - **자동 로그 정리**: 정기적인 오래된 로그 삭제
@@ -208,6 +232,7 @@ nextjs14-qrcode-generator/
 ### 3. QR 코드 생성 시스템
 
 #### 지원 QR 코드 타입 (7가지)
+
 1. **URL**: 웹사이트 링크
 2. **텍스트**: 일반 텍스트
 3. **Wi-Fi**: 네트워크 정보
@@ -217,48 +242,56 @@ nextjs14-qrcode-generator/
 7. **위치**: 지도 위치
 
 #### QR 코드 라이브러리
+
 - **qr-code-styling**: 고급 커스터마이징
 - **qrcode**: 기본 QR 코드 생성
 - **canvas**: 서버 사이드 렌더링
 
-## 주요 기능
+## 🚀 주요 기능
 
 ### 1. 사용자 기능
+
 - **즉시 사용**: 로그인 없이 모든 기본 기능 사용 가능
 - **히스토리 관리**: 로그인 사용자의 QR 코드 히스토리 저장
 - **커스터마이징**: 색상, 로고, 스타일 변경
 - **다중 다운로드**: PNG, SVG, JPG 형식 지원
 
 ### 2. 관리자 기능
+
 - **로그 모니터링**: 실시간 시스템 로그 확인
 - **사용자 관리**: 사용자 계정 및 권한 관리
 - **시스템 통계**: 사용량 및 성능 지표 확인
 
 ### 3. 보안 기능
+
 - **RLS**: 데이터베이스 레벨 보안
 - **CSRF 보호**: 요청 위조 방지
 - **환경변수 검증**: 설정 값 유효성 검사
 
-## 개발 도구 및 품질 관리
+## 🔧 개발 도구 및 품질 관리
 
 ### 1. 코드 품질
+
 - **TypeScript**: 타입 안전성 보장
 - **ESLint**: 코드 스타일 및 품질 검사
 - **Prettier**: 코드 포맷팅
 
 ### 2. 성능 최적화
+
 - **Turbopack**: 빠른 개발 서버
 - **이미지 최적화**: Next.js 내장 이미지 최적화
 - **코드 분할**: 자동 코드 스플리팅
 
 ### 3. 배포 및 모니터링
+
 - **Vercel**: 원클릭 배포
 - **PWA**: Progressive Web App 지원
 - **성능 모니터링**: 로그 기반 성능 추적
 
-## 환경 설정
+## ⚙️ 환경 설정
 
 ### 필수 환경변수
+
 ```env
 # 데이터베이스
 DATABASE_URL=
@@ -282,36 +315,118 @@ LOG_RETENTION_DAYS=90
 ADMIN_EMAILS=
 ```
 
-## 확장성 고려사항
+## 📈 확장성 고려사항
 
 ### 1. 수평 확장
+
 - **Stateless 아키텍처**: 서버 인스턴스 무상태 설계
 - **데이터베이스 분리**: 읽기/쓰기 분리 가능
 - **CDN 활용**: 정적 파일 배포 최적화
 
 ### 2. 기능 확장
+
 - **QR 코드 타입 추가**: 모듈형 구조로 쉬운 확장
 - **API 확장**: RESTful API 설계
 - **국제화**: i18n 지원 준비
 
 ### 3. 성능 최적화
+
 - **캐싱 전략**: React Query 기반 클라이언트 캐싱
 - **로그 아카이빙**: 오래된 로그의 압축 및 아카이빙
 - **이미지 최적화**: WebP 형식 지원 및 압축
 
-## 유지보수 가이드
+## 🔧 개발 명령어
+
+```bash
+# 개발 서버 시작 (Turbopack)
+npm run dev
+
+# 프로덕션 빌드
+npm run build
+
+# 프로덕션 서버 실행
+npm start
+
+# 코드 린팅
+npm run lint
+
+# 의존성 전체 업데이트
+npm run upgrade:latest
+
+# 캐시 정리 및 재설치
+npm run clean && npm run reinstall
+
+# 통합 로그 시스템 관련
+npm run logs:test        # 로그 시스템 테스트
+npm run logs:cleanup     # 오래된 로그 정리
+npm run logs:backup      # 로그 백업
+npm run logs:setup-rls   # RLS 정책 설정
+
+# 문서 업데이트 확인
+npm run docs:update
+```
+
+## 📊 성능 지표
+
+- **빌드 시간**: ~2분 (Turbopack 사용)
+- **번들 크기**: 최적화된 코드 분할
+- **Lighthouse 점수**: 90+ (성능, 접근성, SEO)
+- **TypeScript 적용률**: 100%
+
+## 🔮 유지보수 가이드
 
 ### 1. 정기적인 작업
+
 - **의존성 업데이트**: 월 1회 패키지 업데이트
 - **로그 정리**: 주 1회 오래된 로그 삭제
 - **보안 패치**: 즉시 보안 업데이트 적용
 
 ### 2. 모니터링
+
 - **에러 로그**: 실시간 에러 모니터링
 - **성능 지표**: 응답 시간 및 사용량 추적
 - **사용자 피드백**: 버그 리포트 및 기능 요청
 
 ### 3. 백업 및 복구
+
 - **데이터베이스 백업**: 일일 자동 백업
 - **코드 백업**: Git 기반 버전 관리
 - **설정 백업**: 환경변수 및 설정 파일 백업
+
+## 🔮 향후 계획
+
+1. **실시간 기능**: WebSocket 기반 실시간 QR 코드 공유
+2. **AI 통합**: QR 코드 디자인 자동 생성
+3. **API 확장**: Public API 제공
+4. **국제화**: 다국어 지원 (i18n)
+5. **모바일 앱**: React Native 기반 모바일 앱
+
+## 🤝 지원 및 기여
+
+- **GitHub**: [w3labkr/nextjs14-qrcode-generator](https://github.com/w3labkr/nextjs14-qrcode-generator)
+- **이슈 리포트**: GitHub Issues 활용
+- **기여 가이드**: `docs/CONTRIBUTING.md` 참조
+- **라이선스**: MIT License
+
+## 🔧 최근 주요 업데이트
+
+### 1. 문서 업데이트 (v1.4.31)
+
+- ✅ `.copilot-instructions.md` 생성/업데이트
+- ✅ `README.md` 배지 및 기술 스택 정보 업데이트
+- ✅ `docs/DEPENDENCIES.md` 버전 정보 업데이트
+- ✅ `docs/PROJECT.md` 신규 생성 (통합 문서)
+- ✅ `docs/LOGGING.md` 통합 로깅 시스템 통합
+- ✅ `package.json`에 문서 업데이트 스크립트 추가
+
+### 2. 통합 로깅 시스템
+
+- 6개 분리된 로그 테이블을 1개 통합 테이블로 최적화
+- UnifiedLogger 클래스로 모든 로그 작업 통합
+- 성능 측정 및 자동 정리 기능
+
+### 3. 보안 강화
+
+- Row Level Security (RLS) 구현
+- NextAuth.js v5로 최신 인증 시스템 적용
+- 환경변수 검증 시스템

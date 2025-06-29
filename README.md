@@ -262,7 +262,7 @@ psql "$DATABASE_URL" -f prisma/migrations/test_rls.sql
 
 RLS 상태는 개발 환경에서 `/dashboard/admin/rls-status` 페이지에서 확인할 수 있습니다.
 
-자세한 RLS 설정 방법은 [docs/RLS_SETUP.md](./docs/RLS_SETUP.md)를 참조하세요.
+자세한 RLS 설정 방법은 [docs/RLS.md](./docs/RLS.md)를 참조하세요.
 
 ### 6. 개발 서버 실행
 
@@ -287,11 +287,12 @@ npm start
 
 - **[📋 제품 요구사항 정의서 (PRD)](./docs/PRD.md)** - 프로젝트 비전, 기술 스택, 아키텍처 상세 설명
 - **[📦 의존성 패키지 목록](./docs/DEPENDENCIES.md)** - 100+개 패키지 의존성 정보 및 사용 목적
+- **[🏗️ 프로젝트 구조 및 개요](./docs/PROJECT.md)** - 프로젝트 구조, 아키텍처, 통계 정보
 - **[🗃️ RLS 설정 가이드](./docs/RLS.md)** - Row Level Security 데이터베이스 보안 설정
 - **[⏰ 크론잡 설정 가이드](./docs/CRON.md)** - Vercel 크론잡을 통한 Supabase 비활성화 방지
-- **[📊 로깅 시스템 가이드](./docs/LOGGING.md)** - 종합적 로깅 시스템 구조 및 활용법
-- **[🔒 보안 정책](./SECURITY.md)** - 보안 취약점 보고 및 관련 정책
-- **[🤝 기여 가이드](./CONTRIBUTING.md)** - 오픈소스 기여 방법 및 개발 가이드라인
+- **[📊 로깅 시스템 가이드](./docs/LOGGING.md)** - 통합 로깅 시스템 구조 및 활용법
+- **[🔒 보안 정책](./docs/SECURITY.md)** - 보안 취약점 보고 및 관련 정책
+- **[🤝 기여 가이드](./docs/CONTRIBUTING.md)** - 오픈소스 기여 방법 및 개발 가이드라인
 
 ## 📁 프로젝트 구조
 
@@ -497,7 +498,7 @@ AUTH_DEBUG=false
 - **Component**: React 컴포넌트는 함수형 컴포넌트로 작성
 - **Hooks**: 상태 관리는 Zustand, 폼은 React Hook Form 사용
 
-자세한 기여 가이드라인은 **[CONTRIBUTING.md](./CONTRIBUTING.md)** 파일을 참고해주세요.
+자세한 기여 가이드라인은 **[CONTRIBUTING.md](./docs/CONTRIBUTING.md)** 파일을 참고해주세요.
 
 ## 📜 라이선스
 
@@ -521,7 +522,7 @@ MIT License - 상업적/비상업적 목적으로 자유롭게 사용, 수정, �
 
 - **🐛 버그 신고**: [GitHub Issues](https://github.com/w3labkr/nextjs14-qrcode-generator/issues)
 - **💬 질문 및 토론**: [GitHub Discussions](https://github.com/w3labkr/nextjs14-qrcode-generator/discussions)
-- **🔒 보안 문의**: [SECURITY.md](./SECURITY.md) 파일 참고
+- **🔒 보안 문의**: [SECURITY.md](./docs/SECURITY.md) 파일 참고
 
 ---
 

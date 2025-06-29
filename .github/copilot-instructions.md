@@ -82,6 +82,7 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * **Drawer**: Use `vaul` v1.1.2 for mobile drawer components.
 * **Command**: Use `cmdk` v1.1.1 for command palette interfaces.
 * **OTP**: Use `input-otp` v1.4.2 for OTP input components.
+* **Radix UI**: All UI components are built on top of Radix UI primitives including accordion, alert-dialog, aspect-ratio, avatar, checkbox, collapsible, context-menu, dialog, dropdown-menu, hover-card, label, menubar, navigation-menu, popover, progress, radio-group, scroll-area, select, separator, slider, switch, tabs, toggle, toggle-group, and tooltip.
 
 ### Utilities
 
@@ -109,9 +110,9 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * `auth/`: Authentication-related pages (signin, error).
   * `dashboard/`: Protected dashboard pages and features (account, dashboard, history, settings).
   * `qrcode/`: QR code generation main page with components.
-    * `components/`: QR code specific components (form cards for each type: email, location, sms, textarea, url, vcard, wifi; preview, styling, handlers).
+    * `components/`: QR code specific components (card-email, card-location, card-preview, card-sms, card-style, card-textarea, card-url, card-vcard, card-wifi, qr-handlers, qrcode-form).
 * `components/`: Contains reusable components.
-  * `ui/`: Contains shadcn/ui components (46 components including accordion, alert-dialog, avatar, button, calendar, card, carousel, chart, checkbox, command, dialog, drawer, dropdown-menu, form, input, navigation-menu, pagination, popover, progress, resizable, scroll-area, select, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toggle, tooltip, etc.).
+  * `ui/`: Contains shadcn/ui components (46 components including accordion, alert-dialog, alert, aspect-ratio, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, dialog, drawer, dropdown-menu, form, hover-card, input-otp, input, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toggle-group, toggle, tooltip).
   * Other utility components (address-search, loading-spinner, user-nav, github-badge, history-button, log-statistics, new-qr-code-button, tailwind-indicator, unauthenticated, user-profile, etc.).
 * `lib/`: Contains utility functions and constants.
   * Database connection, download utilities, QR code utilities, auth helpers, error logging, API logging, etc.
@@ -134,7 +135,12 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * `config/`: Contains application configuration.
   * `app.ts`: Application configuration constants.
 * `scripts/`: Contains utility scripts.
+  * `backup-logs.sql`: SQL script for backing up log data.
+  * `cleanup-old-logs.sql`: SQL script for cleaning up old log entries.
+  * `migrate-logging-system.sh`: Shell script for migrating the logging system.
   * `setup-rls.sh`: RLS setup script.
+  * `setup-unified-rls.sql`: SQL script for unified RLS setup.
+  * `test-unified-logging.ts`: TypeScript script for testing the unified logging system.
 * `screenshots/`: Contains application screenshots for documentation.
   * Screenshots for all QR code types and dashboard pages.
 
@@ -142,15 +148,35 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 
 * **Git Commit Messages**: When generating Git commit messages, please refer to the `.gitmessage.txt` file located in the project root and follow its format and content.
 
+## Development Scripts
+
+The project includes several npm scripts for development and maintenance:
+
+* **Development**: `npm run dev` - Starts the development server with Turbo mode
+* **Build**: `npm run build` - Generates Prisma client and builds the application
+* **Cleaning**:
+  * `npm run clean` - Removes node_modules, .next, and package-lock.json, clears npm cache
+  * `npm run clean:files` - Removes files only
+  * `npm run clean:cache` - Clears npm cache only
+* **Package Management**:
+  * `npm run upgrade:latest` - Updates all packages to latest versions
+  * `npm run reinstall` - Clean reinstall of all packages
+* **Logging System**:
+  * `npm run migrate:logging` - Migrates the logging system
+  * `npm run logs:test` - Tests the unified logging system
+  * `npm run logs:cleanup` - Cleans up old log entries
+  * `npm run logs:backup` - Backs up log data
+  * `npm run logs:setup-rls` - Sets up unified RLS for logging
+* **Documentation**: `npm run docs:update` - Shows documentation update checklist
+
 ## Feedback and Improvement
 
 If Copilot's suggestions do not meet expectations, actively modify and provide feedback to help Copilot provide better suggestions in the future.
 
 ## Project Current Status
 
-* **Version**: v1.4.24 (as of 2025년 6월 29일)
-* **File Count**: 171 TypeScript/JavaScript files
-* **Package Count**: 100+ npm packages (73 dependencies + 30 devDependencies)
+* **Version**: v1.4.32 (as of 2025년 6월 29일)
+* **Package Count**: 106 npm packages (74 dependencies + 32 devDependencies)
 * **UI Components**: 46 shadcn/ui components
 * **QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
 * **Authentication**: NextAuth.js v5.0.0-beta.28 with Google OAuth
@@ -160,3 +186,4 @@ If Copilot's suggestions do not meet expectations, actively modify and provide f
 * **Form Handling**: React Hook Form v7.58.0 with Zod v3.25.64 validation integrated
 * **Query Management**: React Query v5.80.7 for server state management
 * **Code Quality**: ESLint, Prettier, and TypeScript configured with strict rules
+* **Development**: Next.js 14.2.30 with Turbo mode enabled for faster development
