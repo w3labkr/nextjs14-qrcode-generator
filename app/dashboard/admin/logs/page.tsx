@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { AdminLogsContent } from "./components/admin-logs-content";
 import { LogStatistics } from "./components/log-statistics";
 import { LogCleanupManager } from "./components/log-cleanup-manager";
@@ -14,72 +12,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAdminEmails } from "@/lib/env-validation";
 
 export const metadata: Metadata = {
   title: "관리자 로그 관리 | QR 코드 생성기",
   description: "시스템 로그 및 오류 관리 대시보드",
 };
 
-/**
- * 관리자 권한 확인 함수
- */
-async function checkAdminAccess(
-  email: string | null | undefined,
-): Promise<boolean> {
-  if (!email) return false;
-
-  const adminEmails = getAdminEmails();
-  return adminEmails.includes(email);
-}
-
 export default async function AdminLogsPage() {
-  const session = await auth();
-
-  if (!session?.user?.email) {
-    redirect("/auth/signin");
-  }
-
-  const isAdmin = await checkAdminAccess(session.user.email);
-
-  if (!isAdmin) {
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>접근 권한 없음</AlertTitle>
-        <AlertDescription>
-          관리자만 이 페이지에 접근할 수 있습니다. 계정 권한을 확인해주세요.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            시스템 로그 관리
-          </h1>
-          <p className="text-muted-foreground">
-            시스템 로그 및 오류 관리 대시보드
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            전체 백업
-          </Button>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            작업 추가
-          </Button>
-        </div>
-      </div>
-
       {/* 통계 카드 */}
       <Suspense
         fallback={
