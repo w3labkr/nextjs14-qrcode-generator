@@ -18,15 +18,38 @@ import {
   Database,
   Cloud,
   UserCog,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { UserProfile } from "@/components/user-profile";
 import { logAuthAction } from "@/app/actions";
+import { useEffect, useState } from "react";
 
 export function UserNav() {
   const { data: session, status } = useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  if (status === "loading") {
+  // 관리자 권한 확인
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch("/api/admin/check");
+          if (response.ok) {
+            const data = await response.json();
+            setIsAdmin(data.isAdmin);
+          }
+        } catch (error) {
+          console.error("관리자 권한 확인 실패:", error);
+          setIsAdmin(false);
+        }
+      }
+    };
+
+    checkAdminStatus();
+  }, [session]);
+
+  if (status !== "authenticated") {
     return <div className="h-8 w-8 animate-pulse bg-gray-200 rounded-full" />;
   }
 
@@ -80,6 +103,17 @@ export function UserNav() {
             설정
           </Link>
         </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/admin/logs">
+                <Shield className="mr-2 h-4 w-4" />
+                관리자 로그
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"

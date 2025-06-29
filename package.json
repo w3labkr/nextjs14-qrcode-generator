@@ -1,6 +1,6 @@
 {
   "name": "nextjs14-qrcode-generator",
-  "version": "1.4.34",
+  "version": "1.4.35",
   "private": true,
   "browserslist": [
     "defaults and fully supports es6-module",
@@ -22,6 +22,8 @@
     "logs:cleanup": "npx prisma db execute --file ./scripts/cleanup-old-logs.sql --schema ./prisma/schema.prisma",
     "logs:backup": "npx prisma db execute --file ./scripts/backup-logs.sql --schema ./prisma/schema.prisma",
     "logs:setup-rls": "npx prisma db execute --file ./scripts/setup-unified-rls.sql --schema ./prisma/schema.prisma",
+    "logs:auto-cleanup": "curl -X POST \"$NEXT_PUBLIC_APP_URL/api/cron/log-cleanup\" -H \"Authorization: Bearer $CRON_SECRET\"",
+    "logs:stats": "curl -X GET \"$NEXT_PUBLIC_APP_URL/api/cron/log-cleanup\" -H \"Authorization: Bearer $CRON_SECRET\"",
     "docs:update": "echo 'Documentation updated. Please review the following files:' && echo '- .copilot-instructions.md' && echo '- README.md' && echo '- docs/DEPENDENCIES.md' && echo '- docs/PROJECT_STRUCTURE.md' && echo '- docs/LOGGING_OPTIMIZATION.md'"
   },
   "dependencies": {
