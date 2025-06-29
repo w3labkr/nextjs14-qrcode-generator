@@ -16,7 +16,7 @@
 
 > 회원가입이나 로그인 없이 누구나 즉시 사용할 수 있는 강력하고 아름다운 정적 QR 코드 생성기
 
-이 프로젝트는 **Next.js 14**, **Tailwind CSS**, **Shadcn UI**를 사용하여 구축된 오픈소스 QR 코드 생성기입니다. 7가지 유형의 정적 QR 코드를 생성하고, 46개의 UI 컴포넌트를 활용한 풍부한 커스터마이징 옵션을 제공합니다.
+이 프로젝트는 **Next.js 14**, **Tailwind CSS**, **Shadcn UI**를 사용하여 구축된 오픈소스 QR 코드 생성기입니다. 7가지 유형의 정적 QR 코드를 생성하고, 47개의 UI 컴포넌트를 활용한 풍부한 커스터마이징 옵션을 제공합니다.
 
 ![SCREENSHOT](./SCREENSHOT.png)
 
@@ -94,7 +94,7 @@
 
 ### UI 컴포넌트 및 디자인
 
-- **[Shadcn UI](https://ui.shadcn.com/)** - 46개의 고품질 React 컴포넌트
+- **[Shadcn UI](https://ui.shadcn.com/)** - 47개의 고품질 React 컴포넌트
 - **[Radix UI](https://www.radix-ui.com/)** - 접근성을 고려한 UI 프리미티브
 - **[Lucide React](https://lucide.dev/)** - 아름다운 SVG 아이콘 라이브러리
 - **[Next Themes](https://github.com/pacocoursey/next-themes)** - 다크/라이트 모드 지원
@@ -182,53 +182,39 @@ cp .env.example .env.local
 
 #### 필수 환경 변수
 
-- `AUTH_SECRET`: Auth.js 세션 암호화용 비밀 키 (32자 이상 랜덤 문자열)
-- `DATABASE_URL`: Supabase PostgreSQL 데이터베이스 연결 URL
-- `DIRECT_URL`: Supabase Direct URL (마이그레이션용)
+```env
+# 데이터베이스
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
 
-#### Supabase 데이터베이스 설정
+# 인증
+AUTH_SECRET="your-32-character-secret-key"
 
-1. [Supabase](https://supabase.com/)에서 새 프로젝트를 생성합니다
-2. 프로젝트 설정 → Database에서 연결 정보를 확인합니다
-3. `.env.local` 파일에 다음과 같이 설정합니다:
-
-   ```bash
-   DATABASE_URL="postgresql://postgres.xxxxxxxxxxxxxxxxxxxx:[YOUR-PASSWORD]@aws-0-[aws-region].pooler.supabase.com:5432/postgres"
-   DIRECT_URL="postgresql://postgres.xxxxxxxxxxxxxxxxxxxx:[YOUR-PASSWORD]@aws-0-[aws-region].pooler.supabase.com:5432/postgres"
-   ```
+# 애플리케이션
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
 
 #### 선택적 환경 변수 (고급 기능)
 
-**Google OAuth 소셜 로그인**:
+```env
+# Google OAuth (선택)
+AUTH_GOOGLE_ID="your-google-client-id"
+AUTH_GOOGLE_SECRET="your-google-client-secret"
 
-1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
-2. OAuth 2.0 클라이언트 ID 생성
-3. 승인된 리디렉션 URI에 `http://localhost:3000/api/auth/callback/google` 추가
+# GitHub OAuth (선택)
+AUTH_GITHUB_ID="your-github-client-id"  
+AUTH_GITHUB_SECRET="your-github-client-secret"
 
-   ```bash
-   AUTH_GOOGLE_ID="your-google-client-id"
-   AUTH_GOOGLE_SECRET="your-google-client-secret"
-   ```
+# Supabase (선택)
+NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 
-**GitHub OAuth 소셜 로그인**:
+# Cron 작업 (선택)
+CRON_SECRET="your-secure-random-string"
+```
 
-1. [GitHub Developer Settings](https://github.com/settings/developers)에서 OAuth App 생성
-2. Authorization callback URL에 `http://localhost:3000/api/auth/callback/github` 추가
-
-   ```bash
-   AUTH_GITHUB_ID="your-github-client-id"
-   AUTH_GITHUB_SECRET="your-github-client-secret"
-   ```
-
-**Supabase 데이터베이스 비활성화 방지 (Vercel 배포 시)**:
-
-Vercel Pro 플랜에서 크론잡을 사용하여 Supabase 프로젝트 비활성화를 방지할 수 있습니다:
-
-   ```bash
-   CRON_SECRET="your-secure-random-string-here"
-   ```
-
-자세한 설정 방법은 [docs/CRON.md](./docs/CRON.md)를 참조하세요.
+자세한 환경 변수 설정 방법은 **[배포 가이드](./docs/DEPLOYMENT.md)**를 참고하세요.
 
 ### 4. 데이터베이스 설정
 
@@ -245,38 +231,12 @@ npx prisma migrate dev --name init
 npx prisma studio
 ```
 
-### 5. Row Level Security (RLS) 설정
-
-보안 강화를 위해 RLS를 활성화하는 것을 강력히 권장합니다:
-
-```bash
-# 자동 설정 스크립트 실행 (권장)
-./scripts/setup-rls.sh
-
-# 또는 수동으로 RLS 활성화
-psql "$DATABASE_URL" -f prisma/migrations/enable_rls.sql
-
-# RLS 테스트 실행
-psql "$DATABASE_URL" -f prisma/migrations/test_rls.sql
-```
-
-RLS 상태는 개발 환경에서 `/dashboard/admin/rls-status` 페이지에서 확인할 수 있습니다.
-
-자세한 RLS 설정 방법은 [docs/RLS.md](./docs/RLS.md)를 참조하세요.
-
-### 6. 개발 서버 실행
+### 5. 개발 서버 실행
 
 ```bash
 npm run dev
 # 또는
 yarn dev
-```
-
-### 7. 프로덕션 빌드
-
-```bash
-npm run build
-npm start
 ```
 
 이제 브라우저에서 `http://localhost:3000`으로 접속하여 애플리케이션을 확인할 수 있습니다.
@@ -285,14 +245,10 @@ npm start
 
 프로젝트의 상세한 정보와 가이드는 다음 문서들을 참고하세요:
 
-- **[📋 제품 요구사항 정의서 (PRD)](./docs/PRD.md)** - 프로젝트 비전, 기술 스택, 아키텍처 상세 설명
-- **[📦 의존성 패키지 목록](./docs/DEPENDENCIES.md)** - 100+개 패키지 의존성 정보 및 사용 목적
-- **[🏗️ 프로젝트 구조 및 개요](./docs/PROJECT.md)** - 프로젝트 구조, 아키텍처, 통계 정보
-- **[🗃️ RLS 설정 가이드](./docs/RLS.md)** - Row Level Security 데이터베이스 보안 설정
-- **[⏰ 크론잡 설정 가이드](./docs/CRON.md)** - Vercel 크론잡을 통한 Supabase 비활성화 방지
-- **[📊 로깅 시스템 가이드](./docs/LOGGING.md)** - 통합 로깅 시스템 구조 및 활용법
-- **[🔒 보안 정책](./docs/SECURITY.md)** - 보안 취약점 보고 및 관련 정책
-- **[🤝 기여 가이드](./docs/CONTRIBUTING.md)** - 오픈소스 기여 방법 및 개발 가이드라인
+- **[📋 프로젝트 개요](./docs/PROJECT.md)** - 프로젝트 개요, 기술 스택, 설치 방법
+- **[� API 문서](./docs/API.md)** - API 엔드포인트 및 Server Actions 사용법
+- **[🚀 배포 가이드](./docs/DEPLOYMENT.md)** - Vercel, Docker 배포 방법 및 환경 설정
+- **[�️ 개발 가이드](./docs/DEVELOPMENT.md)** - 개발 환경 설정, 코딩 스타일, 테스트 방법
 
 ## 📁 프로젝트 구조
 
@@ -305,13 +261,13 @@ nextjs14-qrcode-generator/
 │   └── qrcode/           # QR 코드 생성 메인 페이지
 │       └── components/   # QR 코드 관련 컴포넌트 (11개)
 ├── components/            # React 컴포넌트
-│   ├── ui/               # Shadcn UI 컴포넌트 (46개)
+│   ├── ui/               # Shadcn UI 컴포넌트 (47개)
 │   └── ...               # 기타 유틸리티 컴포넌트
 ├── hooks/                 # 커스텀 훅 & Zustand 스토어 (3개)
 ├── lib/                   # 유틸리티 & 설정
 ├── types/                 # TypeScript 타입 정의 (7개)
 ├── prisma/                # 데이터베이스 스키마 & 마이그레이션
-└── docs/                  # 프로젝트 문서 (8개)
+└── docs/                  # 프로젝트 문서 (4개)
 ```
 
 ## 🎯 사용법
@@ -335,15 +291,16 @@ nextjs14-qrcode-generator/
 
 ## 🌐 배포
 
+자세한 배포 방법은 **[배포 가이드](./docs/DEPLOYMENT.md)**를 참고하세요.
+
 ### Vercel (권장)
 
 1. GitHub 저장소를 Vercel에 연결
-2. 환경 변수 설정 (Supabase URL, Auth Secret 등)
+2. 환경 변수 설정 (DATABASE_URL, AUTH_SECRET 등)
 3. 자동 배포 완료
 
 ### 기타 플랫폼
 
-- **Netlify**: `npm run build` 후 `out` 폴더 배포
 - **Docker**: Dockerfile을 사용한 컨테이너 배포
 - **AWS/GCP**: 정적 호스팅 또는 서버리스 배포
 
@@ -368,71 +325,27 @@ npm run upgrade:latest
 # 캐시 정리 및 재설치
 npm run clean && npm run reinstall
 
-# 통합 로그 시스템 관련
+# 로그 시스템 관련
 npm run logs:test        # 로그 시스템 테스트
 npm run logs:cleanup     # 오래된 로그 정리
 npm run logs:backup      # 로그 백업
-npm run logs:setup-rls   # RLS 정책 설정
+npm run logs:auto-cleanup # API를 통한 자동 로그 정리
+npm run logs:stats       # 로그 정리 통계
 ```
 
-## 📊 통합 로그 시스템
+## 📊 로깅 시스템
 
-이 프로젝트는 통합된 로그 시스템을 사용하여 모든 애플리케이션 활동을 단일 테이블로 관리합니다.
+이 프로젝트는 통합된 로깅 시스템을 사용하여 모든 애플리케이션 활동을 관리합니다.
 
-### 로그 타입
+### 주요 기능
 
-- **ACCESS**: API 접근 로그
-- **AUTH**: 인증 관련 로그 (로그인, 로그아웃 등)
-- **AUDIT**: 데이터 변경 감사 로그
-- **ERROR**: 에러 로그
-- **ADMIN**: 관리자 액션 로그
-- **QR_GENERATION**: QR 코드 생성 로그
-- **SYSTEM**: 시스템 로그
+- **통합 로그 관리**: 모든 로그를 단일 테이블로 통합 관리
+- **다양한 로그 타입**: ACCESS, AUTH, AUDIT, ERROR, ADMIN, QR_GENERATION, SYSTEM
+- **성능 측정**: PerformanceLogger를 통한 작업 시간 추적
+- **자동 정리**: 오래된 로그의 자동 삭제로 스토리지 최적화
+- **보안**: RLS(Row Level Security)를 통한 데이터 보안
 
-### 로그 사용 예제
-
-```typescript
-import { UnifiedLogger } from '@/lib/unified-logging';
-
-// QR 코드 생성 로그
-await UnifiedLogger.logQrGeneration({
-  userId: 'user123',
-  qrType: 'URL',
-  size: '400x400',
-  format: 'png',
-  customization: { hasLogo: true }
-});
-
-// 에러 로그
-await UnifiedLogger.logError({
-  userId: 'user123',
-  error: new Error('Something went wrong'),
-  errorCode: 'QR_GENERATION_FAILED',
-  additionalInfo: { context: 'additional data' }
-});
-
-// 로그 조회
-const logs = await UnifiedLogger.getLogs({
-  type: ['QR_GENERATION', 'ERROR'],
-  userId: 'user123',
-  limit: 100
-});
-
-// 로그 통계
-const stats = await UnifiedLogger.getLogStats({
-  startDate: new Date('2024-01-01'),
-  endDate: new Date()
-});
-```
-
-### 보안 (RLS - Row Level Security)
-
-통합 로그 시스템은 Supabase의 RLS(Row Level Security)를 활용하여 데이터 보안을 보장합니다:
-
-- 사용자는 자신의 로그만 조회 가능
-- 관리자는 모든 로그 접근 가능
-- 시스템 로그는 모든 사용자가 조회 가능
-- 민감한 로그(AUDIT, ADMIN, ERROR)는 관리자만 접근 가능
+자세한 사용법과 API는 **[API 문서](./docs/API.md)**를 참고하세요.
 
 ## 🤝 기여 방법
 
@@ -498,7 +411,7 @@ AUTH_DEBUG=false
 - **Component**: React 컴포넌트는 함수형 컴포넌트로 작성
 - **Hooks**: 상태 관리는 Zustand, 폼은 React Hook Form 사용
 
-자세한 기여 가이드라인은 **[CONTRIBUTING.md](./docs/CONTRIBUTING.md)** 파일을 참고해주세요.
+자세한 기여 가이드라인은 **[개발 가이드](./docs/DEVELOPMENT.md)** 파일을 참고해주세요.
 
 ## 📜 라이선스
 
@@ -522,17 +435,13 @@ MIT License - 상업적/비상업적 목적으로 자유롭게 사용, 수정, �
 
 - **🐛 버그 신고**: [GitHub Issues](https://github.com/w3labkr/nextjs14-qrcode-generator/issues)
 - **💬 질문 및 토론**: [GitHub Discussions](https://github.com/w3labkr/nextjs14-qrcode-generator/discussions)
-- **🔒 보안 문의**: [SECURITY.md](./docs/SECURITY.md) 파일 참고
+- **� 문서**: 프로젝트 docs 폴더의 가이드 문서들 참고
 
 ---
 
-<div align="center">
-
-**⭐ 이 프로젝트가 도움이 되었다면 스타를 눌러주세요! ⭐**
+## ⭐ 이 프로젝트가 도움이 되었다면 스타를 눌러주세요! ⭐
 
 [![GitHub stars](https://img.shields.io/github/stars/w3labkr/nextjs14-qrcode-generator?style=social)](https://github.com/w3labkr/nextjs14-qrcode-generator/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/w3labkr/nextjs14-qrcode-generator?style=social)](https://github.com/w3labkr/nextjs14-qrcode-generator/network/members)
 
 **Made with ❤️ by the open source community**
-
-</div>

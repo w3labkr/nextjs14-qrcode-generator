@@ -112,24 +112,23 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * `qrcode/`: QR code generation main page with components.
     * `components/`: QR code specific components (card-email, card-location, card-preview, card-sms, card-style, card-textarea, card-url, card-vcard, card-wifi, qr-handlers, qrcode-form).
 * `components/`: Contains reusable components.
-  * `ui/`: Contains shadcn/ui components (46 components including accordion, alert-dialog, alert, aspect-ratio, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, dialog, drawer, dropdown-menu, form, hover-card, input-otp, input, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toggle-group, toggle, tooltip).
-  * Other utility components (address-search, loading-spinner, user-nav, github-badge, history-button, log-statistics, new-qr-code-button, tailwind-indicator, unauthenticated, user-profile, etc.).
+  * `ui/`: Contains shadcn/ui components (47 components including accordion, alert-dialog, alert, aspect-ratio, avatar, badge, breadcrumb, button, calendar, card, carousel, chart, checkbox, collapsible, command, context-menu, data-table, date-picker, dialog, drawer, dropdown-menu, form, hover-card, input-otp, input, label, menubar, navigation-menu, pagination, popover, progress, radio-group, resizable, scroll-area, select, separator, sheet, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toggle-group, toggle, tooltip).
+  * Other utility components (access-denied-alert, address-search, client-only, github-badge, history-button, loading-spinner, log-statistics, new-qr-code-button, tailwind-indicator, unauthenticated, user-nav, user-profile).
 * `lib/`: Contains utility functions and constants.
-  * Database connection, download utilities, QR code utilities, auth helpers, error logging, API logging, etc.
+  * Database connection (prisma.ts), download utilities (download-utils.ts), QR code utilities, auth helpers (auth-helpers.ts, auth-server.ts, auth-utils.ts), error logging (error-logging.ts), API logging (api-logging.ts), unified logging (unified-logging.ts), RLS management (rls-manager.ts, rls-utils.ts), environment validation (env-validation.ts), CSV utilities (csv-utils.ts), log utilities (log-utils.ts, log-cleanup.ts), logging middleware (logging-middleware.ts), logging examples (logging-examples.ts), constants (constants.ts), and general utilities (utils.ts).
   * `supabase/`: Supabase client and related utilities.
 * `hooks/`: Contains custom hooks and Zustand stores.
-  * Custom hooks for mobile detection (`use-mobile.tsx`), remember me functionality (`use-remember-me.ts`), token refresh (`use-token-refresh.ts`).
+  * Custom hooks for mobile detection (`use-mobile.tsx`), remember me functionality (`use-remember-me.ts`), token refresh (`use-token-refresh.ts`), and toast notifications (`use-toast.ts`).
 * `types/`: Contains TypeScript type definitions.
   * Type definitions for QR codes, data management, environment, authentication, RLS, logs, etc.
 * `public/`: Contains static assets.
   * PWA manifest, service worker, fonts, screenshots, etc.
 * `prisma/`: Contains database schema and migrations.
 * `docs/`: Contains project documentation.
-  * PRD.md (Product Requirements Document)
-  * DEPENDENCIES.md (Dependencies documentation)
-  * RLS.md (Row Level Security setup guide)
-  * CRON.md (Cron job documentation)
-  * LOGGING.md (Logging system documentation)
+  * PROJECT.md (프로젝트 개요 및 기술 스택)
+  * API.md (API 엔드포인트 및 Server Actions 문서)
+  * DEPLOYMENT.md (배포 가이드 및 환경 설정)
+  * DEVELOPMENT.md (개발 가이드 및 코딩 스타일)
 * `context/`: Contains React context providers.
   * Authentication provider (`auth-provider.tsx`) and client providers (`client-providers.tsx`).
 * `config/`: Contains application configuration.
@@ -166,7 +165,8 @@ The project includes several npm scripts for development and maintenance:
   * `npm run logs:test` - Tests the unified logging system
   * `npm run logs:cleanup` - Cleans up old log entries
   * `npm run logs:backup` - Backs up log data
-  * `npm run logs:setup-rls` - Sets up unified RLS for logging
+  * `npm run logs:auto-cleanup` - Automatically cleans up old log entries via API
+  * `npm run logs:stats` - Shows log cleanup statistics
 * **Documentation**: `npm run docs:update` - Shows documentation update checklist
 
 ## Feedback and Improvement
@@ -175,9 +175,9 @@ If Copilot's suggestions do not meet expectations, actively modify and provide f
 
 ## Project Current Status
 
-* **Version**: v1.4.32 (as of 2025년 6월 29일)
-* **Package Count**: 106 npm packages (74 dependencies + 32 devDependencies)
-* **UI Components**: 46 shadcn/ui components
+* **Version**: v1.4.53 (as of 2025년 1월 2일)
+* **Package Count**: 107 npm packages (76 dependencies + 31 devDependencies)
+* **UI Components**: 47 shadcn/ui components
 * **QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
 * **Authentication**: NextAuth.js v5.0.0-beta.28 with Google OAuth
 * **Database**: Supabase PostgreSQL with Prisma ORM v6.10.1
