@@ -169,6 +169,13 @@ export async function getConnectedAccounts() {
           refresh_token: false,
           expires_at: true,
           scope: true,
+          user: {
+            select: {
+              email: true,
+              name: true,
+              image: true,
+            },
+          },
         },
       });
 
@@ -181,6 +188,9 @@ export async function getConnectedAccounts() {
           providerAccountId: account.providerAccountId,
           expiresAt: account.expires_at,
           scope: account.scope,
+          email: account.user?.email,
+          name: account.user?.name,
+          image: account.user?.image,
         })),
       };
     });
@@ -212,6 +222,17 @@ export async function disconnectOAuthProvider(provider: string) {
 
       if (accountCount <= 1) {
         throw new Error("마지막 연동된 계정은 해제할 수 없습니다.");
+      }
+
+      // 현재 로그인한 계정의 provider 확인
+      const currentProviderResult = await getCurrentAccountProvider();
+      if (
+        currentProviderResult.success &&
+        currentProviderResult.currentProvider === provider
+      ) {
+        throw new Error(
+          "현재 로그인 중인 계정은 연동 해제할 수 없습니다. 다른 계정으로 로그인 후 해제해주세요.",
+        );
       }
 
       // 해당 프로바이더 계정 삭제
@@ -275,6 +296,70 @@ export async function checkOAuthConnectionStatus(userId: string) {
           : "연동 상태 확인에 실패했습니다.",
       connections: { google: null, github: null },
       totalConnections: 0,
+    };
+  }
+}
+
+export async function getCurrentAccountProvider() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    return await withAuthenticatedRLSTransaction(session, async (tx) => {
+      // 사용자의 모든 계정 조회
+      const accounts = await tx.account.findMany({
+        where: {
+          userId: session.user!.id,
+        },
+        select: {
+          provider: true,
+          type: true,
+          providerAccountId: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc", // 최근에 생성된 계정 우선
+        },
+      });
+
+      // 현재 세션에서 가장 최근에 업데이트된 세션 조회
+      const currentSession = await tx.session.findFirst({
+        where: {
+          userId: session.user!.id,
+        },
+        orderBy: {
+          expires: "desc",
+        },
+      });
+
+      // 계정이 하나만 있다면 그것이 현재 로그인 계정
+      let currentProvider = null;
+      if (accounts.length === 1) {
+        currentProvider = accounts[0].provider;
+      } else if (accounts.length > 1) {
+        // 여러 계정이 있는 경우 가장 최근 계정을 현재 로그인으로 가정
+        // 실제로는 OAuth 콜백이나 세션 생성 시점을 기준으로 판단해야 함
+        currentProvider = accounts[0].provider;
+      }
+
+      return {
+        success: true,
+        currentProvider,
+        allAccounts: accounts,
+      };
+    });
+  } catch (error) {
+    console.error("현재 계정 프로바이더 조회 실패:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "계정 정보 조회에 실패했습니다.",
+      currentProvider: null,
+      allAccounts: [],
     };
   }
 }

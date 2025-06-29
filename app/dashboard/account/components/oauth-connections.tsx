@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 import {
   getConnectedAccounts,
   disconnectOAuthProvider,
+  getCurrentAccountProvider,
 } from "@/app/actions/account-management";
 
 interface OAuthConnectionsProps {
@@ -50,17 +52,58 @@ export function OAuthConnections({ session }: OAuthConnectionsProps) {
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
   const [isDisconnecting, setIsDisconnecting] = useState<string | null>(null);
   const [connectedAccounts, setConnectedAccounts] = useState<any[]>([]);
+  const [currentProvider, setCurrentProvider] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     loadConnectedAccounts();
-  }, []);
+
+    // OAuth 콜백 후 성공 메시지 표시
+    const error = searchParams.get("error");
+    const callbackUrl = searchParams.get("callbackUrl");
+
+    if (error) {
+      toast.error("소셜 계정 연동에 실패했습니다.");
+    } else if (
+      callbackUrl &&
+      window.location.pathname === "/dashboard/account"
+    ) {
+      // 성공적으로 돌아온 경우 (URL에 특별한 파라미터가 없어도)
+      const isOAuthCallback =
+        document.referrer.includes("github.com") ||
+        document.referrer.includes("accounts.google.com");
+      if (isOAuthCallback) {
+        setTimeout(() => {
+          toast.success("소셜 계정이 성공적으로 연동되었습니다.");
+        }, 500);
+      }
+    }
+  }, [searchParams]);
+
+  // 세션이 변경될 때마다 현재 프로바이더 업데이트
+  useEffect(() => {
+    if (session?.currentProvider) {
+      setCurrentProvider(session.currentProvider);
+    }
+  }, [session?.currentProvider]);
 
   const loadConnectedAccounts = async () => {
     try {
-      const result = await getConnectedAccounts();
-      if (result.success) {
-        setConnectedAccounts(result.accounts);
+      const [accountsResult, providerResult] = await Promise.all([
+        getConnectedAccounts(),
+        getCurrentAccountProvider(),
+      ]);
+
+      if (accountsResult.success) {
+        setConnectedAccounts(accountsResult.accounts);
+      }
+
+      // 세션에서 currentProvider 정보가 있다면 우선 사용
+      if (session?.currentProvider) {
+        setCurrentProvider(session.currentProvider);
+      } else if (providerResult.success) {
+        setCurrentProvider(providerResult.currentProvider);
       }
     } catch (error) {
       console.error("연동된 계정 조회 실패:", error);
@@ -108,25 +151,30 @@ export function OAuthConnections({ session }: OAuthConnectionsProps) {
 
   const handleConnect = async (provider: string) => {
     setIsConnecting(provider);
+
+    // 환경 변수 확인 (개발 환경에서만)
+    if (process.env.NODE_ENV === "development") {
+      console.log("OAuth 연동 시도:", {
+        provider,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     try {
-      const result = await signIn(provider, {
+      // GitHub/Google OAuth는 실제 페이지 리다이렉트가 필요함
+      await signIn(provider, {
         callbackUrl: "/dashboard/account",
-        redirect: false,
       });
 
-      if (result?.error) {
-        toast.error(
-          `${provider === "google" ? "Google" : "GitHub"} 연동에 실패했습니다.`,
-        );
-      } else {
-        toast.success(
-          `${provider === "google" ? "Google" : "GitHub"} 계정이 연동되었습니다.`,
-        );
-        await loadConnectedAccounts(); // 연동 후 계정 목록 새로고침
-      }
+      // 성공 시에는 리다이렉트가 발생하므로 타이머로 상태 리셋
+      setTimeout(() => {
+        setIsConnecting(null);
+      }, 10000);
     } catch (error) {
-      toast.error("연동 중 오류가 발생했습니다.");
-    } finally {
+      console.error("OAuth 연동 오류:", error);
+      toast.error(
+        `${provider === "google" ? "Google" : "GitHub"} 연동 중 오류가 발생했습니다.`,
+      );
       setIsConnecting(null);
     }
   };
@@ -186,10 +234,20 @@ export function OAuthConnections({ session }: OAuthConnectionsProps) {
                       >
                         {connection.connected ? "연결됨" : "연결 안됨"}
                       </Badge>
+                      {currentProvider === connection.provider && (
+                        <Badge
+                          variant="outline"
+                          className="bg-green-50 text-green-700 border-green-200"
+                        >
+                          현재 로그인
+                        </Badge>
+                      )}
                     </div>
                     {connection.connected && connection.account && (
                       <p className="text-sm text-muted-foreground">
-                        {session?.user?.email || "연동된 계정"}
+                        {connection.account.email ||
+                          session?.user?.email ||
+                          "연동된 계정"}
                       </p>
                     )}
                   </div>
@@ -202,12 +260,20 @@ export function OAuthConnections({ session }: OAuthConnectionsProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled={isDisconnecting === connection.provider}
+                          disabled={
+                            isDisconnecting === connection.provider ||
+                            connectedAccounts.length <= 1 ||
+                            currentProvider === connection.provider
+                          }
                         >
                           <Unlink className="h-4 w-4 mr-2" />
                           {isDisconnecting === connection.provider
                             ? "해제 중..."
-                            : "연동 해제"}
+                            : currentProvider === connection.provider
+                              ? "현재 로그인 중"
+                              : connectedAccounts.length <= 1
+                                ? "마지막 계정"
+                                : "연동 해제"}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -252,11 +318,41 @@ export function OAuthConnections({ session }: OAuthConnectionsProps) {
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
               <h4 className="font-medium text-amber-900 mb-2">주의사항</h4>
               <ul className="text-sm text-amber-700 space-y-1">
+                <li>• 현재 로그인 중인 계정은 연동 해제할 수 없습니다.</li>
                 <li>• 마지막 연동된 계정은 해제할 수 없습니다.</li>
                 <li>• 연동 해제 시 해당 계정으로는 로그인이 불가능합니다.</li>
                 <li>• 새로운 계정 연동 시 기존 데이터는 유지됩니다.</li>
               </ul>
             </div>
+
+            {process.env.NODE_ENV === "development" && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">개발자 정보</h4>
+                <div className="text-sm text-blue-700 space-y-1">
+                  <p>• GitHub OAuth 설정이 필요합니다.</p>
+                  <p>
+                    • .env.local 파일에 AUTH_GITHUB_ID와 AUTH_GITHUB_SECRET을
+                    설정하세요.
+                  </p>
+                  <p>
+                    • GitHub OAuth 앱 설정:
+                    https://github.com/settings/developers
+                  </p>
+                  <p>
+                    • Authorization callback URL:{" "}
+                    {typeof window !== "undefined"
+                      ? window.location.origin
+                      : "http://localhost:3000"}
+                    /api/auth/callback/github
+                  </p>
+                  <p>
+                    • 현재 세션 프로바이더: {session?.currentProvider || "없음"}
+                  </p>
+                  <p>• 현재 상태 프로바이더: {currentProvider || "없음"}</p>
+                  <p>• 연결된 계정 수: {connectedAccounts.length}</p>
+                </div>
+              </div>
+            )}
           </>
         )}
       </CardContent>

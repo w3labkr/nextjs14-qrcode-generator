@@ -19,6 +19,7 @@ interface ExtendedJWT extends JWT {
   refreshTokenExpires?: number;
   rememberMe?: boolean;
   error?: string;
+  currentProvider?: string;
 }
 
 // 확장된 Session 타입 정의
@@ -26,6 +27,7 @@ interface ExtendedSession extends Session {
   accessTokenExpires?: number;
   rememberMe?: boolean;
   error?: string;
+  currentProvider?: string;
 }
 
 // 리프레시 토큰 함수
@@ -217,6 +219,7 @@ export default {
           accessTokenExpires,
           refreshTokenExpires,
           rememberMe,
+          currentProvider: account.provider, // 현재 로그인한 프로바이더 저장
           user: {
             id: user.id,
             name: user.name,
@@ -346,6 +349,7 @@ export default {
         // 토큰 만료 정보 및 기억하기 설정 추가
         extendedSession.accessTokenExpires = extendedToken.accessTokenExpires;
         extendedSession.rememberMe = extendedToken.rememberMe;
+        extendedSession.currentProvider = extendedToken.currentProvider; // 현재 프로바이더 정보 추가
       }
       return extendedSession;
     },
