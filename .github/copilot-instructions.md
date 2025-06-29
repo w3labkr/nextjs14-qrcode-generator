@@ -96,26 +96,30 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
 * **Browser Compatibility**: Use `browserslist` v4.25.0 for browser compatibility configuration.
 * **Authentication Library**: Use `auth` v1.2.3 for additional authentication utilities.
 * **Layout Management**: Use `overlay-kit` v1.8.2 for overlay and modal management.
+* **Database**: Use `pg` v8.16.2 for PostgreSQL client connectivity.
+* **CSS Utilities**: Use `class-variance-authority` v0.7.1 for component variant handling and `tailwind-merge` v3.3.1 for class merging.
+* **Themes**: Use `next-themes` v0.4.6 for theme management.
+* **Development Tools**: Use `tsx` v4.20.3 for TypeScript execution and `ts-node` v10.9.2 for Node.js TypeScript support.
 
 ## Directory Structure
 
 * `app/`: Contains the application's routes, layouts, and pages.
-  * `actions/`: Server actions for data mutations and business logic.
-  * `api/`: API routes for client-side data fetching.
-  * `auth/`: Authentication-related pages (signin, error, verify-request).
-  * `dashboard/`: Protected dashboard pages and features.
+  * `actions/`: Server actions for data mutations and business logic (account-management, data-management, log-management, qr-code-generator, qr-code-management, template-management).
+  * `api/`: API routes for client-side data fetching (auth, cron, qrcodes).
+  * `auth/`: Authentication-related pages (signin, error).
+  * `dashboard/`: Protected dashboard pages and features (account, dashboard, history, settings).
   * `qrcode/`: QR code generation main page with components.
-    * `components/`: QR code specific components (form cards, preview, styling, handlers).
+    * `components/`: QR code specific components (form cards for each type: email, location, sms, textarea, url, vcard, wifi; preview, styling, handlers).
 * `components/`: Contains reusable components.
-  * `ui/`: Contains shadcn/ui components (46 components).
-  * Other utility components (address-search, loading-spinner, user-nav, etc.).
+  * `ui/`: Contains shadcn/ui components (46 components including accordion, alert-dialog, avatar, button, calendar, card, carousel, chart, checkbox, command, dialog, drawer, dropdown-menu, form, input, navigation-menu, pagination, popover, progress, resizable, scroll-area, select, sidebar, skeleton, slider, sonner, switch, table, tabs, textarea, toggle, tooltip, etc.).
+  * Other utility components (address-search, loading-spinner, user-nav, github-badge, history-button, log-statistics, new-qr-code-button, tailwind-indicator, unauthenticated, user-profile, etc.).
 * `lib/`: Contains utility functions and constants.
-  * Database connection, download utilities, QR code utilities, auth helpers, etc.
+  * Database connection, download utilities, QR code utilities, auth helpers, error logging, API logging, etc.
   * `supabase/`: Supabase client and related utilities.
 * `hooks/`: Contains custom hooks and Zustand stores.
-  * Custom hooks for QR code generation, mobile detection, token refresh, remember me functionality, etc.
+  * Custom hooks for mobile detection (`use-mobile.tsx`), remember me functionality (`use-remember-me.ts`), token refresh (`use-token-refresh.ts`).
 * `types/`: Contains TypeScript type definitions.
-  * Type definitions for QR codes, data management, environment, authentication, RLS, etc.
+  * Type definitions for QR codes, data management, environment, authentication, RLS, logs, etc.
 * `public/`: Contains static assets.
   * PWA manifest, service worker, fonts, screenshots, etc.
 * `prisma/`: Contains database schema and migrations.
@@ -124,11 +128,15 @@ This project is a QR code generator built with Next.js 14. It utilizes a modern 
   * DEPENDENCIES.md (Dependencies documentation)
   * RLS.md (Row Level Security setup guide)
   * CRON.md (Cron job documentation)
+  * LOGGING.md (Logging system documentation)
 * `context/`: Contains React context providers.
-  * Authentication provider and client providers.
+  * Authentication provider (`auth-provider.tsx`) and client providers (`client-providers.tsx`).
 * `config/`: Contains application configuration.
+  * `app.ts`: Application configuration constants.
 * `scripts/`: Contains utility scripts.
+  * `setup-rls.sh`: RLS setup script.
 * `screenshots/`: Contains application screenshots for documentation.
+  * Screenshots for all QR code types and dashboard pages.
 
 ## Specific Task Guidelines
 
@@ -140,9 +148,9 @@ If Copilot's suggestions do not meet expectations, actively modify and provide f
 
 ## Project Current Status
 
-* **Version**: v1.4.1 (as of 2025년 6월 27일)
-* **File Count**: 170+ TypeScript/JavaScript files
-* **Package Count**: 105 npm packages (74 dependencies + 31 devDependencies)
+* **Version**: v1.4.24 (as of 2025년 6월 29일)
+* **File Count**: 171 TypeScript/JavaScript files
+* **Package Count**: 100+ npm packages (73 dependencies + 30 devDependencies)
 * **UI Components**: 46 shadcn/ui components
 * **QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
 * **Authentication**: NextAuth.js v5.0.0-beta.28 with Google OAuth

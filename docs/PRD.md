@@ -4,7 +4,11 @@
 
 이 문서는 누구나 자유롭게 사용할 수 있는 웹 기반 오픈소스 QR 코드 생성기의 제품 요구사항을 정의합니다. 본 프로젝트는 **Next.js 14**, **Tailwind CSS**, **Shadcn UI** 기술 스택을 활용하여, 사용자에게 강력한 QR 코드 생성 및 커스터마이징 경험을 제공하는 것을 목표로 합니다.
 
-* **프로젝트 비전**: 회원가입### **3.3. 현재 프로젝트 구조**
+* **프로젝트 버전**: v1.4.24 (2025년 6월 29일 기준)
+* **프로젝트 비전**: 회원가입이나 로그인 없이도 즉시 사용할 수 있는 직관적이고 강력한 QR 코드 생성기
+* **총 파일 수**: 171개 TypeScript/JavaScript 파일
+* **패키지 수**: 100+ npm 패키지 (73 dependencies + 30 devDependencies)
+* **UI 컴포넌트**: 46개 shadcn/ui 컴포넌트### **3.3. 현재 프로젝트 구조**
 
 프로젝트는 Next.js 14 App Router 구조를 기반으로 체계적으로 구성되어 있습니다.
 
@@ -14,30 +18,45 @@ nextjs14-qrcode-generator/
 │   ├── layout.tsx               # 루트 레이아웃
 │   ├── page.tsx                 # 홈페이지
 │   ├── globals.css              # 전역 스타일
-│   ├── actions/                 # Server Actions
+│   ├── actions/                 # Server Actions (7개 파일)
+│   │   ├── account-management.ts # 계정 관리
+│   │   ├── data-management.ts   # 데이터 관리
+│   │   ├── log-management.ts    # 로그 관리
 │   │   ├── qr-code-generator.ts # QR 코드 생성 로직
 │   │   ├── qr-code-management.ts # QR 코드 CRUD
-│   │   ├── template-management.ts # 템플릿 관리
-│   │   └── data-management.ts   # 데이터 관리
+│   │   ├── qr-code.ts          # QR 코드 유틸리티
+│   │   └── template-management.ts # 템플릿 관리
 │   ├── api/                     # API Routes
 │   │   ├── auth/               # NextAuth.js 인증 API
-│   │   ├── email/              # 이메일 API
+│   │   ├── cron/               # 크론잡 API
 │   │   └── qrcodes/            # QR 코드 관리 API
 │   ├── auth/                    # 인증 관련 페이지
 │   │   ├── signin/             # 로그인 페이지
-│   │   ├── error/              # 인증 오류 페이지
-│   │   └── verify-request/     # 이메일 인증 페이지
+│   │   └── error/              # 인증 오류 페이지
 │   ├── dashboard/               # 대시보드 (로그인 사용자)
 │   │   ├── layout.tsx          # 대시보드 레이아웃
 │   │   ├── page.tsx            # 대시보드 홈
+│   │   ├── account/            # 계정 관리
+│   │   ├── dashboard/          # 대시보드 통계
 │   │   ├── history/            # QR 코드 히스토리
-│   │   ├── templates/          # 템플릿 관리
-│   │   ├── profile/            # 프로필 관리
 │   │   └── settings/           # 설정
 │   └── qrcode/                  # QR 코드 생성 메인 페이지
-│       └── page.tsx
+│       ├── layout.tsx          # QR 페이지 레이아웃
+│       ├── page.tsx            # QR 생성 메인 페이지
+│       └── components/         # QR 코드 관련 컴포넌트 (11개)
+│           ├── card-email.tsx  # 이메일 QR 폼
+│           ├── card-location.tsx # 위치 QR 폼
+│           ├── card-preview.tsx # QR 미리보기
+│           ├── card-sms.tsx    # SMS QR 폼
+│           ├── card-style.tsx  # 스타일 설정
+│           ├── card-textarea.tsx # 텍스트 QR 폼
+│           ├── card-url.tsx    # URL QR 폼
+│           ├── card-vcard.tsx  # vCard QR 폼
+│           ├── card-wifi.tsx   # Wi-Fi QR 폼
+│           ├── qr-handlers.ts  # QR 핸들러
+│           └── qrcode-form.tsx # QR 폼 컨테이너
 ├── components/                   # 재사용 가능한 컴포넌트
-│   ├── ui/                      # Shadcn UI 컴포넌트 (47개)
+│   ├── ui/                      # Shadcn UI 컴포넌트 (46개)
 │   │   ├── accordion.tsx        # 아코디언 컴포넌트
 │   │   ├── address-search.tsx   # 주소 검색 컴포넌트 (한국 주소 API)
 │   │   ├── alert-dialog.tsx     # 알림 대화상자
@@ -48,56 +67,68 @@ nextjs14-qrcode-generator/
 │   │   ├── input-otp.tsx        # OTP 입력 컴포넌트
 │   │   ├── resizable.tsx        # 크기 조절 가능한 패널
 │   │   ├── sidebar.tsx          # 사이드바 컴포넌트
-│   │   └── ... (기타 40개 UI 컴포넌트)
-│   ├── qr-code-forms/           # QR 코드 유형별 폼
-│   │   ├── url-form.tsx
-│   │   ├── text-form.tsx
-│   │   ├── wifi-form.tsx
-│   │   ├── vcard-form.tsx
-│   │   ├── email-form.tsx
-│   │   ├── sms-form.tsx
-│   │   └── location-form.tsx
-│   ├── qr-code-frames/          # QR 코드 프레임 선택
-│   │   ├── frame-selector.tsx
-│   │   └── index.tsx
-│   ├── template-manager/        # 템플릿 관리
-│   │   ├── template-list.tsx
-│   │   ├── save-template-dialog.tsx
-│   │   ├── edit-template-dialog.tsx
-│   │   └── loading-skeleton.tsx
-│   ├── auth-provider.tsx        # 인증 제공자
+│   │   └── ... (기타 36개 UI 컴포넌트)
+│   ├── address-search.tsx       # 주소 검색 컴포넌트
+│   ├── client-only.tsx          # 클라이언트 전용 래퍼
 │   ├── github-badge.tsx         # GitHub 배지
+│   ├── history-button.tsx       # 히스토리 버튼
+│   ├── loading-spinner.tsx      # 로딩 스피너
+│   ├── log-statistics.tsx       # 로그 통계
 │   ├── new-qr-code-button.tsx   # 새 QR 코드 버튼
-│   ├── page-header.tsx          # 페이지 헤더
-│   ├── qr-code-preview-card.tsx # QR 코드 미리보기
-│   ├── qr-code-preview-with-frame.tsx # 프레임 포함 미리보기
-│   ├── qr-code-settings-panel.tsx # 설정 패널
-│   ├── qr-code-tabs.tsx         # QR 코드 탭
 │   ├── tailwind-indicator.tsx   # Tailwind 개발 인디케이터
-│   ├── token-status-indicator.tsx # 토큰 상태 인디케이터
+│   ├── unauthenticated.tsx      # 비인증 사용자 UI
 │   ├── user-nav.tsx             # 사용자 네비게이션
 │   └── user-profile.tsx         # 사용자 프로필
-├── hooks/                       # 커스텀 훅 & 상태 관리
-│   ├── use-template.ts          # 템플릿 관리 훅
+├── hooks/                       # 커스텀 훅 & 상태 관리 (3개)
 │   ├── use-mobile.tsx           # 모바일 감지 훅
+│   ├── use-remember-me.ts       # 기억하기 훅
 │   └── use-token-refresh.ts     # 토큰 갱신 훅
 ├── lib/                         # 유틸리티 & 설정
 │   ├── prisma.ts               # Prisma 클라이언트
 │   ├── utils.ts                # 공통 유틸리티
 │   ├── constants.ts            # 상수 정의
-│   ├── auth-utils.ts           # 인증 관련 유틸리티
+│   ├── auth-helpers.ts         # 인증 관련 유틸리티
+│   ├── auth-server.ts          # 서버 인증 유틸리티
+│   ├── auth-utils.ts           # 인증 유틸리티
+│   ├── api-logging.ts          # API 로깅
 │   ├── csv-utils.ts            # CSV 처리 유틸리티
+│   ├── download-utils.ts       # 다운로드 유틸리티
+│   ├── env-validation.ts       # 환경변수 검증
+│   ├── error-logging.ts        # 에러 로깅
+│   ├── log-utils.ts            # 로그 유틸리티
+│   ├── logging-middleware.ts   # 로깅 미들웨어
 │   ├── rls-utils.ts            # RLS 유틸리티
 │   └── supabase/               # Supabase 설정
-├── types/                       # TypeScript 타입 정의
+├── types/                       # TypeScript 타입 정의 (7개)
 │   ├── qr-code.ts              # QR 코드 타입
 │   ├── qr-code-server.ts       # 서버사이드 QR 타입
 │   ├── data-manager.ts         # 데이터 관리 타입
+│   ├── environment.d.ts        # 환경변수 타입
+│   ├── logs.ts                 # 로그 타입
 │   ├── next-auth.d.ts          # NextAuth 타입 확장
-│   └── environment.d.ts        # 환경변수 타입
+│   └── rls.ts                  # RLS 타입
+├── context/                     # React Context 제공자
+│   ├── auth-provider.tsx       # 인증 제공자
+│   └── client-providers.tsx    # 클라이언트 제공자
+├── config/                      # 애플리케이션 설정
+│   └── app.ts                  # 앱 설정 상수
 ├── prisma/                      # 데이터베이스
 │   ├── schema.prisma           # Prisma 스키마
 │   └── migrations/             # 데이터베이스 마이그레이션
+├── scripts/                     # 유틸리티 스크립트
+│   └── setup-rls.sh           # RLS 설정 스크립트
+├── docs/                        # 프로젝트 문서 (8개)
+│   ├── CODE_OF_CONDUCT.md     # 행동 강령
+│   ├── CONTRIBUTING.md        # 기여 가이드
+│   ├── CRON.md                # 크론잡 가이드
+│   ├── DEPENDENCIES.md        # 의존성 문서
+│   ├── LOGGING.md             # 로깅 시스템 가이드
+│   ├── PRD.md                 # 제품 요구사항 정의서
+│   ├── RLS.md                 # RLS 설정 가이드
+│   └── SECURITY.md            # 보안 정책
+├── public/                      # 정적 파일
+├── screenshots/                 # 스크린샷 이미지
+└── 기타 설정 파일들             # Next.js, TypeScript, ESLint 등
 ├── public/                      # 정적 자산
 ├── docs/                        # 프로젝트 문서
 │   ├── PRD.md                  # 제품 요구사항 정의서 (현재 파일)

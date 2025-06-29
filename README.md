@@ -253,9 +253,10 @@ npm start
 프로젝트의 상세한 정보와 가이드는 다음 문서들을 참고하세요:
 
 - **[📋 제품 요구사항 정의서 (PRD)](./docs/PRD.md)** - 프로젝트 비전, 기술 스택, 아키텍처 상세 설명
-- **[📦 의존성 패키지 목록](./docs/DEPENDENCIES.md)** - 101개 패키지 의존성 정보 및 사용 목적
+- **[📦 의존성 패키지 목록](./docs/DEPENDENCIES.md)** - 100+개 패키지 의존성 정보 및 사용 목적
 - **[🗃️ RLS 설정 가이드](./docs/RLS.md)** - Row Level Security 데이터베이스 보안 설정
 - **[⏰ 크론잡 설정 가이드](./docs/CRON.md)** - Vercel 크론잡을 통한 Supabase 비활성화 방지
+- **[📊 로깅 시스템 가이드](./docs/LOGGING.md)** - 종합적 로깅 시스템 구조 및 활용법
 - **[🔒 보안 정책](./SECURITY.md)** - 보안 취약점 보고 및 관련 정책
 - **[🤝 기여 가이드](./CONTRIBUTING.md)** - 오픈소스 기여 방법 및 개발 가이드라인
 
@@ -268,15 +269,15 @@ nextjs14-qrcode-generator/
 │   ├── api/               # API Routes (인증, QR API)
 │   ├── dashboard/         # 대시보드 (로그인 사용자 전용)
 │   └── qrcode/           # QR 코드 생성 메인 페이지
-│       └── components/   # QR 코드 관련 컴포넌트 (10개)
+│       └── components/   # QR 코드 관련 컴포넌트 (11개)
 ├── components/            # React 컴포넌트
 │   ├── ui/               # Shadcn UI 컴포넌트 (46개)
 │   └── ...               # 기타 유틸리티 컴포넌트
-├── hooks/                 # 커스텀 훅 & Zustand 스토어
+├── hooks/                 # 커스텀 훅 & Zustand 스토어 (3개)
 ├── lib/                   # 유틸리티 & 설정
-├── types/                 # TypeScript 타입 정의
+├── types/                 # TypeScript 타입 정의 (7개)
 ├── prisma/                # 데이터베이스 스키마 & 마이그레이션
-└── docs/                  # 프로젝트 문서
+└── docs/                  # 프로젝트 문서 (8개)
 ```
 
 ## 🎯 사용법
