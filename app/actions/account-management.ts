@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { withAuthenticatedRLSTransaction, withoutRLS } from "@/lib/rls-utils";
 
 export async function deleteAccount() {
@@ -143,6 +144,137 @@ export async function updateProfile(data: { name: string; email: string }) {
         error instanceof Error
           ? error.message
           : "프로필 업데이트에 실패했습니다.",
+    };
+  }
+}
+
+export async function getConnectedAccounts() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    return await withAuthenticatedRLSTransaction(session, async (tx) => {
+      const accounts = await tx.account.findMany({
+        where: {
+          userId: session.user!.id,
+        },
+        select: {
+          id: true,
+          type: true,
+          provider: true,
+          providerAccountId: true,
+          access_token: false,
+          refresh_token: false,
+          expires_at: true,
+          scope: true,
+        },
+      });
+
+      return {
+        success: true,
+        accounts: accounts.map((account: any) => ({
+          id: account.id,
+          provider: account.provider,
+          type: account.type,
+          providerAccountId: account.providerAccountId,
+          expiresAt: account.expires_at,
+          scope: account.scope,
+        })),
+      };
+    });
+  } catch (error) {
+    console.error("연동된 계정 조회 실패:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "계정 조회에 실패했습니다.",
+      accounts: [],
+    };
+  }
+}
+
+export async function disconnectOAuthProvider(provider: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      throw new Error("로그인이 필요합니다.");
+    }
+
+    return await withAuthenticatedRLSTransaction(session, async (tx) => {
+      // 연결된 계정 수 확인
+      const accountCount = await tx.account.count({
+        where: {
+          userId: session.user!.id,
+        },
+      });
+
+      if (accountCount <= 1) {
+        throw new Error("마지막 연동된 계정은 해제할 수 없습니다.");
+      }
+
+      // 해당 프로바이더 계정 삭제
+      const deletedAccount = await tx.account.deleteMany({
+        where: {
+          userId: session.user!.id,
+          provider: provider,
+        },
+      });
+
+      if (deletedAccount.count === 0) {
+        throw new Error("해당 프로바이더로 연동된 계정을 찾을 수 없습니다.");
+      }
+
+      return {
+        success: true,
+        message: `${provider} 연동이 성공적으로 해제되었습니다.`,
+      };
+    });
+  } catch (error) {
+    console.error("OAuth 연동 해제 실패:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "연동 해제에 실패했습니다.",
+    };
+  }
+}
+
+export async function checkOAuthConnectionStatus(userId: string) {
+  try {
+    const client = await withoutRLS();
+    const accounts = await client.account.findMany({
+      where: {
+        userId: userId,
+      },
+      select: {
+        provider: true,
+        type: true,
+        providerAccountId: true,
+      },
+    });
+
+    const connections = {
+      google: accounts.find((acc: any) => acc.provider === "google"),
+      github: accounts.find((acc: any) => acc.provider === "github"),
+    };
+
+    return {
+      success: true,
+      connections,
+      totalConnections: accounts.length,
+    };
+  } catch (error) {
+    console.error("OAuth 연동 상태 확인 실패:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "연동 상태 확인에 실패했습니다.",
+      connections: { google: null, github: null },
+      totalConnections: 0,
     };
   }
 }
