@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { createErrorLogAction } from "@/app/actions";
+import { logErrorAction } from "@/app/actions";
 
 export default function Error({
   error,
@@ -15,8 +15,8 @@ export default function Error({
     // 에러 로그 기록
     const logError = async () => {
       try {
-        await createErrorLogAction({
-          errorMessage: `글로벌 에러: ${error.message} | Digest: ${error.digest || "N/A"} | Stack: ${error.stack || "N/A"}`,
+        await logErrorAction({
+          error: `글로벌 에러: ${error.message} | Digest: ${error.digest || "N/A"} | Stack: ${error.stack || "N/A"}`,
         });
       } catch (logError) {
         console.error("에러 로그 기록 실패:", logError);

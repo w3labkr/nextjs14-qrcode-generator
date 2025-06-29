@@ -47,15 +47,13 @@ export { inferQrCodeType } from "@/lib/utils";
 
 // Log Management
 export {
-  createAccessLogAction,
-  createAuthLogAction,
-  createAuditLogAction,
-  createErrorLogAction,
-  createAdminActionLogAction,
-  getAccessLogsAction,
-  getAuthLogsAction,
-  getAuditLogsAction,
-  getErrorLogsAction,
-  getAdminActionLogsAction,
-  getLogStatisticsAction,
+  logAccessAction,
+  logAuthAction,
+  logAuditAction,
+  logErrorAction,
+  logAdminAction,
+  logQrGenerationAction,
+  getLogsAction,
+  getLogStatsAction,
+  cleanupOldLogsAction,
 } from "./log-management";
