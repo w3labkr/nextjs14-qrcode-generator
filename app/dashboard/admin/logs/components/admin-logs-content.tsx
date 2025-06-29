@@ -177,12 +177,12 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                 value={
                   Array.isArray(filters.type)
                     ? filters.type[0]
-                    : filters.type || ""
+                    : filters.type || "all"
                 }
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    type: (value as any) || undefined,
+                    type: value === "all" ? undefined : (value as any),
                   }))
                 }
               >
@@ -190,7 +190,7 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                   <SelectValue placeholder="모든 타입" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">모든 타입</SelectItem>
+                  <SelectItem value="all">모든 타입</SelectItem>
                   {Object.entries(LOG_TYPE_LABELS).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
                       {label}
@@ -207,12 +207,12 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                 value={
                   Array.isArray(filters.level)
                     ? filters.level[0]
-                    : filters.level || ""
+                    : filters.level || "all"
                 }
                 onValueChange={(value) =>
                   setFilters((prev) => ({
                     ...prev,
-                    level: (value as any) || undefined,
+                    level: value === "all" ? undefined : (value as any),
                   }))
                 }
               >
@@ -220,7 +220,7 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                   <SelectValue placeholder="모든 레벨" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">모든 레벨</SelectItem>
+                  <SelectItem value="all">모든 레벨</SelectItem>
                   <SelectItem value="DEBUG">DEBUG</SelectItem>
                   <SelectItem value="INFO">INFO</SelectItem>
                   <SelectItem value="WARN">WARN</SelectItem>
