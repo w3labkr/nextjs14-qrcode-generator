@@ -49,8 +49,8 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [searchValue, setSearchValue] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
-  const [levelFilter, setLevelFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [levelFilter, setLevelFilter] = useState("ALL");
   const [limit, setLimit] = useState(10);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const { toast } = useToast();
@@ -65,8 +65,8 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
         body: JSON.stringify({
           page: currentPage,
           limit,
-          type: typeFilter || undefined,
-          level: levelFilter || undefined,
+          type: typeFilter === "ALL" ? undefined : typeFilter,
+          level: levelFilter === "ALL" ? undefined : levelFilter,
           search: searchValue || undefined,
           startDate: dateRange?.from,
           endDate: dateRange?.to,
@@ -107,8 +107,8 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: typeFilter || undefined,
-          level: levelFilter || undefined,
+          type: typeFilter === "ALL" ? undefined : typeFilter,
+          level: levelFilter === "ALL" ? undefined : levelFilter,
           search: searchValue || undefined,
           startDate: dateRange?.from,
           endDate: dateRange?.to,
@@ -212,7 +212,7 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                   <SelectValue placeholder="유형 선택" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">전체 유형</SelectItem>
+                  <SelectItem value="ALL">전체 유형</SelectItem>
                   {Object.entries(LOG_TYPE_LABELS).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
                       {label}
@@ -226,7 +226,7 @@ export function AdminLogsContent({ initialData = [] }: AdminLogsContentProps) {
                   <SelectValue placeholder="레벨" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">전체 레벨</SelectItem>
+                  <SelectItem value="ALL">전체 레벨</SelectItem>
                   <SelectItem value="DEBUG">디버그</SelectItem>
                   <SelectItem value="INFO">정보</SelectItem>
                   <SelectItem value="WARN">경고</SelectItem>
