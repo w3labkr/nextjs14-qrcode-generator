@@ -40,14 +40,19 @@ export async function logApiRequest(
   }
 
   try {
-    await UnifiedLogger.logAccess({
-      userId: userId || undefined,
-      method: request.method,
-      path: request.nextUrl.pathname,
-      statusCode: response.status,
-      responseTime,
-      requestId: request.headers.get("x-request-id") || undefined,
-    });
+    const clientInfo = UnifiedLogger.getClientInfoFromRequest(request);
+
+    await UnifiedLogger.logAccess(
+      {
+        userId: userId || undefined,
+        method: request.method,
+        path: request.nextUrl.pathname,
+        statusCode: response.status,
+        responseTime,
+        requestId: request.headers.get("x-request-id") || undefined,
+      },
+      clientInfo,
+    );
   } catch (error) {
     console.error("API 요청 로그 기록 실패:", error);
   }
@@ -59,6 +64,7 @@ export async function logApiRequest(
 export async function logAuthEvent(
   action: string,
   authAction: "LOGIN" | "LOGOUT" | "REFRESH" | "REVOKE" | "FAIL",
+  request?: NextRequest,
   userId?: string | null,
   provider?: string,
   sessionId?: string,
@@ -69,13 +75,20 @@ export async function logAuthEvent(
   }
 
   try {
-    await UnifiedLogger.logAuth({
-      userId: userId || undefined,
-      action,
-      authAction,
-      provider,
-      sessionId,
-    });
+    const clientInfo = request
+      ? UnifiedLogger.getClientInfoFromRequest(request)
+      : undefined;
+
+    await UnifiedLogger.logAuth(
+      {
+        userId: userId || undefined,
+        action,
+        authAction,
+        provider,
+        sessionId,
+      },
+      clientInfo,
+    );
   } catch (error) {
     console.error("인증 이벤트 로그 기록 실패:", error);
   }
@@ -86,6 +99,7 @@ export async function logAuthEvent(
  */
 export async function logError(
   error: Error | string,
+  request?: NextRequest,
   userId?: string | null,
   errorCode?: string,
   requestId?: string,
@@ -97,13 +111,20 @@ export async function logError(
   }
 
   try {
-    await UnifiedLogger.logError({
-      userId: userId || undefined,
-      error,
-      errorCode,
-      requestId,
-      additionalInfo,
-    });
+    const clientInfo = request
+      ? UnifiedLogger.getClientInfoFromRequest(request)
+      : undefined;
+
+    await UnifiedLogger.logError(
+      {
+        userId: userId || undefined,
+        error,
+        errorCode,
+        requestId,
+        additionalInfo,
+      },
+      clientInfo,
+    );
   } catch (error) {
     console.error("에러 로그 기록 실패:", error);
   }
@@ -114,6 +135,7 @@ export async function logError(
  */
 export async function logQrGeneration(
   qrType: string,
+  request?: NextRequest,
   userId?: string | null,
   contentHash?: string,
   size?: string,
@@ -126,14 +148,21 @@ export async function logQrGeneration(
   }
 
   try {
-    await UnifiedLogger.logQrGeneration({
-      userId: userId || undefined,
-      qrType,
-      contentHash,
-      size,
-      format,
-      customization,
-    });
+    const clientInfo = request
+      ? UnifiedLogger.getClientInfoFromRequest(request)
+      : undefined;
+
+    await UnifiedLogger.logQrGeneration(
+      {
+        userId: userId || undefined,
+        qrType,
+        contentHash,
+        size,
+        format,
+        customization,
+      },
+      clientInfo,
+    );
   } catch (error) {
     console.error("QR 코드 생성 로그 기록 실패:", error);
   }
@@ -145,6 +174,7 @@ export async function logQrGeneration(
 export async function logAudit(
   action: string,
   tableName: string,
+  request?: NextRequest,
   userId?: string | null,
   recordId?: string,
   oldValues?: Record<string, any>,
@@ -157,15 +187,22 @@ export async function logAudit(
   }
 
   try {
-    await UnifiedLogger.logAudit({
-      userId: userId || undefined,
-      action,
-      tableName,
-      recordId,
-      oldValues,
-      newValues,
-      changes,
-    });
+    const clientInfo = request
+      ? UnifiedLogger.getClientInfoFromRequest(request)
+      : undefined;
+
+    await UnifiedLogger.logAudit(
+      {
+        userId: userId || undefined,
+        action,
+        tableName,
+        recordId,
+        oldValues,
+        newValues,
+        changes,
+      },
+      clientInfo,
+    );
   } catch (error) {
     console.error("감사 로그 기록 실패:", error);
   }
@@ -177,6 +214,7 @@ export async function logAudit(
 export async function logSystem(
   action: string,
   message: string,
+  request?: NextRequest,
   level: LogLevel = "INFO",
   metadata?: Record<string, any>,
 ) {
@@ -186,12 +224,19 @@ export async function logSystem(
   }
 
   try {
-    await UnifiedLogger.logSystem({
-      action,
-      message,
-      level,
-      metadata,
-    });
+    const clientInfo = request
+      ? UnifiedLogger.getClientInfoFromRequest(request)
+      : undefined;
+
+    await UnifiedLogger.logSystem(
+      {
+        action,
+        message,
+        level,
+        metadata,
+      },
+      clientInfo,
+    );
   } catch (error) {
     console.error("시스템 로그 기록 실패:", error);
   }

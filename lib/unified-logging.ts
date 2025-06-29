@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { RLSManager } from "@/lib/rls-manager";
 import type {
@@ -19,8 +18,17 @@ import type {
  * 모든 로그를 하나의 테이블로 관리하여 성능과 유지보수성을 향상
  */
 export class UnifiedLogger {
-  private static async getClientInfo() {
+  /**
+   * Server Component에서 클라이언트 정보를 가져오는 헬퍼 함수
+   * 이 함수는 Server Component에서만 호출되어야 합니다.
+   */
+  static async getClientInfoFromHeaders(): Promise<{
+    ipAddress: string | null;
+    userAgent: string | null;
+  }> {
     try {
+      // 동적으로 next/headers를 import하여 Server Component에서만 사용
+      const { headers } = await import("next/headers");
       const headersList = headers();
       return {
         ipAddress:
@@ -30,7 +38,7 @@ export class UnifiedLogger {
         userAgent: headersList.get("user-agent") || null,
       };
     } catch (error) {
-      // headers() 호출이 실패하는 경우 (서버 사이드 스크립트 등)
+      // headers() 호출이 실패하는 경우 (클라이언트 사이드, API 라우트 등)
       return {
         ipAddress: null,
         userAgent: null,
@@ -39,11 +47,38 @@ export class UnifiedLogger {
   }
 
   /**
+   * Request 객체에서 클라이언트 정보를 가져오는 헬퍼 함수
+   * API 라우트에서 사용됩니다.
+   */
+  static getClientInfoFromRequest(request: Request): {
+    ipAddress: string | null;
+    userAgent: string | null;
+  } {
+    const headers = request.headers;
+    return {
+      ipAddress:
+        headers.get("x-forwarded-for") || headers.get("x-real-ip") || null,
+      userAgent: headers.get("user-agent") || null,
+    };
+  }
+
+  /**
    * 기본 로그 생성 메서드
    */
-  private static async createLog(data: ApplicationLogData): Promise<void> {
+  private static async createLog(
+    data: ApplicationLogData,
+    clientInfo?: { ipAddress: string | null; userAgent: string | null },
+  ): Promise<void> {
     try {
-      const { ipAddress, userAgent } = await this.getClientInfo();
+      // 클라이언트 정보가 제공되지 않은 경우 자동으로 가져오기 시도
+      let finalClientInfo = clientInfo;
+      if (!finalClientInfo) {
+        try {
+          finalClientInfo = await this.getClientInfoFromHeaders();
+        } catch {
+          finalClientInfo = { ipAddress: null, userAgent: null };
+        }
+      }
 
       await prisma.applicationLog.create({
         data: {
@@ -54,8 +89,8 @@ export class UnifiedLogger {
           message: data.message,
           metadata: data.metadata as any,
           level: data.level || "INFO",
-          ipAddress: data.ipAddress || ipAddress,
-          userAgent: data.userAgent || userAgent,
+          ipAddress: data.ipAddress || finalClientInfo.ipAddress,
+          userAgent: data.userAgent || finalClientInfo.userAgent,
         },
       });
     } catch (error) {
@@ -66,14 +101,17 @@ export class UnifiedLogger {
   /**
    * API 접근 로그
    */
-  static async logAccess(params: {
-    userId?: string;
-    method: string;
-    path: string;
-    statusCode: number;
-    responseTime?: number;
-    requestId?: string;
-  }) {
+  static async logAccess(
+    params: {
+      userId?: string;
+      method: string;
+      path: string;
+      statusCode: number;
+      responseTime?: number;
+      requestId?: string;
+    },
+    clientInfo?: { ipAddress: string | null; userAgent: string | null },
+  ) {
     const metadata: AccessLogMetadata = {
       method: params.method,
       path: params.path,
@@ -82,56 +120,68 @@ export class UnifiedLogger {
       requestId: params.requestId,
     };
 
-    await this.createLog({
-      userId: params.userId,
-      type: "ACCESS",
-      action: `${params.method} ${params.path}`,
-      category: "API_ACCESS",
-      message: `${params.method} ${params.path} - ${params.statusCode}`,
-      metadata,
-      level: params.statusCode >= 400 ? "ERROR" : "INFO",
-    });
+    await this.createLog(
+      {
+        userId: params.userId,
+        type: "ACCESS",
+        action: `${params.method} ${params.path}`,
+        category: "API_ACCESS",
+        message: `${params.method} ${params.path} - ${params.statusCode}`,
+        metadata,
+        level: params.statusCode >= 400 ? "ERROR" : "INFO",
+      },
+      clientInfo,
+    );
   }
 
   /**
    * 인증 로그
    */
-  static async logAuth(params: {
-    userId?: string;
-    action: string;
-    authAction: "LOGIN" | "LOGOUT" | "REFRESH" | "REVOKE" | "FAIL";
-    provider?: string;
-    sessionId?: string;
-  }) {
+  static async logAuth(
+    params: {
+      userId?: string;
+      action: string;
+      authAction: "LOGIN" | "LOGOUT" | "REFRESH" | "REVOKE" | "FAIL";
+      provider?: string;
+      sessionId?: string;
+    },
+    clientInfo?: { ipAddress: string | null; userAgent: string | null },
+  ) {
     const metadata: AuthLogMetadata = {
       authAction: params.authAction,
       provider: params.provider,
       sessionId: params.sessionId,
     };
 
-    await this.createLog({
-      userId: params.userId,
-      type: "AUTH",
-      action: params.action,
-      category: "AUTHENTICATION",
-      message: `사용자 인증: ${params.authAction}`,
-      metadata,
-      level: params.authAction === "FAIL" ? "WARN" : "INFO",
-    });
+    await this.createLog(
+      {
+        userId: params.userId,
+        type: "AUTH",
+        action: params.action,
+        category: "AUTHENTICATION",
+        message: `사용자 인증: ${params.authAction}`,
+        metadata,
+        level: params.authAction === "FAIL" ? "WARN" : "INFO",
+      },
+      clientInfo,
+    );
   }
 
   /**
    * 감사 로그 (데이터 변경)
    */
-  static async logAudit(params: {
-    userId?: string;
-    action: string;
-    tableName: string;
-    recordId?: string;
-    oldValues?: Record<string, any>;
-    newValues?: Record<string, any>;
-    changes?: string[];
-  }) {
+  static async logAudit(
+    params: {
+      userId?: string;
+      action: string;
+      tableName: string;
+      recordId?: string;
+      oldValues?: Record<string, any>;
+      newValues?: Record<string, any>;
+      changes?: string[];
+    },
+    clientInfo?: { ipAddress: string | null; userAgent: string | null },
+  ) {
     const metadata: AuditLogMetadata = {
       tableName: params.tableName,
       recordId: params.recordId,
@@ -140,27 +190,33 @@ export class UnifiedLogger {
       changes: params.changes,
     };
 
-    await this.createLog({
-      userId: params.userId,
-      type: "AUDIT",
-      action: params.action,
-      category: "DATA_CHANGE",
-      message: `${params.tableName} 테이블에서 ${params.action} 수행`,
-      metadata,
-      level: "INFO",
-    });
+    await this.createLog(
+      {
+        userId: params.userId,
+        type: "AUDIT",
+        action: params.action,
+        category: "DATA_CHANGE",
+        message: `${params.tableName} 테이블에서 ${params.action} 수행`,
+        metadata,
+        level: "INFO",
+      },
+      clientInfo,
+    );
   }
 
   /**
    * 에러 로그
    */
-  static async logError(params: {
-    userId?: string;
-    error: Error | string;
-    errorCode?: string;
-    requestId?: string;
-    additionalInfo?: Record<string, any>;
-  }) {
+  static async logError(
+    params: {
+      userId?: string;
+      error: Error | string;
+      errorCode?: string;
+      requestId?: string;
+      additionalInfo?: Record<string, any>;
+    },
+    clientInfo?: { ipAddress: string | null; userAgent: string | null },
+  ) {
     const errorMessage =
       typeof params.error === "string" ? params.error : params.error.message;
 
@@ -172,55 +228,67 @@ export class UnifiedLogger {
       additionalInfo: params.additionalInfo,
     };
 
-    await this.createLog({
-      userId: params.userId,
-      type: "ERROR",
-      action: "ERROR_OCCURRED",
-      category: "APPLICATION_ERROR",
-      message: errorMessage,
-      metadata,
-      level: "ERROR",
-    });
+    await this.createLog(
+      {
+        userId: params.userId,
+        type: "ERROR",
+        action: "ERROR_OCCURRED",
+        category: "APPLICATION_ERROR",
+        message: errorMessage,
+        metadata,
+        level: "ERROR",
+      },
+      clientInfo,
+    );
   }
 
   /**
    * 관리자 액션 로그
    */
-  static async logAdminAction(params: {
-    adminId: string;
-    action: string;
-    targetUserId?: string;
-    affectedRecords?: number;
-    details?: string;
-  }) {
+  static async logAdminAction(
+    params: {
+      adminId: string;
+      action: string;
+      targetUserId?: string;
+      affectedRecords?: number;
+      details?: string;
+    },
+    clientInfo?: { ipAddress: string | null; userAgent: string | null },
+  ) {
     const metadata: AdminActionLogMetadata = {
       targetUserId: params.targetUserId,
       affectedRecords: params.affectedRecords,
       details: params.details,
     };
 
-    await this.createLog({
-      userId: params.adminId,
-      type: "ADMIN",
-      action: params.action,
-      category: "ADMIN_ACTION",
-      message: `관리자 액션: ${params.action}`,
-      metadata,
-      level: "INFO",
-    });
+    await this.createLog(
+      {
+        userId: params.adminId,
+        type: "ADMIN",
+        action: params.action,
+        category: "ADMIN_ACTION",
+        message: `관리자 액션: ${params.action}`,
+        metadata,
+        level: "INFO",
+      },
+      clientInfo,
+    );
   }
 
   /**
    * QR 코드 생성 로그
    */
-  static async logQrGeneration(params: {
-    userId?: string;
-    qrType: string;
-    contentHash?: string;
-    size?: string;
-    format?: string;
-    customization?: Record<string, any>;
-  }) {
+  static async logQrGeneration(
+    params: {
+      userId?: string;
+      qrType: string;
+      contentHash?: string;
+      size?: string;
+      format?: string;
+      customization?: Record<string, any>;
+    },
+    clientInfo?: { ipAddress: string | null; userAgent: string | null },
+  ) {
     const metadata: QrGenerationLogMetadata = {
       qrType: params.qrType,
       contentHash: params.contentHash,
@@ -229,34 +297,43 @@ export class UnifiedLogger {
       customization: params.customization,
     };
 
-    await this.createLog({
-      userId: params.userId,
-      type: "QR_GENERATION",
-      action: "QR_CODE_GENERATED",
-      category: "QR_SERVICE",
-      message: `QR 코드 생성: ${params.qrType}`,
-      metadata,
-      level: "INFO",
-    });
+    await this.createLog(
+      {
+        userId: params.userId,
+        type: "QR_GENERATION",
+        action: "QR_CODE_GENERATED",
+        category: "QR_SERVICE",
+        message: `QR 코드 생성: ${params.qrType}`,
+        metadata,
+        level: "INFO",
+      },
+      clientInfo,
+    );
   }
 
   /**
    * 시스템 로그
    */
-  static async logSystem(params: {
-    action: string;
-    message: string;
-    level?: LogLevel;
-    metadata?: Record<string, any>;
-  }) {
-    await this.createLog({
-      type: "SYSTEM",
-      action: params.action,
-      category: "SYSTEM",
-      message: params.message,
-      metadata: params.metadata,
-      level: params.level || "INFO",
-    });
+  static async logSystem(
+    params: {
+      action: string;
+      message: string;
+      level?: LogLevel;
+      metadata?: Record<string, any>;
+    },
+    clientInfo?: { ipAddress: string | null; userAgent: string | null },
+  ) {
+    await this.createLog(
+      {
+        type: "SYSTEM",
+        action: params.action,
+        category: "SYSTEM",
+        message: params.message,
+        metadata: params.metadata,
+        level: params.level || "INFO",
+      },
+      clientInfo,
+    );
   }
 
   /**
