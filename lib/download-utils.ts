@@ -117,33 +117,6 @@ export const downloadFileSecure = (blob: Blob, filename: string) => {
   }
 };
 
-// JSON 데이터 내보내기 함수
-export const downloadAsJSON = (data: any, filename?: string) => {
-  try {
-    const jsonContent = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonContent], {
-      type: "application/json;charset=utf-8",
-    });
-
-    const defaultFilename = `qr-data-export-${new Date().toISOString().split("T")[0]}.json`;
-    const finalFilename = filename || defaultFilename;
-
-    // 먼저 기본 방법 시도
-    try {
-      downloadFileSecure(blob, finalFilename);
-    } catch (error) {
-      console.warn("Primary download method failed, trying fallback:", error);
-      // 실패 시 대안 방법 시도
-      if (!fallbackDownload(blob, finalFilename)) {
-        throw new Error("모든 다운로드 방법이 실패했습니다.");
-      }
-    }
-  } catch (error) {
-    console.error("JSON 다운로드 오류:", error);
-    throw error;
-  }
-};
-
 // CSV 데이터 내보내기 함수
 export const downloadAsCSV = (csvContent: string, filename: string) => {
   try {
