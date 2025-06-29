@@ -9,7 +9,7 @@ import {
   SaveQrCodeData,
 } from "@/types/qr-code-server";
 import { generateQrCode } from "./qr-code-generator";
-import { createAuditLog, createErrorLog } from "@/lib/log-utils";
+import { UnifiedLogger } from "@/lib/unified-logging";
 
 export async function getUserQrCodes(page = 1, limit = 10) {
   const session = await auth();
@@ -80,22 +80,25 @@ export async function toggleQrCodeFavorite(qrCodeId: string) {
       });
 
       // 감사 로그 기록
-      await createAuditLog({
+      await UnifiedLogger.logAudit({
         userId,
         action: updatedQrCode.isFavorite
           ? "FAVORITE_QR_CODE"
           : "UNFAVORITE_QR_CODE",
         tableName: "qr_codes",
         recordId: qrCodeId,
+        newValues: { isFavorite: updatedQrCode.isFavorite },
+        oldValues: { isFavorite: qrCode.isFavorite },
       });
 
       return updatedQrCode;
     });
   } catch (error) {
     // 에러 로그 기록
-    await createErrorLog({
+    await UnifiedLogger.logError({
       userId,
-      errorMessage: `QR 코드 즐겨찾기 토글 실패: ${error instanceof Error ? error.message : String(error)}`,
+      error: error instanceof Error ? error : new Error(String(error)),
+      additionalInfo: { action: "TOGGLE_QR_CODE_FAVORITE", qrCodeId },
     });
     throw error;
   }
@@ -131,7 +134,7 @@ export async function deleteQrCode(qrCodeId: string) {
       });
 
       // 감사 로그 기록
-      await createAuditLog({
+      await UnifiedLogger.logAudit({
         userId,
         action: "DELETE_QR_CODE",
         tableName: "qr_codes",
@@ -142,9 +145,10 @@ export async function deleteQrCode(qrCodeId: string) {
     });
   } catch (error) {
     // 에러 로그 기록
-    await createErrorLog({
+    await UnifiedLogger.logError({
       userId,
-      errorMessage: `QR 코드 삭제 실패: ${error instanceof Error ? error.message : String(error)}`,
+      error: error instanceof Error ? error : new Error(String(error)),
+      additionalInfo: { action: "DELETE_QR_CODE", qrCodeId },
     });
     throw error;
   }
@@ -196,7 +200,7 @@ export async function updateQrCode(
     });
 
     // 감사 로그 기록
-    await createAuditLog({
+    await UnifiedLogger.logAudit({
       userId: session.user.id,
       action: "UPDATE_QR_CODE",
       tableName: "qr_codes",
@@ -212,9 +216,10 @@ export async function updateQrCode(
     console.error("Error updating QR code:", error);
 
     // 에러 로그 기록
-    await createErrorLog({
+    await UnifiedLogger.logError({
       userId: session?.user?.id,
-      errorMessage: `QR 코드 업데이트 실패: ${error instanceof Error ? error.message : String(error)}`,
+      error: error instanceof Error ? error : new Error(String(error)),
+      additionalInfo: { action: "UPDATE_QR_CODE", qrCodeId },
     });
 
     return { success: false, error: "Failed to update QR code" };
@@ -241,7 +246,7 @@ export async function saveQrCode(data: SaveQrCodeData) {
     });
 
     // 감사 로그 기록
-    await createAuditLog({
+    await UnifiedLogger.logAudit({
       userId: session.user.id,
       action: "CREATE_QR_CODE",
       tableName: "qr_codes",
@@ -259,9 +264,10 @@ export async function saveQrCode(data: SaveQrCodeData) {
     console.error("QR 코드 저장 실패:", error);
 
     // 에러 로그 기록
-    await createErrorLog({
+    await UnifiedLogger.logError({
       userId: undefined, // session을 못 가져온 경우를 대비
-      errorMessage: `QR 코드 저장 실패: ${error instanceof Error ? error.message : String(error)}`,
+      error: error instanceof Error ? error : new Error(String(error)),
+      additionalInfo: { action: "SAVE_QR_CODE", data },
     });
 
     return {
@@ -301,7 +307,7 @@ export async function getQrCodeStats() {
     ]);
 
     const byType = typeStats.reduce(
-      (acc, stat) => {
+      (acc: Record<string, number>, stat: any) => {
         acc[stat.type] = stat._count;
         return acc;
       },

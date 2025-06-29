@@ -116,6 +116,14 @@
 - **[ESLint](https://eslint.org/)** + **[Prettier](https://prettier.io/)** - 코드 품질 및 스타일 관리
 - **[Turbopack](https://turbo.build/pack)** - Next.js 14 고속 번들러
 
+### 📊 통합 로깅 시스템
+- **UnifiedLogger 클래스** - 모든 로그를 하나의 테이블로 통합 관리
+- **로그 타입**: ACCESS, AUTH, AUDIT, ERROR, ADMIN, QR_GENERATION, SYSTEM
+- **로그 레벨**: DEBUG, INFO, WARN, ERROR, FATAL
+- **성능 측정** - PerformanceLogger를 통한 작업 시간 추적
+- **자동 정리** - 오래된 로그의 자동 삭제로 스토리지 최적화
+- **실시간 모니터링** - 로그 통계 및 필터링 기능
+
 ## 🚀 시작하기
 
 ### 전제 조건
@@ -333,7 +341,72 @@ npm run upgrade:latest
 
 # 캐시 정리 및 재설치
 npm run clean && npm run reinstall
+
+# 통합 로그 시스템 관련
+npm run logs:test        # 로그 시스템 테스트
+npm run logs:cleanup     # 오래된 로그 정리
+npm run logs:backup      # 로그 백업
+npm run logs:setup-rls   # RLS 정책 설정
 ```
+
+## 📊 통합 로그 시스템
+
+이 프로젝트는 통합된 로그 시스템을 사용하여 모든 애플리케이션 활동을 단일 테이블로 관리합니다.
+
+### 로그 타입
+
+- **ACCESS**: API 접근 로그
+- **AUTH**: 인증 관련 로그 (로그인, 로그아웃 등)
+- **AUDIT**: 데이터 변경 감사 로그
+- **ERROR**: 에러 로그
+- **ADMIN**: 관리자 액션 로그
+- **QR_GENERATION**: QR 코드 생성 로그
+- **SYSTEM**: 시스템 로그
+
+### 로그 사용 예제
+
+```typescript
+import { UnifiedLogger } from '@/lib/unified-logging';
+
+// QR 코드 생성 로그
+await UnifiedLogger.logQrGeneration({
+  userId: 'user123',
+  qrType: 'URL',
+  size: '400x400',
+  format: 'png',
+  customization: { hasLogo: true }
+});
+
+// 에러 로그
+await UnifiedLogger.logError({
+  userId: 'user123',
+  error: new Error('Something went wrong'),
+  errorCode: 'QR_GENERATION_FAILED',
+  additionalInfo: { context: 'additional data' }
+});
+
+// 로그 조회
+const logs = await UnifiedLogger.getLogs({
+  type: ['QR_GENERATION', 'ERROR'],
+  userId: 'user123',
+  limit: 100
+});
+
+// 로그 통계
+const stats = await UnifiedLogger.getLogStats({
+  startDate: new Date('2024-01-01'),
+  endDate: new Date()
+});
+```
+
+### 보안 (RLS - Row Level Security)
+
+통합 로그 시스템은 Supabase의 RLS(Row Level Security)를 활용하여 데이터 보안을 보장합니다:
+
+- 사용자는 자신의 로그만 조회 가능
+- 관리자는 모든 로그 접근 가능
+- 시스템 로그는 모든 사용자가 조회 가능
+- 민감한 로그(AUDIT, ADMIN, ERROR)는 관리자만 접근 가능
 
 ## 🤝 기여 방법
 

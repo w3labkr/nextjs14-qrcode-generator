@@ -1,4 +1,4 @@
-import { createErrorLog } from "@/lib/log-utils";
+import { UnifiedLogger } from "@/lib/unified-logging";
 
 /**
  * 함수 실행 중 발생하는 에러를 자동으로 로그에 기록하는 데코레이터
@@ -15,7 +15,7 @@ export function withErrorLogging<T extends any[], R>(
       const errorMessage = `${context ? `[${context}] ` : ""}${error instanceof Error ? error.message : String(error)}`;
 
       try {
-        await createErrorLog({
+        await UnifiedLogger.logError({
           errorMessage,
         });
       } catch (logError) {
@@ -44,7 +44,7 @@ export function withErrorLoggingSync<T extends any[], R>(
 
       Promise.resolve()
         .then(() =>
-          createErrorLog({
+          UnifiedLogger.logError({
             errorMessage,
           }),
         )
@@ -71,7 +71,7 @@ export async function withPromiseErrorLogging<T>(
     const errorMessage = `${context ? `[${context}] ` : ""}${error instanceof Error ? error.message : String(error)}`;
 
     try {
-      await createErrorLog({
+      await UnifiedLogger.logError({
         userId,
         errorMessage,
       });
@@ -103,7 +103,7 @@ export function ErrorLogged(context?: string) {
         const errorMessage = `${context || `${target.constructor.name}.${propertyName}`}: ${error instanceof Error ? error.message : String(error)}`;
 
         try {
-          await createErrorLog({
+          await UnifiedLogger.logError({
             errorMessage,
           });
         } catch (logError) {
@@ -130,7 +130,7 @@ export function setupGlobalErrorLogging() {
 
       Promise.resolve()
         .then(() =>
-          createErrorLog({
+          UnifiedLogger.logError({
             errorMessage,
           }),
         )
@@ -143,7 +143,7 @@ export function setupGlobalErrorLogging() {
 
       Promise.resolve()
         .then(() =>
-          createErrorLog({
+          UnifiedLogger.logError({
             errorMessage,
           }),
         )
@@ -165,7 +165,7 @@ export async function handleUserFacingError(
   const errorMessage = `${context ? `[${context}] ` : ""}${error instanceof Error ? error.message : String(error)}`;
 
   try {
-    await createErrorLog({
+    await UnifiedLogger.logError({
       userId,
       errorMessage,
     });

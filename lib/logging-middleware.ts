@@ -1,19 +1,38 @@
 import { NextRequest } from "next/server";
-import {
-  createAccessLog,
-  createAuthLog,
-  createErrorLog,
-  createQrGenerationLog,
-} from "@/lib/log-utils";
-import type { AuthAction } from "@/types/logs";
+import { UnifiedLogger } from "@/lib/unified-logging";
+import type { LogLevel } from "@/types/logs";
 
 /**
- * API 요청 로그를 자동으로 기록하는 미들웨어 헬퍼
+ * 클라이언트 IP 주소 추출
+ */
+function getClientIP(request: NextRequest): string | null {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIP = request.headers.get("x-real-ip");
+  const remoteAddress = request.headers.get("x-vercel-forwarded-for");
+
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+
+  if (realIP) {
+    return realIP;
+  }
+
+  if (remoteAddress) {
+    return remoteAddress;
+  }
+
+  return null;
+}
+
+/**
+ * API 요청 로깅 미들웨어
  */
 export async function logApiRequest(
   request: NextRequest,
   response: Response,
   userId?: string | null,
+  responseTime?: number,
 ) {
   // 서버 환경에서만 실행
   if (typeof window !== "undefined") {
@@ -21,13 +40,13 @@ export async function logApiRequest(
   }
 
   try {
-    await createAccessLog({
-      userId,
+    await UnifiedLogger.logAccess({
+      userId: userId || undefined,
       method: request.method,
       path: request.nextUrl.pathname,
       statusCode: response.status,
-      userAgent: request.headers.get("user-agent") || undefined,
-      ipAddress: getClientIP(request),
+      responseTime,
+      requestId: request.headers.get("x-request-id") || undefined,
     });
   } catch (error) {
     console.error("API 요청 로그 기록 실패:", error);
@@ -35,18 +54,27 @@ export async function logApiRequest(
 }
 
 /**
- * 인증 이벤트 로그를 기록하는 헬퍼
+ * 인증 이벤트 로깅
  */
-export async function logAuthEvent(action: AuthAction, userId?: string | null) {
+export async function logAuthEvent(
+  action: string,
+  authAction: "LOGIN" | "LOGOUT" | "REFRESH" | "REVOKE" | "FAIL",
+  userId?: string | null,
+  provider?: string,
+  sessionId?: string,
+) {
   // 서버 환경에서만 실행
   if (typeof window !== "undefined") {
     return;
   }
 
   try {
-    await createAuthLog({
-      userId,
+    await UnifiedLogger.logAuth({
+      userId: userId || undefined,
       action,
+      authAction,
+      provider,
+      sessionId,
     });
   } catch (error) {
     console.error("인증 이벤트 로그 기록 실패:", error);
@@ -54,12 +82,14 @@ export async function logAuthEvent(action: AuthAction, userId?: string | null) {
 }
 
 /**
- * 에러 로그를 기록하는 헬퍼
+ * 에러 로깅
  */
 export async function logError(
   error: Error | string,
   userId?: string | null,
-  context?: Record<string, any>,
+  errorCode?: string,
+  requestId?: string,
+  additionalInfo?: Record<string, any>,
 ) {
   // 서버 환경에서만 실행
   if (typeof window !== "undefined") {
@@ -67,51 +97,28 @@ export async function logError(
   }
 
   try {
-    const errorMessage = typeof error === "string" ? error : error.message;
-    const fullErrorMessage = context
-      ? `${errorMessage} | Context: ${JSON.stringify(context)}`
-      : errorMessage;
-
-    await createErrorLog({
-      userId,
-      errorMessage: fullErrorMessage,
-    });
-  } catch (logError) {
-    console.error("에러 로그 기록 실패:", logError);
-  }
-}
-
-/**
- * 에러 이벤트 로그를 기록하는 헬퍼
- */
-export async function logErrorEvent(
-  errorMessage: string,
-  userId?: string | null,
-) {
-  // 서버 환경에서만 실행
-  if (typeof window !== "undefined") {
-    return;
-  }
-
-  try {
-    await createErrorLog({
-      userId,
-      errorMessage,
+    await UnifiedLogger.logError({
+      userId: userId || undefined,
+      error,
+      errorCode,
+      requestId,
+      additionalInfo,
     });
   } catch (error) {
-    console.error("에러 이벤트 로그 기록 실패:", error);
+    console.error("에러 로그 기록 실패:", error);
   }
 }
 
 /**
- * QR 코드 생성 이벤트 로그를 기록하는 헬퍼
+ * QR 코드 생성 로깅
  */
-export async function logQrGenerationEvent(
+export async function logQrGeneration(
   qrType: string,
-  content: string,
-  request?: NextRequest,
   userId?: string | null,
-  customHeaders?: { ipAddress?: string; userAgent?: string },
+  contentHash?: string,
+  size?: string,
+  format?: string,
+  customization?: Record<string, any>,
 ) {
   // 서버 환경에서만 실행
   if (typeof window !== "undefined") {
@@ -119,215 +126,128 @@ export async function logQrGenerationEvent(
   }
 
   try {
-    // 개인정보가 포함될 수 있는 내용은 해싱하여 저장
-    const hashedContent = await hashSensitiveContent(content, qrType);
-
-    let ipAddress: string | undefined;
-    let userAgent: string | undefined;
-
-    if (customHeaders) {
-      ipAddress = customHeaders.ipAddress;
-      userAgent = customHeaders.userAgent;
-    } else if (request) {
-      ipAddress = getClientIP(request);
-      userAgent = request.headers.get("user-agent") || undefined;
-    }
-
-    await createQrGenerationLog({
-      userId,
+    await UnifiedLogger.logQrGeneration({
+      userId: userId || undefined,
       qrType,
-      content: hashedContent,
-      ipAddress,
-      userAgent,
+      contentHash,
+      size,
+      format,
+      customization,
     });
   } catch (error) {
-    console.error("QR 코드 생성 이벤트 로그 기록 실패:", error);
+    console.error("QR 코드 생성 로그 기록 실패:", error);
   }
 }
 
 /**
- * QR 코드 내용을 기반으로 타입을 추론하는 헬퍼 함수
+ * 감사 로그 (데이터 변경 이력)
  */
-export function inferQrType(content: string): string {
-  if (!content || typeof content !== "string") {
-    return "UNKNOWN";
-  }
-
-  const trimmedContent = content.trim().toLowerCase();
-
-  // URL 패턴 검사
-  if (trimmedContent.match(/^https?:\/\//)) {
-    return "URL";
-  }
-
-  // Email 패턴 검사
-  if (
-    trimmedContent.startsWith("mailto:") ||
-    trimmedContent.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
-  ) {
-    return "EMAIL";
-  }
-
-  // SMS 패턴 검사
-  if (
-    trimmedContent.startsWith("sms:") ||
-    trimmedContent.startsWith("smsto:")
-  ) {
-    return "SMS";
-  }
-
-  // WiFi 패턴 검사
-  if (trimmedContent.startsWith("wifi:")) {
-    return "WIFI";
-  }
-
-  // vCard 패턴 검사
-  if (
-    trimmedContent.startsWith("begin:vcard") ||
-    trimmedContent.includes("vcard")
-  ) {
-    return "VCARD";
-  }
-
-  // 지도/위치 패턴 검사
-  if (
-    trimmedContent.startsWith("geo:") ||
-    trimmedContent.includes("maps.google.") ||
-    trimmedContent.includes("openstreetmap.")
-  ) {
-    return "LOCATION";
-  }
-
-  // 기본적으로 텍스트로 분류
-  return "TEXTAREA";
-}
-
-/**
- * 민감한 내용을 해싱하는 헬퍼 함수
- */
-async function hashSensitiveContent(
-  content: string,
-  qrType: string,
-): Promise<string> {
-  // EMAIL, SMS, VCARD 등 개인정보가 포함될 수 있는 타입의 경우 해싱 처리
-  const sensitiveTypes = ["EMAIL", "SMS", "VCARD"];
-
-  if (sensitiveTypes.includes(qrType.toUpperCase())) {
-    // 간단한 해싱 처리 (실제 운영환경에서는 더 강력한 해싱 알고리즘 사용 권장)
-    const encoder = new TextEncoder();
-    const data = encoder.encode(content);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  }
-
-  // URL, TEXTAREA, WIFI, LOCATION 등은 일부만 저장 (첫 100자)
-  return content.length > 100 ? content.substring(0, 100) + "..." : content;
-}
-
-/**
- * 클라이언트 IP 주소를 가져오는 헬퍼
- */
-export function getClientIP(request: NextRequest): string {
-  // Vercel의 경우 x-forwarded-for 헤더 사용
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-
-  // Cloudflare의 경우 cf-connecting-ip 헤더 사용
-  const cfConnectingIp = request.headers.get("cf-connecting-ip");
-  if (cfConnectingIp) {
-    return cfConnectingIp;
-  }
-
-  // 기본 remote address
-  const remoteAddr = request.headers.get("x-real-ip");
-  if (remoteAddr) {
-    return remoteAddr;
-  }
-
-  return "unknown";
-}
-
-/**
- * API 라우트에서 사용할 수 있는 래퍼 함수
- */
-export function withLogging<T extends any[], R>(
-  handler: (...args: T) => Promise<R>,
-  options?: {
-    logRequest?: boolean;
-    logErrors?: boolean;
-    getUserId?: (...args: T) => string | null | undefined;
-  },
+export async function logAudit(
+  action: string,
+  tableName: string,
+  userId?: string | null,
+  recordId?: string,
+  oldValues?: Record<string, any>,
+  newValues?: Record<string, any>,
+  changes?: string[],
 ) {
-  return async (...args: T): Promise<R> => {
-    const { logRequest = true, logErrors = true, getUserId } = options || {};
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return;
+  }
+
+  try {
+    await UnifiedLogger.logAudit({
+      userId: userId || undefined,
+      action,
+      tableName,
+      recordId,
+      oldValues,
+      newValues,
+      changes,
+    });
+  } catch (error) {
+    console.error("감사 로그 기록 실패:", error);
+  }
+}
+
+/**
+ * 시스템 로그
+ */
+export async function logSystem(
+  action: string,
+  message: string,
+  level: LogLevel = "INFO",
+  metadata?: Record<string, any>,
+) {
+  // 서버 환경에서만 실행
+  if (typeof window !== "undefined") {
+    return;
+  }
+
+  try {
+    await UnifiedLogger.logSystem({
+      action,
+      message,
+      level,
+      metadata,
+    });
+  } catch (error) {
+    console.error("시스템 로그 기록 실패:", error);
+  }
+}
+
+/**
+ * 성능 측정 및 로깅 헬퍼
+ */
+export class PerformanceLogger {
+  private startTime: number;
+  private readonly action: string;
+  private readonly userId?: string;
+
+  constructor(action: string, userId?: string) {
+    this.startTime = Date.now();
+    this.action = action;
+    this.userId = userId;
+  }
+
+  async end(additionalMetadata?: Record<string, any>) {
+    const duration = Date.now() - this.startTime;
 
     try {
-      const result = await handler(...args);
-
-      // 요청 로깅 (필요한 경우)
-      if (logRequest && args[0] instanceof Request) {
-        const request = args[0] as NextRequest;
-        const userId = getUserId ? getUserId(...args) : undefined;
-
-        // 응답 객체를 생성하여 로깅
-        const response = new Response(null, { status: 200 });
-        await logApiRequest(request, response, userId);
-      }
-
-      return result;
-    } catch (error) {
-      // 에러 로깅
-      if (logErrors) {
-        const userId = getUserId ? getUserId(...args) : undefined;
-        await logError(error as Error, userId, {
-          args: args.length > 0 ? "Arguments provided" : "No arguments",
-        });
-      }
-
-      throw error;
-    }
-  };
-}
-
-/**
- * Next.js API 라우트에서 사용할 수 있는 로깅 미들웨어
- */
-export function createLoggingMiddleware(
-  getUserId?: (request: NextRequest) => string | null,
-) {
-  return async (request: NextRequest, handler: () => Promise<Response>) => {
-    try {
-      const response = await handler();
-
-      // 요청 로깅
-      const userId = getUserId ? getUserId(request) : null;
-      await logApiRequest(request, response, userId);
-
-      return response;
-    } catch (error) {
-      // 에러 로깅
-      const userId = getUserId ? getUserId(request) : null;
-      await logError(error as Error, userId, {
-        method: request.method,
-        path: request.nextUrl.pathname,
-      });
-
-      // 에러 응답 생성
-      const errorResponse = new Response(
-        JSON.stringify({ error: "서버 에러가 발생했습니다" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
+      await UnifiedLogger.logSystem({
+        action: this.action,
+        message: `작업 완료: ${this.action} (${duration}ms)`,
+        level: "INFO",
+        metadata: {
+          duration,
+          userId: this.userId,
+          ...additionalMetadata,
         },
-      );
-
-      // 에러 응답도 로깅
-      await logApiRequest(request, errorResponse, userId);
-
-      return errorResponse;
+      });
+    } catch (error) {
+      console.error("성능 로그 기록 실패:", error);
     }
-  };
+
+    return duration;
+  }
+}
+
+/**
+ * 요청 ID 생성
+ */
+export function generateRequestId(): string {
+  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * 로그 레벨에 따른 필터링
+ */
+export function shouldLog(level: LogLevel): boolean {
+  const currentLevel = process.env.LOG_LEVEL || "INFO";
+  const levels = ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"];
+  const currentIndex = levels.indexOf(currentLevel);
+  const logIndex = levels.indexOf(level);
+
+  return logIndex >= currentIndex;
 }

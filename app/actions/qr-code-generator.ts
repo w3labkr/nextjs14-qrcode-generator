@@ -5,8 +5,7 @@ import { createCanvas, loadImage } from "canvas";
 import { auth } from "@/auth";
 import { withAuthenticatedRLSTransaction, withoutRLS } from "@/lib/rls-utils";
 import { QrCodeOptions, QrCodeGenerationOptions } from "@/types/qr-code-server";
-import { createErrorLog } from "@/lib/log-utils";
-import { logQrGenerationEvent, inferQrType } from "@/lib/logging-middleware";
+import { UnifiedLogger, inferQrType } from "@/lib/unified-logging";
 import { headers } from "next/headers";
 
 export async function generateQrCode(options: QrCodeOptions): Promise<string> {
@@ -47,19 +46,22 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
         realIp ||
         "unknown";
 
-      // QR 타입 추론 (옵션에서 제공되지 않는 경우)
+      // QR 타입 추론
       const qrType = inferQrType(text);
 
-      await logQrGenerationEvent(
+      await UnifiedLogger.logQrGeneration({
+        userId: session?.user?.id,
         qrType,
-        text,
-        undefined, // NextRequest 객체가 없으므로 undefined
-        session?.user?.id || null,
-        {
-          ipAddress,
-          userAgent,
+        size: `${width}x${width}`,
+        format: type,
+        customization: {
+          hasLogo: !!logo,
+          hasCustomColor: !!(color?.dark && color.dark !== "#000000"),
+          hasDotsOptions: !!dotsOptions,
+          hasCornersSquareOptions: !!cornersSquareOptions,
+          hasFrameOptions: !!frameOptions,
         },
-      );
+      });
     } catch (logError) {
       console.error("QR 생성 로그 기록 실패:", logError);
       // 로그 실패가 QR 생성을 방해하지 않도록 함
@@ -146,9 +148,10 @@ export async function generateQrCode(options: QrCodeOptions): Promise<string> {
     console.error("Error generating QR code:", error);
 
     // 에러 로그 기록
-    await createErrorLog({
+    await UnifiedLogger.logError({
       userId: session?.user?.id,
-      errorMessage: `QR 코드 생성 실패: ${error instanceof Error ? error.message : String(error)} | 옵션: ${JSON.stringify(options)}`,
+      error: error instanceof Error ? error : new Error(String(error)),
+      additionalInfo: { options },
     });
 
     if (error instanceof Error) {

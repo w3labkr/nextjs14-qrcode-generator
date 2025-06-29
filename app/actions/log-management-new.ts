@@ -166,24 +166,18 @@ export async function logQrGenerationAction(params: {
 }
 
 /**
- * 로그 조회 (RLS 적용)
+ * 로그 조회
  */
 export async function getLogsAction(filters: LogFilterOptions = {}) {
   try {
     const session = await auth();
-    const userId = session?.user?.id;
-    const userIsAdmin = isAdmin(session?.user?.email);
-
-    if (!userId) {
-      return { success: false, error: "인증이 필요합니다" };
-    }
 
     // 관리자가 아닌 경우 자신의 로그만 조회 가능
-    if (!userIsAdmin) {
-      filters.userId = userId;
+    if (!isAdmin(session?.user?.email)) {
+      filters.userId = session?.user?.id;
     }
 
-    const logs = await UnifiedLogger.getLogs(filters, userId, userIsAdmin);
+    const logs = await UnifiedLogger.getLogs(filters);
     return { success: true, data: logs };
   } catch (error) {
     console.error("로그 조회 액션 실패:", error);
@@ -192,26 +186,20 @@ export async function getLogsAction(filters: LogFilterOptions = {}) {
 }
 
 /**
- * 로그 통계 조회 (RLS 적용)
+ * 로그 통계 조회
  */
 export async function getLogStatsAction(
   filters: Partial<LogFilterOptions> = {},
 ) {
   try {
     const session = await auth();
-    const userId = session?.user?.id;
-    const userIsAdmin = isAdmin(session?.user?.email);
-
-    if (!userId) {
-      return { success: false, error: "인증이 필요합니다" };
-    }
 
     // 관리자가 아닌 경우 자신의 로그 통계만 조회 가능
-    if (!userIsAdmin) {
-      filters.userId = userId;
+    if (!isAdmin(session?.user?.email)) {
+      filters.userId = session?.user?.id;
     }
 
-    const stats = await UnifiedLogger.getLogStats(filters, userId, userIsAdmin);
+    const stats = await UnifiedLogger.getLogStats(filters);
     return { success: true, data: stats };
   } catch (error) {
     console.error("로그 통계 조회 실패:", error);
@@ -230,10 +218,7 @@ export async function cleanupOldLogsAction(retentionDays = 90) {
       throw new Error("관리자 권한이 필요합니다");
     }
 
-    const deletedCount = await UnifiedLogger.cleanupOldLogs(
-      retentionDays,
-      session.user.id,
-    );
+    const deletedCount = await UnifiedLogger.cleanupOldLogs(retentionDays);
     return { success: true, data: { deletedCount } };
   } catch (error) {
     console.error("로그 정리 실패:", error);

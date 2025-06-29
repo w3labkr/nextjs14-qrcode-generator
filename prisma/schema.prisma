@@ -23,14 +23,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  qrCodes          QrCode[]
-  templates        QrTemplate[]
-  qrGenerationLogs QrGenerationLog[]
-  accessLogs       AccessLog[]
-  authLogs         AuthLog[]
-  auditLogs        AuditLog[]
-  errorLogs        ErrorLog[]
-  adminActionLogs  AdminActionLog[]
+  qrCodes         QrCode[]
+  templates       QrTemplate[]
+  applicationLogs ApplicationLog[]
 
   @@map("users")
 }
@@ -115,90 +110,16 @@ model QrTemplate {
   @@map("qr_templates")
 }
 
-// API 접근 로그 테이블
-model AccessLog {
-  id         String   @id @default(cuid())
-  userId     String?
-  method     String // GET, POST, PUT, DELETE, etc.
-  path       String // API 경로
-  statusCode Int // HTTP 상태 코드
-  userAgent  String? // 사용자 에이전트
-  ipAddress  String? // IP 주소
-  createdAt  DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId, createdAt])
-  @@index([createdAt])
-  @@map("access_logs")
-}
-
-// 인증/로그인 로그 테이블
-model AuthLog {
-  id        String     @id @default(cuid())
-  userId    String?
-  action    AuthAction // 인증 액션 타입
-  createdAt DateTime   @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId, createdAt])
-  @@index([createdAt])
-  @@map("auth_logs")
-}
-
-// 감사 로그 테이블 (데이터 변경 이력)
-model AuditLog {
+// 통합 로그 테이블 (모든 로그를 하나의 테이블로 관리)
+model ApplicationLog {
   id        String   @id @default(cuid())
-  userId    String?
+  userId    String? // 사용자 ID (로그인한 경우)
+  type      LogType // 로그 타입
   action    String // 수행된 액션
-  tableName String // 변경된 테이블명
-  recordId  String? // 변경된 레코드 ID
-  createdAt DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId, createdAt])
-  @@index([tableName, createdAt])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-// 에러 로그 테이블
-model ErrorLog {
-  id           String   @id @default(cuid())
-  userId       String?
-  errorMessage String // 에러 메시지
-  createdAt    DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId, createdAt])
-  @@index([createdAt])
-  @@map("error_logs")
-}
-
-// 관리자 활동 로그 테이블
-model AdminActionLog {
-  id        String   @id @default(cuid())
-  adminId   String
-  action    String // 수행된 관리자 액션
-  detail    String? // 상세 정보
-  createdAt DateTime @default(now())
-
-  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
-
-  @@index([adminId, createdAt])
-  @@index([createdAt])
-  @@map("admin_action_logs")
-}
-
-// QR 코드 생성 로그 테이블 (로그인하지 않은 사용자 포함)
-model QrGenerationLog {
-  id        String   @id @default(cuid())
-  userId    String? // 로그인한 사용자의 경우만
-  qrType    String // URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION
-  content   String // QR 코드에 포함된 실제 데이터 (개인정보는 해싱하여 저장)
+  category  String? // 로그 카테고리 (선택적)
+  message   String? // 로그 메시지
+  metadata  Json? // 추가 메타데이터 (JSON 형태)
+  level     LogLevel @default(INFO) // 로그 레벨
   ipAddress String? // 클라이언트 IP 주소
   userAgent String? // 사용자 에이전트
   createdAt DateTime @default(now())
@@ -206,9 +127,35 @@ model QrGenerationLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
-  @@index([qrType, createdAt])
+  @@index([type, createdAt])
+  @@index([level, createdAt])
+  @@index([action, createdAt])
   @@index([createdAt])
-  @@map("qr_generation_logs")
+  @@map("application_logs")
+}
+
+// 로그 타입 열거형
+enum LogType {
+  ACCESS // API 접근 로그
+  AUTH // 인증 로그
+  AUDIT // 감사 로그 (데이터 변경)
+  ERROR // 에러 로그
+  ADMIN // 관리자 액션 로그
+  QR_GENERATION // QR 코드 생성 로그
+  SYSTEM // 시스템 로그
+
+  @@map("log_type")
+}
+
+// 로그 레벨 열거형
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+  FATAL
+
+  @@map("log_level")
 }
 
 // 인증 액션 열거형
@@ -260,40 +207,27 @@ enum AuthAction {
 // CREATE POLICY sessions_user_policy ON sessions
 //   USING (user_id = current_setting('app.current_user_id')::text);
 
-// 11. AccessLog 테이블 RLS 활성화 (선택적 - 관리자만 접근)
-// ALTER TABLE access_logs ENABLE ROW LEVEL SECURITY;
+// 11. ApplicationLog 테이블 RLS 활성화 (통합 로그 시스템)
+// ALTER TABLE application_logs ENABLE ROW LEVEL SECURITY;
 
-// 12. AccessLog 접근 정책 생성 (사용자는 자신의 로그만 접근 가능)
-// CREATE POLICY access_logs_user_policy ON access_logs
-//   USING (user_id = current_setting('app.current_user_id')::text OR current_setting('app.is_admin')::boolean = true);
+// 12. ApplicationLog 접근 정책 생성 (사용자는 자신의 로그 + 관리자는 모든 로그 접근 가능)
+// CREATE POLICY application_logs_user_policy ON application_logs
+//   USING (
+//     user_id = current_setting('app.current_user_id')::text
+//     OR current_setting('app.is_admin')::boolean = true
+//     OR type = 'SYSTEM' -- 시스템 로그는 모든 사용자가 조회 가능
+//   );
 
-// 13. AuthLog 테이블 RLS 활성화 (선택적 - 관리자만 접근)
-// ALTER TABLE auth_logs ENABLE ROW LEVEL SECURITY;
-
-// 14. AuthLog 접근 정책 생성 (사용자는 자신의 로그만 접근 가능)
-// CREATE POLICY auth_logs_user_policy ON auth_logs
-//   USING (user_id = current_setting('app.current_user_id')::text OR current_setting('app.is_admin')::boolean = true);
-
-// 15. AuditLog 테이블 RLS 활성화 (관리자만 접근)
-// ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
-
-// 16. AuditLog 접근 정책 생성 (관리자만 접근 가능)
-// CREATE POLICY audit_logs_admin_policy ON audit_logs
-//   USING (current_setting('app.is_admin')::boolean = true);
-
-// 17. ErrorLog 테이블 RLS 활성화 (관리자만 접근)
-// ALTER TABLE error_logs ENABLE ROW LEVEL SECURITY;
-
-// 18. ErrorLog 접근 정책 생성 (관리자만 접근 가능)
-// CREATE POLICY error_logs_admin_policy ON error_logs
-//   USING (current_setting('app.is_admin')::boolean = true);
-
-// 19. AdminActionLog 테이블 RLS 활성화 (관리자만 접근)
-// ALTER TABLE admin_action_logs ENABLE ROW LEVEL SECURITY;
-
-// 20. AdminActionLog 접근 정책 생성 (관리자만 접근 가능)
-// CREATE POLICY admin_action_logs_admin_policy ON admin_action_logs
-//   USING (current_setting('app.is_admin')::boolean = true);
+// 13. ApplicationLog 관리자 전용 정책 (민감한 로그 타입)
+// CREATE POLICY application_logs_admin_only_policy ON application_logs
+//   FOR SELECT
+//   USING (
+//     CASE
+//       WHEN type IN ('AUDIT', 'ADMIN', 'ERROR')
+//       THEN current_setting('app.is_admin')::boolean = true
+//       ELSE true
+//     END
+//   );
 
 // RLS 사용 시 주의사항:
 // - 애플리케이션에서 DB 연결 시 current_setting('app.current_user_id')를 설정해야 함

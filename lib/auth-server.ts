@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createAuthLog, createErrorLog } from "@/lib/log-utils";
+import { UnifiedLogger } from "@/lib/unified-logging";
 
 // 서버 전용 인증 유틸리티 함수들
 export async function refreshAccessToken(token: any) {
@@ -52,9 +52,10 @@ export async function handleSignIn(user: any, account: any, profile: any) {
     }
 
     // 로그인 성공 로그 기록
-    await createAuthLog({
+    await UnifiedLogger.logAuth({
       userId: user.id || user.email,
       action: "LOGIN",
+      authAction: "LOGIN",
     });
 
     return true;
@@ -64,9 +65,10 @@ export async function handleSignIn(user: any, account: any, profile: any) {
     try {
       const { prisma } = await import("@/lib/prisma");
       if (prisma) {
-        await createErrorLog({
+        await UnifiedLogger.logError({
           userId: user?.id || null,
-          errorMessage: `로그인 처리 오류: ${error instanceof Error ? error.message : String(error)}`,
+          error: error instanceof Error ? error : new Error(String(error)),
+          additionalInfo: { action: "LOGIN_PROCESS" },
         });
       }
     } catch (logError) {
@@ -90,9 +92,10 @@ export async function handleSignOut(session: any) {
     }
 
     // 로그아웃 로그 기록
-    await createAuthLog({
+    await UnifiedLogger.logAuth({
       userId: session?.user?.id || session?.user?.email,
       action: "LOGOUT",
+      authAction: "LOGOUT",
     });
   } catch (error) {
     console.error("로그아웃 처리 중 오류:", error);
@@ -100,9 +103,10 @@ export async function handleSignOut(session: any) {
     try {
       const { prisma } = await import("@/lib/prisma");
       if (prisma) {
-        await createErrorLog({
+        await UnifiedLogger.logError({
           userId: session?.user?.id || null,
-          errorMessage: `로그아웃 처리 오류: ${error instanceof Error ? error.message : String(error)}`,
+          error: error instanceof Error ? error : new Error(String(error)),
+          additionalInfo: { action: "LOGOUT_PROCESS" },
         });
       }
     } catch (logError) {
