@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import type { PrismaClient } from "@prisma/client";
 import type { Session } from "next-auth";
 
@@ -92,12 +93,12 @@ export async function resetRLS() {
  */
 export async function withRLSTransaction<T>(
   userId: string,
-  callback: (tx: any) => Promise<T>,
+  callback: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
   validateUserId(userId);
 
   try {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 트랜잭션 내에서 사용자 ID 설정
       await tx.$executeRawUnsafe(`SET app.current_user_id = '${userId}'`);
       return await callback(tx);

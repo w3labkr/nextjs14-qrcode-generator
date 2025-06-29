@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { AdminLogsContent } from "./components/admin-logs-content";
 import { LogStatistics } from "./components/log-statistics";
 import { LogCleanupManager } from "./components/log-cleanup-manager";
-import { AlertTriangle, Activity } from "lucide-react";
+import { AlertTriangle, Activity, Download, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -57,6 +58,28 @@ export default async function AdminLogsPage() {
 
   return (
     <div className="space-y-6">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            시스템 로그 관리
+          </h1>
+          <p className="text-muted-foreground">
+            시스템 로그 및 오류 관리 대시보드
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            전체 백업
+          </Button>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            작업 추가
+          </Button>
+        </div>
+      </div>
+
       {/* 통계 카드 */}
       <Suspense
         fallback={
@@ -84,8 +107,14 @@ export default async function AdminLogsPage() {
       {/* 탭 컨테이너 */}
       <Tabs defaultValue="logs" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="logs">로그 조회</TabsTrigger>
-          <TabsTrigger value="cleanup">로그 정리</TabsTrigger>
+          <TabsTrigger value="logs" className="flex items-center space-x-2">
+            <Activity className="h-4 w-4" />
+            <span>로그 관리</span>
+          </TabsTrigger>
+          <TabsTrigger value="cleanup" className="flex items-center space-x-2">
+            <AlertTriangle className="h-4 w-4" />
+            <span>시스템 정리</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* 로그 조회 탭 */}
@@ -125,9 +154,9 @@ export default async function AdminLogsPage() {
             fallback={
               <Card>
                 <CardHeader>
-                  <CardTitle>로그 정리</CardTitle>
+                  <CardTitle>시스템 정리</CardTitle>
                   <CardDescription>
-                    로그 정리 옵션을 불러오는 중...
+                    시스템 정리 옵션을 불러오는 중...
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

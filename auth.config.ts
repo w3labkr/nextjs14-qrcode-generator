@@ -315,7 +315,8 @@ export default {
             });
             await createErrorLog({
               userId: extendedToken.sub || undefined,
-              errorMessage: `토큰 갱신 실패: ${error instanceof Error ? error.message : String(error)}`,
+              error: `토큰 갱신 실패: ${error instanceof Error ? error.message : String(error)}`,
+              context: "JWT_REFRESH",
             });
           } catch (logError) {
             console.error("토큰 갱신 실패 로그 기록 실패:", logError);

@@ -30,7 +30,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -213,6 +213,15 @@ export function DataTable<TData, TValue>({
             <Button
               variant="outline"
               size="sm"
+              onClick={() => pagination.onPageChange(0)}
+              disabled={!pagination.canPreviousPage}
+            >
+              <ChevronsLeft className="h-4 w-4" />
+              처음
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => pagination.onPageChange(pagination.pageIndex - 1)}
               disabled={!pagination.canPreviousPage}
             >
@@ -232,6 +241,15 @@ export function DataTable<TData, TValue>({
             >
               다음
               <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => pagination.onPageChange(pagination.pageCount - 1)}
+              disabled={!pagination.canNextPage}
+            >
+              마지막
+              <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

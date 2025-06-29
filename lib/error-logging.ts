@@ -16,7 +16,7 @@ export function withErrorLogging<T extends any[], R>(
 
       try {
         await UnifiedLogger.logError({
-          errorMessage,
+          error: errorMessage,
         });
       } catch (logError) {
         console.error("에러 로그 기록 실패:", logError);
@@ -45,7 +45,7 @@ export function withErrorLoggingSync<T extends any[], R>(
       Promise.resolve()
         .then(() =>
           UnifiedLogger.logError({
-            errorMessage,
+            error: errorMessage,
           }),
         )
         .catch((logError) => console.error("에러 로그 기록 실패:", logError));
@@ -73,7 +73,7 @@ export async function withPromiseErrorLogging<T>(
     try {
       await UnifiedLogger.logError({
         userId,
-        errorMessage,
+        error: errorMessage,
       });
     } catch (logError) {
       console.error("에러 로그 기록 실패:", logError);
@@ -104,7 +104,7 @@ export function ErrorLogged(context?: string) {
 
         try {
           await UnifiedLogger.logError({
-            errorMessage,
+            error: errorMessage,
           });
         } catch (logError) {
           console.error("에러 로그 기록 실패:", logError);
@@ -131,7 +131,7 @@ export function setupGlobalErrorLogging() {
       Promise.resolve()
         .then(() =>
           UnifiedLogger.logError({
-            errorMessage,
+            error: errorMessage,
           }),
         )
         .catch((logError) => console.error("에러 로그 기록 실패:", logError));
@@ -144,7 +144,7 @@ export function setupGlobalErrorLogging() {
       Promise.resolve()
         .then(() =>
           UnifiedLogger.logError({
-            errorMessage,
+            error: errorMessage,
           }),
         )
         .catch((logError) => console.error("에러 로그 기록 실패:", logError));
@@ -167,7 +167,7 @@ export async function handleUserFacingError(
   try {
     await UnifiedLogger.logError({
       userId,
-      errorMessage,
+      error: errorMessage,
     });
   } catch (logError) {
     console.error("에러 로그 기록 실패:", logError);

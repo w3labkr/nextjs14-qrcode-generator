@@ -78,7 +78,7 @@ const handleGET = async (request: NextRequest) => {
   ]);
 
   // settings 문자열을 JSON으로 파싱
-  const formattedQrCodes = qrCodes.map((qrCode) => ({
+  const formattedQrCodes = qrCodes.map((qrCode: any) => ({
     ...qrCode,
     settings: qrCode.settings ? JSON.parse(qrCode.settings) : {},
   }));

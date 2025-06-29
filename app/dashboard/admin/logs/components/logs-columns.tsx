@@ -14,26 +14,100 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Eye, ArrowUpDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Eye,
+  ArrowUpDown,
+  MoreHorizontal,
+  Copy,
+  Download,
+  AlertTriangle,
+  Info,
+  CheckCircle,
+  XCircle,
+  Activity,
+} from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 
 const LOG_TYPE_LABELS = {
-  ACCESS: "API 접근",
+  ACCESS: "접근",
   AUTH: "인증",
   AUDIT: "감사",
   ERROR: "오류",
   ADMIN: "관리자",
-  QR_GENERATION: "QR 생성",
+  QR_GENERATION: "QR생성",
   SYSTEM: "시스템",
-};
+} as const;
 
 const LOG_LEVEL_COLORS = {
-  DEBUG: "bg-gray-100 text-gray-800",
-  INFO: "bg-blue-100 text-blue-800",
-  WARN: "bg-yellow-100 text-yellow-800",
-  ERROR: "bg-red-100 text-red-800",
-  FATAL: "bg-red-200 text-red-900",
+  DEBUG: "bg-gray-100 text-gray-800 border-gray-200",
+  INFO: "bg-blue-100 text-blue-800 border-blue-200",
+  WARN: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  ERROR: "bg-red-100 text-red-800 border-red-200",
+  FATAL: "bg-red-200 text-red-900 border-red-300",
+} as const;
+
+const getStatusIcon = (level: string) => {
+  switch (level) {
+    case "ERROR":
+    case "FATAL":
+      return <XCircle className="h-4 w-4 text-red-500" />;
+    case "WARN":
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    case "INFO":
+      return <Info className="h-4 w-4 text-blue-500" />;
+    case "DEBUG":
+      return <Activity className="h-4 w-4 text-gray-500" />;
+    default:
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+  }
+};
+
+const getStatusText = (type: string, level: string) => {
+  if (level === "ERROR" || level === "FATAL") return "오류";
+  if (level === "WARN") return "경고";
+  if (type === "SYSTEM") return "완료";
+  return "진행중";
+};
+
+const getPriorityText = (level: string) => {
+  switch (level) {
+    case "FATAL":
+      return "긴급";
+    case "ERROR":
+      return "높음";
+    case "WARN":
+      return "보통";
+    case "INFO":
+      return "보통";
+    case "DEBUG":
+      return "낮음";
+    default:
+      return "보통";
+  }
+};
+
+const getPriorityIcon = (level: string) => {
+  switch (level) {
+    case "FATAL":
+    case "ERROR":
+      return "🔴";
+    case "WARN":
+      return "🟡";
+    case "INFO":
+      return "🔵";
+    case "DEBUG":
+      return "⚪";
+    default:
+      return "🔵";
+  }
 };
 
 interface LogDetailDialogProps {
@@ -44,42 +118,48 @@ function LogDetailDialog({ log }: LogDetailDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <Eye className="h-4 w-4" />
-          <span className="sr-only">로그 상세보기</span>
-        </Button>
+        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+          <Eye className="mr-2 h-4 w-4" />
+          상세보기
+        </DropdownMenuItem>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>로그 상세 정보</DialogTitle>
+          <DialogTitle className="flex items-center space-x-2">
+            <span>로그 상세 정보</span>
+            <Badge
+              variant="outline"
+              className={`text-xs ${log.level && log.level in LOG_LEVEL_COLORS ? LOG_LEVEL_COLORS[log.level as keyof typeof LOG_LEVEL_COLORS] : "bg-gray-100 text-gray-800"}`}
+            >
+              {log.level || "INFO"}
+            </Badge>
+          </DialogTitle>
           <DialogDescription>
+            로그 ID: {log.id} |{" "}
             {log.createdAt &&
-              format(new Date(log.createdAt), "PPP p", { locale: ko })}
+              format(new Date(log.createdAt), "yyyy-MM-dd HH:mm:ss", {
+                locale: ko,
+              })}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh]">
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <strong className="text-sm font-medium">로그 ID:</strong>
-                <p className="text-sm text-muted-foreground">
-                  {log.id || "N/A"}
-                </p>
-              </div>
-              <div>
                 <strong className="text-sm font-medium">유형:</strong>
                 <Badge
-                  variant={log.type === "ERROR" ? "destructive" : "default"}
-                  className="ml-2"
+                  variant="outline"
+                  className={`ml-2 ${log.type === "ERROR" ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800"}`}
                 >
-                  {LOG_TYPE_LABELS[log.type] || log.type}
+                  {LOG_TYPE_LABELS[log.type as keyof typeof LOG_TYPE_LABELS] ||
+                    log.type}
                 </Badge>
               </div>
               <div>
                 <strong className="text-sm font-medium">레벨:</strong>
                 <Badge
                   variant="outline"
-                  className={`ml-2 ${log.level ? LOG_LEVEL_COLORS[log.level] : "bg-gray-100 text-gray-800"}`}
+                  className={`ml-2 ${log.level && log.level in LOG_LEVEL_COLORS ? LOG_LEVEL_COLORS[log.level as keyof typeof LOG_LEVEL_COLORS] : "bg-gray-100 text-gray-800"}`}
                 >
                   {log.level || "INFO"}
                 </Badge>
@@ -167,6 +247,122 @@ function LogDetailDialog({ log }: LogDetailDialogProps) {
 
 export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
   {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="모든 행 선택"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="행 선택"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+    size: 40,
+  },
+  {
+    accessorKey: "id",
+    header: "로그 ID",
+    cell: ({ row }) => {
+      const logId = row.getValue("id") as string;
+      return (
+        <div className="font-mono text-xs text-muted-foreground">
+          LOG-{logId?.slice(-4).toUpperCase() || "----"}
+        </div>
+      );
+    },
+    size: 80,
+  },
+  {
+    accessorKey: "type",
+    header: "제목",
+    cell: ({ row }) => {
+      const log = row.original;
+      const logType = log.type as keyof typeof LOG_TYPE_LABELS;
+      const action = log.action;
+
+      return (
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="text-xs">
+              {LOG_TYPE_LABELS[logType] || logType}
+            </Badge>
+            <span className="font-medium text-sm">{action}</span>
+          </div>
+          {log.message && (
+            <p className="text-xs text-muted-foreground line-clamp-2 max-w-[400px]">
+              {log.message}
+            </p>
+          )}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "level",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-8 px-2"
+        >
+          상태
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const log = row.original;
+      const level = log.level || "INFO";
+      const type = log.type;
+
+      return (
+        <div className="flex items-center space-x-2">
+          {getStatusIcon(level)}
+          <span className="text-sm">{getStatusText(type, level)}</span>
+        </div>
+      );
+    },
+    size: 100,
+  },
+  {
+    accessorKey: "level",
+    id: "priority",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-8 px-2"
+        >
+          우선순위
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const level = (row.getValue("level") as string) || "INFO";
+
+      return (
+        <div className="flex items-center space-x-1">
+          <span>{getPriorityIcon(level)}</span>
+          <span className="text-sm">{getPriorityText(level)}</span>
+        </div>
+      );
+    },
+    size: 100,
+  },
+  {
     accessorKey: "createdAt",
     header: ({ column }) => {
       return (
@@ -175,7 +371,7 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="h-8 px-2"
         >
-          시간
+          생성일시
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -183,102 +379,13 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
     cell: ({ row }) => {
       const date = row.getValue("createdAt") as Date;
       if (!date) return <span className="text-muted-foreground">-</span>;
+
       return (
         <div className="text-sm">
-          <div>{format(new Date(date), "MM/dd HH:mm", { locale: ko })}</div>
+          <div>{format(new Date(date), "yyyy-MM-dd", { locale: ko })}</div>
           <div className="text-xs text-muted-foreground">
-            {format(new Date(date), "yyyy", { locale: ko })}
+            {format(new Date(date), "HH:mm:ss", { locale: ko })}
           </div>
-        </div>
-      );
-    },
-    size: 100,
-  },
-  {
-    accessorKey: "type",
-    header: "유형",
-    cell: ({ row }) => {
-      const logType = row.getValue("type") as keyof typeof LOG_TYPE_LABELS;
-      return (
-        <Badge
-          variant={logType === "ERROR" ? "destructive" : "default"}
-          className="text-xs"
-        >
-          {LOG_TYPE_LABELS[logType] || logType}
-        </Badge>
-      );
-    },
-    size: 80,
-  },
-  {
-    accessorKey: "level",
-    header: "레벨",
-    cell: ({ row }) => {
-      const level = row.getValue("level") as keyof typeof LOG_LEVEL_COLORS;
-      return (
-        <Badge
-          variant="outline"
-          className={`text-xs ${level ? LOG_LEVEL_COLORS[level] : "bg-gray-100 text-gray-800"}`}
-        >
-          {level || "INFO"}
-        </Badge>
-      );
-    },
-    size: 70,
-  },
-  {
-    accessorKey: "action",
-    header: "액션",
-    cell: ({ row }) => {
-      const action = row.getValue("action") as string;
-      return (
-        <div className="max-w-[200px]">
-          <p className="text-sm truncate" title={action}>
-            {action}
-          </p>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "message",
-    header: "메시지",
-    cell: ({ row }) => {
-      const message = row.getValue("message") as string;
-      return (
-        <div className="max-w-[300px]">
-          <p className="text-sm truncate" title={message || ""}>
-            {message || "-"}
-          </p>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "userId",
-    header: "사용자",
-    cell: ({ row }) => {
-      const userId = row.getValue("userId") as string;
-      return (
-        <div className="text-sm text-muted-foreground">
-          {userId ? (
-            <span className="font-mono">{userId.slice(0, 8)}...</span>
-          ) : (
-            "N/A"
-          )}
-        </div>
-      );
-    },
-    size: 100,
-  },
-  {
-    accessorKey: "ipAddress",
-    header: "IP 주소",
-    cell: ({ row }) => {
-      const ipAddress = row.getValue("ipAddress") as string;
-      return (
-        <div className="text-sm text-muted-foreground">
-          {ipAddress ? <span className="font-mono">{ipAddress}</span> : "N/A"}
         </div>
       );
     },
@@ -286,11 +393,51 @@ export const adminLogsColumns: ColumnDef<ApplicationLogData>[] = [
   },
   {
     id: "actions",
-    header: "작업",
+    header: "",
     cell: ({ row }) => {
       const log = row.original;
-      return <LogDetailDialog log={log} />;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">메뉴 열기</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[160px]">
+            <LogDetailDialog log={log} />
+            <DropdownMenuItem
+              onClick={() => {
+                if (log.id) {
+                  navigator.clipboard.writeText(log.id);
+                }
+              }}
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              ID 복사
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                const logData = JSON.stringify(log, null, 2);
+                const blob = new Blob([logData], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `log-${log.id || "unknown"}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              다운로드
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
     },
-    size: 60,
+    enableSorting: false,
+    enableHiding: false,
+    size: 50,
   },
 ];
