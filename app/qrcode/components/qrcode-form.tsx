@@ -5,6 +5,7 @@ import { useForm, useFormContext, useWatch } from "react-hook-form";
 import * as z from "zod";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   Form,
   FormControl,
@@ -136,15 +137,18 @@ export function QrcodeForm() {
             value={qrType}
             onValueChange={(value) => setValue("qrType", value as any)}
           >
-            <TabsList className="flex flex-row justify-start items-center overflow-x-auto">
-              <TabsTrigger value="url">URL</TabsTrigger>
-              <TabsTrigger value="textarea">텍스트</TabsTrigger>
-              <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
-              <TabsTrigger value="email">이메일</TabsTrigger>
-              <TabsTrigger value="sms">SMS</TabsTrigger>
-              <TabsTrigger value="vcard">연락처</TabsTrigger>
-              <TabsTrigger value="location">지도</TabsTrigger>
-            </TabsList>
+            <ScrollArea className="w-full whitespace-nowrap">
+              <TabsList className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground w-full">
+                <TabsTrigger value="url">URL</TabsTrigger>
+                <TabsTrigger value="textarea">텍스트</TabsTrigger>
+                <TabsTrigger value="wifi">Wi-Fi</TabsTrigger>
+                <TabsTrigger value="email">이메일</TabsTrigger>
+                <TabsTrigger value="sms">SMS</TabsTrigger>
+                <TabsTrigger value="vcard">연락처</TabsTrigger>
+                <TabsTrigger value="location">지도</TabsTrigger>
+              </TabsList>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
             <TabsContent value="url" className="space-y-4">
               <CardUrl />
               <CardStyle />
