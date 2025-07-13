@@ -6,7 +6,7 @@ import { COPYRIGHT_TEXT } from "@/lib/constants";
 export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 pt-20 md:pt-8">
         <div className="text-center max-w-3xl mx-auto">
           <GithubBadge />
 

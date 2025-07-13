@@ -11,9 +11,9 @@ export default function QrCodeLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col p-4 sm:p-8 md:p-24">
-      <header className="w-full max-w-6xl mx-auto">
+      <header className="w-full max-w-6xl mx-auto pt-20 md:pt-0">
         <GithubBadge />
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl font-bold">
               QR 코드 생성기
@@ -25,7 +25,7 @@ export default function QrCodeLayout({
               이메일 정보를 QR 코드로 변환하여 쉽게 공유하세요.
             </p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-end space-x-4">
             <HistoryButton />
             <UserNav />
           </div>
