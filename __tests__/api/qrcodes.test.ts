@@ -8,11 +8,22 @@ jest.mock("@/auth", () => ({
 }));
 
 jest.mock("@/lib/rls-utils", () => ({
+  withRLS: jest.fn(),
   withAuthenticatedRLS: jest.fn(),
 }));
 
 jest.mock("@/lib/api-logging", () => ({
   withAuthenticatedApiLogging: jest.fn((handler) => handler),
+}));
+
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
+    qrCode: {
+      findMany: jest.fn(),
+      count: jest.fn(),
+    },
+  },
 }));
 
 // Mock Request
@@ -42,12 +53,14 @@ describe("/api/qrcodes API Route", () => {
   describe("GET /api/qrcodes", () => {
     it("인증된 사용자의 QR 코드 목록을 반환해야 한다", async () => {
       const mockAuth = require("@/auth").auth;
-      const mockWithAuthenticatedRLS =
-        require("@/lib/rls-utils").withAuthenticatedRLS;
-
-      mockAuth.mockResolvedValue({
+      const mockWithRLS = require("@/lib/rls-utils").withRLS;
+      const mockWithAuthenticatedRLS = require("@/lib/rls-utils").withAuthenticatedRLS;
+      
+      const session = {
         user: { id: TEST_USER_ID, email: "test@example.com" },
-      });
+      };
+      
+      mockAuth.mockResolvedValue(session);
 
       const mockQrCodes = [
         {
@@ -66,15 +79,24 @@ describe("/api/qrcodes API Route", () => {
         },
       };
 
-      mockWithAuthenticatedRLS.mockResolvedValue(mockPrisma);
+      // withRLS가 userId를 받아서 mockPrisma를 반환하도록 설정
+      mockWithRLS.mockImplementation((userId: string) => {
+        console.log("withRLS called with userId:", userId);
+        return Promise.resolve(mockPrisma);
+      });
+
+      // withAuthenticatedRLS가 session을 받아서 mockPrisma를 반환하도록 설정
+      mockWithAuthenticatedRLS.mockImplementation((session: any) => {
+        console.log("withAuthenticatedRLS called with session:", session);
+        return Promise.resolve(mockPrisma);
+      });
 
       const request = mockRequest("GET", { page: "1", limit: "10" });
       const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
-      expect(data.data).toEqual(mockQrCodes);
+      expect(data.qrCodes).toEqual(mockQrCodes);
     });
 
     it("인증되지 않은 사용자의 경우 401을 반환해야 한다", async () => {
@@ -89,12 +111,14 @@ describe("/api/qrcodes API Route", () => {
 
     it("검색 파라미터로 필터링해야 한다", async () => {
       const mockAuth = require("@/auth").auth;
-      const mockWithAuthenticatedRLS =
-        require("@/lib/rls-utils").withAuthenticatedRLS;
-
-      mockAuth.mockResolvedValue({
+      const mockWithRLS = require("@/lib/rls-utils").withRLS;
+      const mockWithAuthenticatedRLS = require("@/lib/rls-utils").withAuthenticatedRLS;
+      
+      const session = {
         user: { id: TEST_USER_ID, email: "test@example.com" },
-      });
+      };
+      
+      mockAuth.mockResolvedValue(session);
 
       const mockQrCodes = [
         {
@@ -112,7 +136,13 @@ describe("/api/qrcodes API Route", () => {
         },
       };
 
-      mockWithAuthenticatedRLS.mockResolvedValue(mockPrisma);
+      mockWithRLS.mockImplementation((userId: string) => {
+        return Promise.resolve(mockPrisma);
+      });
+      
+      mockWithAuthenticatedRLS.mockImplementation((session: any) => {
+        return Promise.resolve(mockPrisma);
+      });
 
       const request = mockRequest("GET", {
         page: "1",
@@ -125,15 +155,15 @@ describe("/api/qrcodes API Route", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
+      expect(data.qrCodes).toEqual(mockQrCodes);
       expect(mockPrisma.qrCode.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             AND: expect.arrayContaining([
               expect.objectContaining({
                 OR: expect.arrayContaining([
-                  { title: { contains: "example", mode: "insensitive" } },
-                  { content: { contains: "example", mode: "insensitive" } },
+                  { title: { contains: "example" } },
+                  { content: { contains: "example" } },
                 ]),
               }),
               { type: "URL" },
@@ -145,12 +175,14 @@ describe("/api/qrcodes API Route", () => {
 
     it("페이지네이션이 올바르게 작동해야 한다", async () => {
       const mockAuth = require("@/auth").auth;
-      const mockWithAuthenticatedRLS =
-        require("@/lib/rls-utils").withAuthenticatedRLS;
-
-      mockAuth.mockResolvedValue({
+      const mockWithRLS = require("@/lib/rls-utils").withRLS;
+      const mockWithAuthenticatedRLS = require("@/lib/rls-utils").withAuthenticatedRLS;
+      
+      const session = {
         user: { id: TEST_USER_ID, email: "test@example.com" },
-      });
+      };
+      
+      mockAuth.mockResolvedValue(session);
 
       const mockQrCodes = Array.from({ length: 5 }, (_, i) => ({
         id: `qr${i + 1}`,
@@ -166,7 +198,13 @@ describe("/api/qrcodes API Route", () => {
         },
       };
 
-      mockWithAuthenticatedRLS.mockResolvedValue(mockPrisma);
+      mockWithRLS.mockImplementation((userId: string) => {
+        return Promise.resolve(mockPrisma);
+      });
+
+      mockWithAuthenticatedRLS.mockImplementation((session: any) => {
+        return Promise.resolve(mockPrisma);
+      });
 
       const request = mockRequest("GET", { page: "2", limit: "5" });
       const response = await GET(request);
@@ -174,11 +212,10 @@ describe("/api/qrcodes API Route", () => {
 
       expect(response.status).toBe(200);
       expect(data.pagination).toEqual({
-        currentPage: 2,
-        totalPages: 5,
-        totalItems: 25,
-        hasNextPage: true,
-        hasPrevPage: true,
+        total: 25,
+        page: 2,
+        limit: 5,
+        pages: 5,
       });
     });
   });

@@ -21,6 +21,8 @@ export const prisma = {
     deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
   },
   $disconnect: jest.fn().mockResolvedValue(undefined),
+  $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
+  $queryRawUnsafe: jest.fn().mockResolvedValue([]),
   $transaction: jest.fn().mockImplementation((callback) => {
     if (typeof callback === "function") {
       return callback(prisma);

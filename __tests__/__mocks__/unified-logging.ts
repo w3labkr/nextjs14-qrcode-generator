@@ -9,39 +9,37 @@ export class UnifiedLogging {
   static logTypes = {
     API: "API",
     AUTH: "AUTH",
-    AUDIT: "AUDIT",
+    AUDIT: "AUDIT", 
     ERROR: "ERROR",
     QR_GENERATION: "QR_GENERATION",
   };
 
   static async createLog() {
-    // Mock implementation - do nothing in tests
-    return Promise.resolve();
+    return Promise.resolve({ id: "1", message: "mock log entry" });
   }
 
   static async logError() {
-    // Mock implementation - do nothing in tests
-    return Promise.resolve();
-  }
-
-  static async logAPI() {
-    // Mock implementation - do nothing in tests
-    return Promise.resolve();
+    return Promise.resolve({ id: "1", message: "mock error log" });
   }
 
   static async logAuth() {
-    // Mock implementation - do nothing in tests
-    return Promise.resolve();
+    return Promise.resolve({ id: "1", message: "mock auth log" });
   }
 
-  static async logAudit() {
-    // Mock implementation - do nothing in tests
-    return Promise.resolve();
+  static async logApiAccess() {
+    return Promise.resolve({ id: "1", message: "mock api log" });
+  }
+
+  static async logAPI() {
+    return Promise.resolve({ id: "1", message: "mock api log" });
   }
 
   static async logQrGeneration() {
-    // Mock implementation - do nothing in tests
-    return Promise.resolve();
+    return Promise.resolve({ id: "1", message: "mock qr generation log" });
+  }
+
+  static async logAudit() {
+    return Promise.resolve({ id: "1", message: "mock audit log" });
   }
 
   static async getLogs() {

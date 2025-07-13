@@ -10,7 +10,7 @@
 
 ### 1.1 실패한 테스트 스위트 수정
 
-- [ ] `__tests__/api/qrcodes.test.ts` - User ID 형식 검증 오류 수정
+- [x] `__tests__/api/qrcodes.test.ts` - User ID 형식 검증 오류 수정
   - RLS 유틸리티의 CUID/UUID 검증 로직 수정
   - 테스트용 유효한 User ID 생성
 - [ ] `__tests__/actions/qr-code-generator.test.ts` - 로깅 시스템 모킹 오류 수정
