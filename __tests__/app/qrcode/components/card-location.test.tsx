@@ -9,7 +9,7 @@ import { CardLocation } from "@/app/qrcode/components/card-location";
 const qrcodeFormSchema = z.object({
   qrType: z.enum([
     "url",
-    "textarea", 
+    "textarea",
     "wifi",
     "email",
     "sms",

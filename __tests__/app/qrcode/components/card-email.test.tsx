@@ -9,14 +9,17 @@ import { CardEmail } from "@/app/qrcode/components/card-email";
 const qrcodeFormSchema = z.object({
   qrType: z.enum([
     "url",
-    "textarea", 
+    "textarea",
     "wifi",
     "email",
     "sms",
     "vcard",
     "location",
   ]),
-  emailAddress: z.string().email("올바른 이메일 형식을 입력해주세요.").optional(),
+  emailAddress: z
+    .string()
+    .email("올바른 이메일 형식을 입력해주세요.")
+    .optional(),
   emailSubject: z.string().optional(),
   emailBody: z.string().optional(),
   // Add other fields as needed for form validation

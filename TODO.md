@@ -124,14 +124,27 @@
 - [x] `app/qrcode/components/card-wifi.tsx` 테스트 추가 (2025-01-07 완료)
   - WiFi QR 코드 생성 폼 컴포넌트
   - 21개 테스트 케이스로 WiFi 설정 입력 기능 완전 검증
-- [ ] `app/qrcode/components/card-style.tsx` 테스트 추가
-- [ ] `app/qrcode/components/card-preview.tsx` 테스트 추가
-- [ ] `app/qrcode/components/qrcode-form.tsx` 테스트 추가
+- [x] `app/qrcode/components/card-style.tsx` 테스트 추가 (2025-01-07 완료)
+  - QR 코드 스타일링 폼 컴포넌트
+  - 12개 테스트 케이스로 색상, 테두리, 폰트 설정 기능 완전 검증
+- [x] `app/qrcode/components/card-preview.tsx` 테스트 추가 (2025-01-07 완료)
+  - QR 코드 미리보기 및 다운로드 컴포넌트
+  - 16개 테스트 케이스로 QR 코드 생성, 미리보기, 다운로드 기능 완전 검증
+- [x] `app/qrcode/components/qrcode-form.tsx` 테스트 추가 (2025-01-07 완료)
+  - QR 코드 생성 메인 폼 컴포넌트 (탭 네비게이션)
+  - 10개 테스트 케이스로 탭 전환, 상태 관리, 접근성 기능 완전 검증
 
 ### 3.2 대시보드 컴포넌트 테스트
 
-- [ ] `app/dashboard/dashboard/components/stats-cards.tsx` 테스트 추가
-- [ ] `app/dashboard/dashboard/components/recent-qr-codes.tsx` 테스트 추가
+- [x] `app/dashboard/dashboard/components/stats-cards.tsx` 테스트 추가 (2025-01-07 완료)
+  - 대시보드 통계 카드 컴포넌트
+  - 13개 테스트 케이스로 통계 표시, 로딩 상태, 아이콘 렌더링 기능 완전 검증
+- [x] `app/dashboard/dashboard/components/recent-qr-codes.tsx` 테스트 추가 (2025-01-07 완료)
+  - 최근 생성한 QR 코드 목록 컴포넌트
+  - 16개 테스트 케이스로 QR 코드 목록, 즐겨찾기, 링크, 빈 상태 기능 완전 검증
+- [x] `app/dashboard/dashboard/components/type-stats.tsx` 테스트 추가 (2025-01-07 완료)
+  - 유형별 통계 컴포넌트
+  - 15개 테스트 케이스로 유형별 통계, 정렬, 빈 상태 기능 완전 검증
 - [ ] `app/dashboard/history/components/qr-code-card.tsx` 테스트 추가
 - [ ] `app/dashboard/history/components/search-and-filters.tsx` 테스트 추가
 - [ ] `app/dashboard/account/components/profile-form.tsx` 테스트 추가
