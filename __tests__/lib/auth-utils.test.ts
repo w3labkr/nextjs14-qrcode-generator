@@ -31,7 +31,7 @@ describe("auth-utils", () => {
       setRememberMeCookie(true);
 
       expect(mockCookieSetter).toHaveBeenCalledWith(
-        "remember-me=true; path=/; max-age=2592000; secure; samesite=strict"
+        "remember-me=true; path=/; max-age=2592000; secure; samesite=strict",
       );
     });
 
@@ -45,7 +45,7 @@ describe("auth-utils", () => {
       setRememberMeCookie(false);
 
       expect(mockCookieSetter).toHaveBeenCalledWith(
-        "remember-me=false; path=/; max-age=2592000; secure; samesite=strict"
+        "remember-me=false; path=/; max-age=2592000; secure; samesite=strict",
       );
     });
 

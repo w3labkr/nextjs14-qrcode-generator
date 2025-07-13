@@ -1,13 +1,13 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { 
-  cn, 
-  inferQrCodeType, 
-  truncateContent, 
-  getTypeLabel, 
-  getTypeColor, 
-  getContentPreview, 
-  getQrCodeColor 
+import {
+  cn,
+  inferQrCodeType,
+  truncateContent,
+  getTypeLabel,
+  getTypeColor,
+  getContentPreview,
+  getQrCodeColor,
 } from "@/lib/utils";
 
 describe("Utils 라이브러리", () => {
@@ -85,13 +85,21 @@ describe("Utils 라이브러리", () => {
     });
 
     it("WIFI 타입을 올바르게 감지해야 한다", () => {
-      expect(inferQrCodeType("wifi:T:WPA;S:MyNetwork;P:password;;")).toBe("WIFI");
-      expect(inferQrCodeType("WIFI:T:WPA;S:MyNetwork;P:password;;")).toBe("WIFI");
+      expect(inferQrCodeType("wifi:T:WPA;S:MyNetwork;P:password;;")).toBe(
+        "WIFI",
+      );
+      expect(inferQrCodeType("WIFI:T:WPA;S:MyNetwork;P:password;;")).toBe(
+        "WIFI",
+      );
     });
 
     it("VCARD 타입을 올바르게 감지해야 한다", () => {
-      expect(inferQrCodeType("BEGIN:VCARD\nVERSION:3.0\nFN:John Doe\nEND:VCARD")).toBe("VCARD");
-      expect(inferQrCodeType("begin:vcard\nversion:3.0\nfn:john doe\nend:vcard")).toBe("VCARD");
+      expect(
+        inferQrCodeType("BEGIN:VCARD\nVERSION:3.0\nFN:John Doe\nEND:VCARD"),
+      ).toBe("VCARD");
+      expect(
+        inferQrCodeType("begin:vcard\nversion:3.0\nfn:john doe\nend:vcard"),
+      ).toBe("VCARD");
     });
 
     it("LOCATION 타입을 올바르게 감지해야 한다", () => {
@@ -190,7 +198,10 @@ describe("Utils 라이브러리", () => {
     });
 
     it("WIFI 타입의 JSON 데이터를 파싱해야 한다", () => {
-      const wifiData = JSON.stringify({ ssid: "MyNetwork", password: "secret" });
+      const wifiData = JSON.stringify({
+        ssid: "MyNetwork",
+        password: "secret",
+      });
       expect(getContentPreview(wifiData, "WIFI")).toBe("SSID: MyNetwork");
     });
 
@@ -235,9 +246,9 @@ describe("Utils 라이브러리", () => {
     });
 
     it("color.dark가 있으면 foregroundColor보다 우선해야 한다", () => {
-      const settings = { 
-        color: { dark: "#ff0000" }, 
-        foregroundColor: "#0000ff" 
+      const settings = {
+        color: { dark: "#ff0000" },
+        foregroundColor: "#0000ff",
       };
       expect(getQrCodeColor(settings)).toBe("#ff0000");
     });

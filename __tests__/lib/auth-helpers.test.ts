@@ -117,7 +117,9 @@ describe("auth-helpers", () => {
       const mockError = new Error("Authentication service unavailable");
       (auth as jest.Mock).mockRejectedValue(mockError);
 
-      await expect(getAuthStatus()).rejects.toThrow("Authentication service unavailable");
+      await expect(getAuthStatus()).rejects.toThrow(
+        "Authentication service unavailable",
+      );
       expect(auth).toHaveBeenCalledTimes(1);
     });
 

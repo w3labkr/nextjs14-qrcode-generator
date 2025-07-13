@@ -8,7 +8,7 @@ describe("App Configuration", () => {
 
     it("앱 설명이 올바르게 설정되어 있어야 한다", () => {
       expect(appConfig.description).toBe(
-        "다양한 유형의 QR 코드를 생성할 수 있는 웹 애플리케이션입니다."
+        "다양한 유형의 QR 코드를 생성할 수 있는 웹 애플리케이션입니다.",
       );
     });
 
@@ -68,19 +68,19 @@ describe("App Configuration", () => {
 
     it("기억하기 세션이 기본 세션보다 길어야 한다", () => {
       expect(appConfig.session.sessionMaxAgeRemember).toBeGreaterThan(
-        appConfig.session.sessionMaxAgeDefault
+        appConfig.session.sessionMaxAgeDefault,
       );
     });
 
     it("리프레시 토큰이 액세스 토큰보다 오래 지속되어야 한다", () => {
       expect(appConfig.session.refreshTokenExpiresIn).toBeGreaterThan(
-        appConfig.session.accessTokenExpiresIn
+        appConfig.session.accessTokenExpiresIn,
       );
     });
 
     it("수동 갱신 임계값이 토큰 갱신 임계값보다 커야 한다", () => {
       expect(appConfig.session.manualRefreshThreshold).toBeGreaterThan(
-        appConfig.session.refreshThresholdSeconds
+        appConfig.session.refreshThresholdSeconds,
       );
     });
 

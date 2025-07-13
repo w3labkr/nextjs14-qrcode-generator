@@ -1,4 +1,8 @@
-import { getAdminEmails, getLogLevel, getLogRetentionDays } from "@/lib/env-validation";
+import {
+  getAdminEmails,
+  getLogLevel,
+  getLogRetentionDays,
+} from "@/lib/env-validation";
 import type { LogLevel } from "@/types/logs";
 
 describe("Environment Validation", () => {
@@ -27,25 +31,41 @@ describe("Environment Validation", () => {
     });
 
     it("여러 이메일 주소를 쉼표로 분리하여 반환해야 한다", () => {
-      process.env.ADMIN_EMAILS = "admin1@example.com,admin2@example.com,admin3@example.com";
+      process.env.ADMIN_EMAILS =
+        "admin1@example.com,admin2@example.com,admin3@example.com";
       const result = getAdminEmails();
-      expect(result).toEqual(["admin1@example.com", "admin2@example.com", "admin3@example.com"]);
+      expect(result).toEqual([
+        "admin1@example.com",
+        "admin2@example.com",
+        "admin3@example.com",
+      ]);
     });
 
     it("공백이 포함된 이메일을 정리해야 한다", () => {
-      process.env.ADMIN_EMAILS = " admin1@example.com , admin2@example.com , admin3@example.com ";
+      process.env.ADMIN_EMAILS =
+        " admin1@example.com , admin2@example.com , admin3@example.com ";
       const result = getAdminEmails();
-      expect(result).toEqual(["admin1@example.com", "admin2@example.com", "admin3@example.com"]);
+      expect(result).toEqual([
+        "admin1@example.com",
+        "admin2@example.com",
+        "admin3@example.com",
+      ]);
     });
 
     it("빈 이메일 항목을 필터링해야 한다", () => {
-      process.env.ADMIN_EMAILS = "admin1@example.com,,admin2@example.com, ,admin3@example.com";
+      process.env.ADMIN_EMAILS =
+        "admin1@example.com,,admin2@example.com, ,admin3@example.com";
       const result = getAdminEmails();
-      expect(result).toEqual(["admin1@example.com", "admin2@example.com", "admin3@example.com"]);
+      expect(result).toEqual([
+        "admin1@example.com",
+        "admin2@example.com",
+        "admin3@example.com",
+      ]);
     });
 
     it("@가 없는 잘못된 이메일을 필터링해야 한다", () => {
-      process.env.ADMIN_EMAILS = "admin1@example.com,invalid-email,admin2@example.com";
+      process.env.ADMIN_EMAILS =
+        "admin1@example.com,invalid-email,admin2@example.com";
       const result = getAdminEmails();
       expect(result).toEqual(["admin1@example.com", "admin2@example.com"]);
     });
