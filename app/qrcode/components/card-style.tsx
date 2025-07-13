@@ -59,24 +59,44 @@ export function CardStyle() {
         </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FieldStyleForegroundColor />
-        <FieldStyleBackgroundColor />
+        <div className="col-span-2 sm:col-span-1">
+          <FieldStyleForegroundColor />
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <FieldStyleBackgroundColor />
+        </div>
         <FieldStyleLogo />
         <FieldStyleBorderStyle />
         {borderStyle === "custom" && (
           <>
             <FieldStyleText />
-            <FieldStyleBorderColor />
-            <FieldStyleTextColor />
-            <FieldStyleBorderRadius />
-            <FieldStyleBorderWidth />
-            <FieldStyleFontSize />
+            <div className="col-span-2 sm:col-span-1">
+              <FieldStyleBorderColor />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <FieldStyleTextColor />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <FieldStyleBorderRadius />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <FieldStyleBorderWidth />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <FieldStyleFontSize />
+            </div>
           </>
         )}
-        {borderStyle === "rounded" && <FieldStyleBorderRadius />}
+        {borderStyle === "rounded" && (
+          <div className="col-span-2 sm:col-span-1">
+            <FieldStyleBorderRadius />
+          </div>
+        )}
         {borderStyle === "simple" && (
           <>
-            <FieldStyleBorderColor />
+            <div className="col-span-2 sm:col-span-1">
+              <FieldStyleBorderColor />
+            </div>
           </>
         )}
         {borderStyle === "custom" && (
