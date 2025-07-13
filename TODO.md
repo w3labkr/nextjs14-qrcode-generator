@@ -2,9 +2,9 @@
 
 > **현재 상태 (2024년 12월 19일 기준)**
 >
-> - 테스트 커버리지: 10.21% → **목표: 90%**
+> - 테스트 커버리지: 11.43% → **목표: 90%**
 > - 테스트 스위트: 20개 (17개 통과, 3개 실패)
-> - 테스트 케이스: 181개 (172개 통과, 9개 실패)
+> - 테스트 케이스: 214개 (205개 통과, 9개 실패)
 
 ## 🚨 우선순위 1: 실패한 테스트 수정
 
@@ -17,6 +17,10 @@
 - [x] `__tests__/lib/constants.test.ts` - 100% 커버리지 달성 (2024-12-19 완료)
   - QR_CODE_TYPES, QR_CODE_TYPE_VALUES, GITHUB_REPO_URL, COPYRIGHT_TEXT 모든 상수 검증
   - 15개 테스트 케이스로 완전한 검증 구현
+- [x] `__tests__/lib/utils.test.ts` - 88.05% 커버리지 달성 (2024-12-19 완료)
+  - cn, inferQrCodeType, truncateContent, getTypeLabel, getTypeColor, getContentPreview, getQrCodeColor 함수 테스트
+  - 41개 테스트 케이스로 유틸리티 함수 완전 검증
+  - 10.44% → 88.05% 커버리지 대폭 향상
 - [ ] `__tests__/actions/qr-code-management.test.ts` - 관련 종속성 모킹 수정 (⚠️ 복잡한 RLS 모킹 이슈)
   - withRLS, withRLSTransaction, withAuthenticatedRLSTransaction 함수들의 복잡한 모킹 필요
   - Prisma 클라이언트와 RLS 시스템 간의 상호작용 모킹 어려움
@@ -24,7 +28,12 @@
 
 ## 📊 우선순위 2: 커버리지가 낮은 핵심 영역 개선
 
-### 2.1 Server Actions 테스트 확장 (현재: ~30%)
+### 2.1 쉬운 라이브러리 함수 테스트 확장 (완료 영역)
+
+- [x] `lib/constants.ts` - 100% 커버리지 달성 (2024-12-19 완료)
+- [x] `lib/utils.ts` - 88.05% 커버리지 달성 (2024-12-19 완료)
+
+### 2.2 Server Actions 테스트 확장 (현재: ~30%)
 
 - [ ] `app/actions/account-management.ts` 테스트 추가
   - 계정 정보 업데이트 함수
