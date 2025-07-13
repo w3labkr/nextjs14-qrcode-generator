@@ -20,10 +20,7 @@ export const withRLSTransaction = jest.fn(
   },
 );
 
-export const withAuthenticatedRLS = jest.fn(async (callback: any) => {
-  if (typeof callback === "function") {
-    return await callback(prisma);
-  }
+export const withAuthenticatedRLS = jest.fn(async (session: any) => {
   return prisma;
 });
 

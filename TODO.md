@@ -10,9 +10,10 @@
 
 ### 1.1 실패한 테스트 스위트 수정
 
-- [x] `__tests__/api/qrcodes.test.ts` - 기본 API 테스트 추가 완료
+- [x] `__tests__/api/qrcodes.test.ts` - 기본 API 테스트 추가 완료 (2024-12-19 수정)
   - RLS 유틸리티의 CUID/UUID 검증 로직 수정
   - 테스트용 유효한 User ID 생성
+  - Prisma 모킹 방식 개선으로 API 라우트 테스트 통과
 - [x] `__tests__/actions/qr-code-generator.test.ts` - 로깅 시스템 모킹 오류 수정 (8/10 테스트 통과)
 - [x] `__tests__/lib/constants.test.ts` - 100% 커버리지 달성 (2024-12-19 완료)
   - QR_CODE_TYPES, QR_CODE_TYPE_VALUES, GITHUB_REPO_URL, COPYRIGHT_TEXT 모든 상수 검증

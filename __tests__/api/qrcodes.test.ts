@@ -13,10 +13,6 @@ jest.mock("@/auth", () => ({
   auth: jest.fn(),
 }));
 
-jest.mock("@/lib/rls-utils", () => ({
-  withAuthenticatedRLS: jest.fn(),
-}));
-
 jest.mock("@/lib/api-logging", () => ({
   withAuthenticatedApiLogging: (handler: Function) => handler,
 }));
@@ -32,8 +28,6 @@ const createMockRequest = (url: string) => {
 
 describe("QR Codes API", () => {
   const mockAuth = require("@/auth").auth;
-  const mockWithAuthenticatedRLS =
-    require("@/lib/rls-utils").withAuthenticatedRLS;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -70,15 +64,12 @@ describe("QR Codes API", () => {
         },
       ];
 
-      const mockDb = {
-        qrCode: {
-          findMany: jest.fn().mockResolvedValue(mockQrCodes),
-          count: jest.fn().mockResolvedValue(1),
-        },
-      };
+      // 글로벌 Prisma 모킹 조작
+      const { prisma } = require("@/lib/prisma");
+      prisma.qrCode.findMany.mockResolvedValue(mockQrCodes);
+      prisma.qrCode.count.mockResolvedValue(1);
 
       mockAuth.mockResolvedValue(mockSession);
-      mockWithAuthenticatedRLS.mockResolvedValue(mockDb);
 
       const request = createMockRequest("http://localhost:3000/api/qrcodes");
       const response = await GET(request);
@@ -94,22 +85,19 @@ describe("QR Codes API", () => {
         },
       };
 
-      const mockDb = {
-        qrCode: {
-          findMany: jest.fn().mockResolvedValue([]),
-          count: jest.fn().mockResolvedValue(0),
-        },
-      };
+      // 글로벌 Prisma 모킹 조작
+      const { prisma } = require("@/lib/prisma");
+      prisma.qrCode.findMany.mockResolvedValue([]);
+      prisma.qrCode.count.mockResolvedValue(0);
 
       mockAuth.mockResolvedValue(mockSession);
-      mockWithAuthenticatedRLS.mockResolvedValue(mockDb);
 
       const request = createMockRequest(
         "http://localhost:3000/api/qrcodes?page=2&limit=5&search=test&type=URL&favorite=true&sortBy=title&sortOrder=asc",
       );
       const response = await GET(request);
 
-      expect(mockDb.qrCode.findMany).toHaveBeenCalledWith({
+      expect(prisma.qrCode.findMany).toHaveBeenCalledWith({
         where: {
           userId: TEST_USER_ID,
           OR: [
