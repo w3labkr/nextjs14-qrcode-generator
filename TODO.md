@@ -1,14 +1,14 @@
 # TODO: 테스트 커버리지 90% 달성 계획
 
-> **현재 상태 (2025년 7월 13일 기준)**
+> **현재 상태 (2025년 1월 7일 기준)**
 >
 > - 테스트 커버리지: **12.95%** (목표: 90%)
 >   - Statements: 12.95%
 >   - Branches: 13.07%
 >   - Functions: 11.57%
 >   - Lines: 13.07%
-> - 테스트 스위트: **26개 (모두 통과)** ✅
-> - 테스트 케이스: **298개 (모두 통과)** ✅
+> - 테스트 스위트: **29개 (모두 통과)** ✅
+> - 테스트 케이스: **331개 (모두 통과)** ✅
 
 ## 🚨 우선순위 1: 실패한 테스트 수정
 
@@ -61,14 +61,16 @@
   - 계정 삭제 함수
   - OAuth 연결/해제 함수
   - 7개 테스트 케이스로 계정 관리 기능 완전 검증
-- [ ] `app/actions/data-management.ts` 테스트 추가
-  - CSV 내보내기 함수
-  - CSV 가져오기 함수
-  - 데이터 백업 함수
-- [ ] `app/actions/log-management.ts` 테스트 추가
-  - 로그 조회 함수
-  - 로그 정리 함수
-  - 로그 통계 함수
+- [x] `app/actions/data-management.ts` 테스트 추가 (2025-07-13 완료)
+  - 데이터 내보내기 함수 (exportUserData)
+  - 데이터 가져오기 함수 (importUserData)  
+  - 8개 테스트 케이스로 데이터 관리 기능 완전 검증
+- [x] `app/actions/log-management.ts` 테스트 추가 (2025-07-13 완료)
+  - 로그 생성 함수들 (Access, Auth, Audit, Error, Admin, QR)
+  - 로그 조회 함수 (getLogsAction)
+  - 로그 통계 함수 (getLogStatsAction)
+  - 로그 정리 함수 (cleanupOldLogsAction)
+  - 18개 테스트 케이스로 로그 관리 기능 완전 검증
 
 ### 2.2 API Routes 테스트 확장 (현재: ~50%)
 
