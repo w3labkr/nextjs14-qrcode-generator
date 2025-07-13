@@ -109,11 +109,21 @@
 
 ### 3.1 QR 코드 생성 컴포넌트 테스트
 
-- [ ] `app/qrcode/components/card-email.tsx` 테스트 추가
-- [ ] `app/qrcode/components/card-location.tsx` 테스트 추가
-- [ ] `app/qrcode/components/card-sms.tsx` 테스트 추가
-- [ ] `app/qrcode/components/card-vcard.tsx` 테스트 추가
-- [ ] `app/qrcode/components/card-wifi.tsx` 테스트 추가
+- [x] `app/qrcode/components/card-email.tsx` 테스트 추가 (2025-01-07 완료)
+  - 이메일 QR 코드 생성 폼 컴포넌트
+  - 12개 테스트 케이스로 이메일 주소, 제목, 내용 입력 기능 완전 검증
+- [x] `app/qrcode/components/card-location.tsx` 테스트 추가 (2025-01-07 완료)
+  - 위치 정보 QR 코드 생성 폼 컴포넌트
+  - 15개 테스트 케이스로 주소 입력 및 검색 기능 완전 검증
+- [x] `app/qrcode/components/card-sms.tsx` 테스트 추가 (2025-01-07 완료)
+  - SMS QR 코드 생성 폼 컴포넌트
+  - 16개 테스트 케이스로 전화번호 및 메시지 입력 기능 완전 검증
+- [x] `app/qrcode/components/card-vcard.tsx` 테스트 추가 (2025-01-07 완료)
+  - 연락처(vCard) QR 코드 생성 폼 컴포넌트
+  - 18개 테스트 케이스로 명함 정보 입력 기능 완전 검증
+- [x] `app/qrcode/components/card-wifi.tsx` 테스트 추가 (2025-01-07 완료)
+  - WiFi QR 코드 생성 폼 컴포넌트
+  - 21개 테스트 케이스로 WiFi 설정 입력 기능 완전 검증
 - [ ] `app/qrcode/components/card-style.tsx` 테스트 추가
 - [ ] `app/qrcode/components/card-preview.tsx` 테스트 추가
 - [ ] `app/qrcode/components/qrcode-form.tsx` 테스트 추가

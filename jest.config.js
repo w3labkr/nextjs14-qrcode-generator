@@ -46,6 +46,9 @@ const customJestConfig = {
   testEnvironmentOptions: {
     customExportConditions: [""],
   },
+  transformIgnorePatterns: [
+    "node_modules/(?!(next-auth|@auth|oauth4webapi|preact-render-to-string|preact|@panva)/)",
+  ],
 };
 
 module.exports = createJestConfig(customJestConfig);

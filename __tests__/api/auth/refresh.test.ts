@@ -19,7 +19,7 @@ const createMockRequest = (url: string, options?: RequestInit) => {
     url,
     method: options?.method || "GET",
     headers: new Headers(),
-    json: () => Promise.resolve(JSON.parse(options?.body as string || "{}")),
+    json: () => Promise.resolve(JSON.parse((options?.body as string) || "{}")),
   } as any;
 };
 
@@ -34,7 +34,9 @@ describe("/api/auth/refresh", () => {
     it("should return 401 when no session exists", async () => {
       mockAuth.mockResolvedValueOnce(null);
 
-      const request = createMockRequest("http://localhost:3000/api/auth/refresh");
+      const request = createMockRequest(
+        "http://localhost:3000/api/auth/refresh",
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(401);
@@ -51,7 +53,9 @@ describe("/api/auth/refresh", () => {
       };
       mockAuth.mockResolvedValueOnce(mockSession);
 
-      const request = createMockRequest("http://localhost:3000/api/auth/refresh");
+      const request = createMockRequest(
+        "http://localhost:3000/api/auth/refresh",
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -60,7 +64,9 @@ describe("/api/auth/refresh", () => {
     it("should handle auth errors gracefully", async () => {
       mockAuth.mockRejectedValueOnce(new Error("Auth error"));
 
-      const request = createMockRequest("http://localhost:3000/api/auth/refresh");
+      const request = createMockRequest(
+        "http://localhost:3000/api/auth/refresh",
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(500);
@@ -71,9 +77,12 @@ describe("/api/auth/refresh", () => {
     it("should return 401 when no session exists", async () => {
       mockAuth.mockResolvedValueOnce(null);
 
-      const request = createMockRequest("http://localhost:3000/api/auth/refresh", {
-        method: "POST",
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/auth/refresh",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(401);
@@ -90,9 +99,12 @@ describe("/api/auth/refresh", () => {
       };
       mockAuth.mockResolvedValueOnce(mockSession);
 
-      const request = createMockRequest("http://localhost:3000/api/auth/refresh", {
-        method: "POST",
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/auth/refresh",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -101,9 +113,12 @@ describe("/api/auth/refresh", () => {
     it("should handle auth errors gracefully", async () => {
       mockAuth.mockRejectedValueOnce(new Error("Auth error"));
 
-      const request = createMockRequest("http://localhost:3000/api/auth/refresh", {
-        method: "POST",
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/auth/refresh",
+        {
+          method: "POST",
+        },
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(500);
