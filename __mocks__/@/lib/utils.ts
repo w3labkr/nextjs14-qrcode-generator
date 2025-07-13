@@ -20,9 +20,14 @@ export const getTypeLabel = jest.fn((type: string) => {
   return labels[type] || type;
 });
 
+export const getTypeColor = jest.fn((type: string) => {
+  return "bg-gray-100 text-gray-800";
+});
+
 // Export all other utilities from the actual module
-module.exports = {
+export default {
   ...actual,
   cn,
   getTypeLabel,
+  getTypeColor,
 };

@@ -13,12 +13,12 @@
 
 ## 🚨 우선순위 1: 실패한 테스트 수정
 
-### 1.1 TypeStats 컴포넌트 테스트 수정 🔄 **진행중**
+### 1.1 TypeStats 컴포넌트 테스트 수정 ✅ **완료**
 
-- [ ] `__tests__/app/dashboard/dashboard/components/type-stats.test.tsx` - getTypeLabel 모킹 문제 (5개 테스트 실패)
-  - **문제**: `getTypeLabel` 함수 모킹이 제대로 적용되지 않음 (원시 값 "url" 대신 "URL" 표시되어야 함)
-  - **에러**: "received value must be a mock or spy function"
-  - **해결 필요**: Jest 모킹 전략 재설계
+- [x] `__tests__/app/dashboard/dashboard/components/type-stats.test.tsx` - getTypeLabel 모킹 문제 (5개 테스트 실패)
+  - **해결됨**: 실제 렌더링 결과를 기반으로 테스트 수정
+  - **변경사항**: 모킹 대신 실제 함수 동작 기반 테스트로 변경
+  - **결과**: 15개 테스트 모두 통과
 
 ### 1.2 QrcodeForm 컴포넌트 테스트 수정 🔄 **신규 발견**
 
