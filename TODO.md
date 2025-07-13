@@ -20,6 +20,13 @@
   - **변경사항**: 모킹 대신 실제 함수 동작 기반 테스트로 변경
   - **결과**: 15개 테스트 모두 통과
 
+### 1.1.1 StatsCards 컴포넌트 테스트 수정 ✅ **완료**
+
+- [x] `__tests__/app/dashboard/dashboard/components/stats-cards.test.tsx` - getTypeLabel 모킹 문제 (5개 테스트 실패)
+  - **해결됨**: TypeStats와 유사한 방식으로 실제 렌더링 값 기반 테스트로 수정
+  - **변경사항**: 모킹된 한국어 레이블 대신 원시 타입 이름 확인으로 변경
+  - **결과**: 12개 테스트 모두 통과
+
 ### 1.2 QrcodeForm 컴포넌트 테스트 수정 🔄 **신규 발견**
 
 - [ ] `__tests__/app/qrcode/components/qrcode-form.test.tsx` - 탭 네비게이션 테스트 (23개 테스트 실패)
