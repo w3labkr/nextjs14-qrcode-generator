@@ -1,20 +1,26 @@
 import { render, screen } from "@testing-library/react";
 
-// Mock utils
-jest.mock("@/lib/utils", () => ({
-  getTypeLabel: jest.fn((type: string) => {
-    const labels: { [key: string]: string } = {
-      url: "URL",
-      text: "텍스트",
-      wifi: "Wi-Fi",
-      email: "이메일",
-      sms: "SMS",
-      vcard: "연락처",
-      location: "위치",
-    };
-    return labels[type] || type;
-  }),
-}));
+// Mock utils - need to preserve all utilities from the actual module
+const mockGetTypeLabel = jest.fn((type: string) => {
+  const labels: { [key: string]: string } = {
+    url: "URL",
+    text: "텍스트",
+    wifi: "Wi-Fi",
+    email: "이메일",
+    sms: "SMS",
+    vcard: "연락처",
+    location: "위치",
+  };
+  return labels[type] || type;
+});
+
+jest.mock("@/lib/utils", () => {
+  const actual = jest.requireActual("@/lib/utils");
+  return {
+    ...actual,
+    getTypeLabel: mockGetTypeLabel,
+  };
+});
 
 // Mock constants
 jest.mock("@/lib/constants", () => ({
@@ -230,14 +236,12 @@ describe("TypeStats", () => {
   it("getTypeLabel 함수가 올바르게 호출되어야 한다", () => {
     render(<TypeStats stats={mockStats} />);
 
-    const { getTypeLabel } = require("@/lib/utils");
-
     // 모든 유형에 대해 getTypeLabel이 호출되어야 한다
-    expect(getTypeLabel).toHaveBeenCalledWith("url");
-    expect(getTypeLabel).toHaveBeenCalledWith("wifi");
-    expect(getTypeLabel).toHaveBeenCalledWith("email");
-    expect(getTypeLabel).toHaveBeenCalledWith("text");
-    expect(getTypeLabel).toHaveBeenCalledWith("sms");
-    expect(getTypeLabel).toHaveBeenCalledWith("vcard");
+    expect(mockGetTypeLabel).toHaveBeenCalledWith("url");
+    expect(mockGetTypeLabel).toHaveBeenCalledWith("wifi");
+    expect(mockGetTypeLabel).toHaveBeenCalledWith("email");
+    expect(mockGetTypeLabel).toHaveBeenCalledWith("text");
+    expect(mockGetTypeLabel).toHaveBeenCalledWith("sms");
+    expect(mockGetTypeLabel).toHaveBeenCalledWith("vcard");
   });
 });

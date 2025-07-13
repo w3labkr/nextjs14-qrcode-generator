@@ -51,6 +51,21 @@ jest.mock("next/navigation", () => ({
   },
 }));
 
+// Mock lib/utils cn function before importing anything else
+const mockCn = jest.fn(
+  (...classes: (string | undefined | null | boolean)[]) => {
+    return classes.filter(Boolean).join(" ");
+  },
+);
+
+jest.doMock("@/lib/utils", () => {
+  const actual = jest.requireActual("@/lib/utils");
+  return {
+    ...actual,
+    cn: mockCn,
+  };
+});
+
 // Mock NextAuth
 jest.mock("@/auth", () => ({
   auth: jest.fn(() => Promise.resolve(null)),
