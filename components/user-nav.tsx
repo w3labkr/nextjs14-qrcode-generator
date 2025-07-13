@@ -17,7 +17,6 @@ import {
   Settings,
   LogOut,
   Database,
-  Cloud,
   UserCog,
   Shield,
 } from "lucide-react";
@@ -54,15 +53,8 @@ export function UserNav() {
   if (status === "unauthenticated" || !session) {
     return (
       <div className="flex gap-2">
-        <Button
-          asChild
-          size="icon"
-          variant="ghost"
-          className="hover:bg-transparent"
-        >
-          <Link href="/auth/signin">
-            <Cloud className="!size-8" />
-          </Link>
+        <Button asChild variant="outline">
+          <Link href="/auth/signin">로그인</Link>
         </Button>
       </div>
     );
