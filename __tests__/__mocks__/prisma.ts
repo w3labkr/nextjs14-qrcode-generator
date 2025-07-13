@@ -20,6 +20,12 @@ export const prisma = {
     count: jest.fn().mockResolvedValue(0),
     deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
   },
+  applicationLog: {
+    create: jest.fn().mockResolvedValue({}),
+    findMany: jest.fn().mockResolvedValue([]),
+    count: jest.fn().mockResolvedValue(0),
+    deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+  },
   $disconnect: jest.fn().mockResolvedValue(undefined),
   $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
   $queryRawUnsafe: jest.fn().mockResolvedValue([]),

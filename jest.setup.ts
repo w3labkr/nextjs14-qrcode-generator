@@ -1,25 +1,28 @@
 import "@testing-library/jest-dom";
 
-// Add missing DOM APIs for jsdom
-Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
-  value: jest.fn(() => false),
-  writable: true,
-});
+// Check if we're in a browser environment before adding DOM APIs
+if (typeof HTMLElement !== 'undefined') {
+  // Add missing DOM APIs for jsdom
+  Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
+    value: jest.fn(() => false),
+    writable: true,
+  });
 
-Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
-  value: jest.fn(),
-  writable: true,
-});
+  Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+    value: jest.fn(),
+    writable: true,
+  });
 
-Object.defineProperty(HTMLElement.prototype, "releasePointerCapture", {
-  value: jest.fn(),
-  writable: true,
-});
+  Object.defineProperty(HTMLElement.prototype, "releasePointerCapture", {
+    value: jest.fn(),
+    writable: true,
+  });
 
-Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
-  value: jest.fn(),
-  writable: true,
-});
+  Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
+    value: jest.fn(),
+    writable: true,
+  });
+}
 
 // ResizeObserver Mock
 global.ResizeObserver = jest.fn().mockImplementation(() => ({

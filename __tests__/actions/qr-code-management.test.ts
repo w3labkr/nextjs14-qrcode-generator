@@ -15,17 +15,7 @@ jest.mock("@/auth", () => ({
 }));
 
 jest.mock("@/lib/rls-utils", () => ({
-  withRLS: jest.fn().mockResolvedValue({
-    qrCode: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      deleteMany: jest.fn(),
-      count: jest.fn(),
-    },
-  }),
+  withRLS: jest.fn(),
   withAuthenticatedRLSTransaction: jest.fn(),
   withoutRLS: jest.fn(),
 }));

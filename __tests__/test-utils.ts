@@ -13,3 +13,15 @@ export const createMockSession = (overrides: any = {}) => ({
   user: createMockUser(overrides.user),
   ...overrides,
 });
+
+export const mockQrCode = {
+  id: TEST_QR_CODE_ID,
+  userId: TEST_USER_ID,
+  type: "text",
+  title: "Test QR Code",
+  content: "Test content",
+  settings: '{"size": 200, "bgColor": "#ffffff", "fgColor": "#000000"}',
+  isFavorite: false,
+  createdAt: new Date("2024-01-01T00:00:00Z"),
+  updatedAt: new Date("2024-01-01T00:00:00Z"),
+};

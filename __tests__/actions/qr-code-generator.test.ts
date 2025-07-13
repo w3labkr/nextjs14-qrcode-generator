@@ -15,13 +15,7 @@ jest.mock("next/headers", () => ({
   headers: jest.fn(),
 }));
 
-jest.mock("@/lib/unified-logging", () => ({
-  UnifiedLogger: {
-    logQrGeneration: jest.fn(),
-    logError: jest.fn(),
-  },
-  inferQrType: jest.fn(),
-}));
+jest.mock("@/lib/unified-logging");
 
 jest.mock("qrcode", () => ({
   toString: jest.fn(),
@@ -42,18 +36,9 @@ jest.mock("qr-code-styling-node", () => ({
   })),
 }));
 
-jest.mock("@/lib/rls-utils", () => ({
-  withRLSTransaction: jest.fn(),
-  validateUserId: jest.fn(),
-}));
+jest.mock("@/lib/rls-utils");
 
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
-    qrCode: {
-      create: jest.fn(),
-    },
-  },
-}));
+jest.mock("@/lib/prisma");
 
 describe("QR Code Generator Actions", () => {
   const mockAuth = require("@/auth").auth;

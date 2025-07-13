@@ -9,7 +9,7 @@ export class UnifiedLogging {
   static logTypes = {
     API: "API",
     AUTH: "AUTH",
-    AUDIT: "AUDIT", 
+    AUDIT: "AUDIT",
     ERROR: "ERROR",
     QR_GENERATION: "QR_GENERATION",
   };

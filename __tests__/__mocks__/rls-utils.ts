@@ -11,12 +11,14 @@ export const withRLS = jest.fn(async (userId: string) => {
   return prisma;
 });
 
-export const withRLSTransaction = jest.fn(async (userId: string, callback: any) => {
-  if (typeof callback === "function") {
-    return await callback(prisma);
-  }
-  return callback;
-});
+export const withRLSTransaction = jest.fn(
+  async (userId: string, callback: any) => {
+    if (typeof callback === "function") {
+      return await callback(prisma);
+    }
+    return callback;
+  },
+);
 
 export const withAuthenticatedRLS = jest.fn(async (callback: any) => {
   if (typeof callback === "function") {
