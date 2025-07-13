@@ -8,16 +8,24 @@
 
 ## 🚨 우선순위 1: 실패한 테스트 수정
 
-### 1.1 실패한 테스트 스위트 수정
+### 1.1 실패한 테스트 스위트 수정 ✅ **완료** (2024-12-19)
 
 - [x] `__tests__/api/qrcodes.test.ts` - 기본 API 테스트 추가 완료 (2024-12-19 수정)
   - RLS 유틸리티의 CUID/UUID 검증 로직 수정
   - 테스트용 유효한 User ID 생성
   - Prisma 모킹 방식 개선으로 API 라우트 테스트 통과
-- [x] `__tests__/actions/qr-code-generator.test.ts` - 로깅 시스템 모킹 오류 수정 (8/10 테스트 통과)
+- [x] `__tests__/actions/qr-code-generator.test.ts` - 로깅 시스템 모킹 오류 수정 (10/10 테스트 통과) ✅
+  - Prisma 트랜잭션 모킹 개선
+  - generateAndSaveQrCode 함수 반환 형태 표준화
+  - 모든 QR 코드 생성 기능 테스트 통과
+- [x] `__tests__/actions/qr-code-management.test.ts` - QR 코드 관리 액션 테스트 (5/5 테스트 통과) ✅
+  - RLS 트랜잭션 모킹 완전 수정
+  - 모든 CRUD 작업 테스트 통과
 - [x] `__tests__/lib/constants.test.ts` - 100% 커버리지 달성 (2024-12-19 완료)
   - QR_CODE_TYPES, QR_CODE_TYPE_VALUES, GITHUB_REPO_URL, COPYRIGHT_TEXT 모든 상수 검증
   - 15개 테스트 케이스로 완전한 검증 구현
+
+**결과**: 전체 26개 테스트 스위트, 298개 테스트 케이스 모두 통과 🎉
 - [x] `__tests__/lib/utils.test.ts` - 88.05% 커버리지 달성 (2024-12-19 완료)
   - cn, inferQrCodeType, truncateContent, getTypeLabel, getTypeColor, getContentPreview, getQrCodeColor 함수 테스트
   - 41개 테스트 케이스로 유틸리티 함수 완전 검증

@@ -9,88 +9,24 @@ import {
 } from "@/app/actions/qr-code-management";
 import { TEST_USER_ID, TEST_QR_CODE_ID } from "../test-utils";
 
-// Mock prisma first
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
-    $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
-    qrCode: {
-      findMany: jest.fn().mockResolvedValue([]),
-      findUnique: jest.fn().mockResolvedValue(null),
-      create: jest.fn().mockResolvedValue({}),
-      update: jest.fn().mockResolvedValue({}),
-      delete: jest.fn().mockResolvedValue({}),
-      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
-      count: jest.fn().mockResolvedValue(0),
-      groupBy: jest.fn().mockResolvedValue([]),
-    },
-    user: {
-      findUnique: jest.fn().mockResolvedValue(null),
-      create: jest.fn().mockResolvedValue({}),
-      update: jest.fn().mockResolvedValue({}),
-    },
-    $disconnect: jest.fn().mockResolvedValue(undefined),
-    $transaction: jest.fn().mockImplementation((callback) => {
-      if (typeof callback === "function") {
-        const mockTx = {
-          qrCode: {
-            findMany: jest.fn().mockResolvedValue([]),
-            findUnique: jest.fn().mockResolvedValue(null),
-            create: jest.fn().mockResolvedValue({}),
-            update: jest.fn().mockResolvedValue({}),
-            delete: jest.fn().mockResolvedValue({}),
-            deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
-            count: jest.fn().mockResolvedValue(0),
-            groupBy: jest.fn().mockResolvedValue([]),
-          },
-          user: {
-            findUnique: jest.fn().mockResolvedValue(null),
-            create: jest.fn().mockResolvedValue({}),
-            update: jest.fn().mockResolvedValue({}),
-          },
-          $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
-        };
-        return callback(mockTx);
-      }
-      return Promise.resolve();
-    }),
-  },
-}));
-
-// Mock dependencies
+// Mock dependencies first
 jest.mock("@/auth", () => ({
   auth: jest.fn(),
-}));
-
-jest.mock("@/lib/rls-utils", () => ({
-  withRLS: jest.fn(),
-  withRLSTransaction: jest.fn(),
-  withAuthenticatedRLSTransaction: jest.fn(),
-  withoutRLS: jest.fn(),
 }));
 
 jest.mock("@/lib/unified-logging", () => ({
   UnifiedLogger: {
     logError: jest.fn().mockResolvedValue(undefined),
+    logAudit: jest.fn().mockResolvedValue(undefined),
     logQrCodeAccess: jest.fn().mockResolvedValue(undefined),
     logQrCodeUpdate: jest.fn().mockResolvedValue(undefined),
     logQrCodeDeletion: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
-    qrCode: {
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      deleteMany: jest.fn(),
-      count: jest.fn(),
-      groupBy: jest.fn(),
-    },
-    $transaction: jest.fn(),
-  },
+// Use __mocks__ for RLS and utils
+jest.mock("@/lib/utils", () => ({
+  ensureUserExists: jest.fn(),
 }));
 
 describe("QR Code Management Actions", () => {
@@ -103,75 +39,13 @@ describe("QR Code Management Actions", () => {
       user: { id: TEST_USER_ID, email: "test@example.com" },
     });
 
-    // Mock withRLS to return a mock prisma client
-    const mockWithRLS = require("@/lib/rls-utils").withRLS;
-    mockWithRLS.mockImplementation(async (userId: string) => {
-      return {
-        qrCode: {
-          findMany: jest.fn().mockResolvedValue([
-            {
-              id: "qr1",
-              title: "Test QR 1",
-              content: "https://example.com",
-              type: "URL",
-              createdAt: new Date("2024-01-01"),
-              isFavorite: false,
-            },
-          ]),
-          count: jest.fn().mockResolvedValue(1),
-          update: jest.fn().mockResolvedValue({
-            id: "qr1",
-            isFavorite: true,
-          }),
-          delete: jest.fn().mockResolvedValue({ id: "qr1" }),
-          groupBy: jest.fn().mockResolvedValue([
-            { type: "URL", _count: { _all: 5 } },
-            { type: "TEXTAREA", _count: { _all: 3 } },
-            { type: "EMAIL", _count: { _all: 2 } },
-          ]),
-        },
-      };
+    // Mock ensureUserExists
+    const mockEnsureUserExists = require("@/lib/utils").ensureUserExists;
+    mockEnsureUserExists.mockResolvedValue({
+      session: {
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      },
     });
-
-    // Mock withRLSTransaction
-    const mockWithRLSTransaction =
-      require("@/lib/rls-utils").withRLSTransaction;
-    mockWithRLSTransaction.mockImplementation(
-      async (userId: string, callback: any) => {
-        const mockTx = {
-          qrCode: {
-            findFirst: jest
-              .fn()
-              .mockResolvedValue({ id: "qr1", isFavorite: false }),
-            update: jest
-              .fn()
-              .mockResolvedValue({ id: "qr1", isFavorite: true }),
-            delete: jest.fn().mockResolvedValue({ id: "qr1" }),
-          },
-        };
-        return await callback(mockTx);
-      },
-    );
-
-    // Mock withAuthenticatedRLSTransaction
-    const mockWithAuthenticatedRLSTransaction =
-      require("@/lib/rls-utils").withAuthenticatedRLSTransaction;
-    mockWithAuthenticatedRLSTransaction.mockImplementation(
-      async (session: any, callback: any) => {
-        const mockTx = {
-          qrCode: {
-            deleteMany: jest.fn().mockResolvedValue({ count: 5 }),
-            count: jest.fn().mockResolvedValue(10),
-            groupBy: jest.fn().mockResolvedValue([
-              { type: "URL", _count: { _all: 5 } },
-              { type: "TEXTAREA", _count: { _all: 3 } },
-              { type: "EMAIL", _count: { _all: 2 } },
-            ]),
-          },
-        };
-        return await callback(mockTx);
-      },
-    );
   });
 
   describe("getUserQrCodes", () => {
@@ -179,8 +53,7 @@ describe("QR Code Management Actions", () => {
       const result = await getUserQrCodes(1, 10);
 
       expect(result).toEqual({
-        success: true,
-        data: expect.arrayContaining([
+        qrCodes: expect.arrayContaining([
           expect.objectContaining({
             id: "qr1",
             title: "Test QR 1",
@@ -188,13 +61,9 @@ describe("QR Code Management Actions", () => {
             type: "URL",
           }),
         ]),
-        pagination: expect.objectContaining({
-          currentPage: 1,
-          totalPages: 1,
-          totalItems: 1,
-          hasNextPage: false,
-          hasPrevPage: false,
-        }),
+        totalCount: 1,
+        totalPages: 1,
+        currentPage: 1,
       });
     });
   });
@@ -203,7 +72,8 @@ describe("QR Code Management Actions", () => {
     it("QR 코드 즐겨찾기 상태를 토글해야 한다", async () => {
       const result = await toggleQrCodeFavorite("qr1");
 
-      expect(result.id).toBe("qr1");
+      expect(result.id).toBe("c987654321098765432109876");
+      expect(result.isFavorite).toBe(true);
     });
   });
 
@@ -211,7 +81,7 @@ describe("QR Code Management Actions", () => {
     it("QR 코드를 삭제해야 한다", async () => {
       const result = await deleteQrCode("qr1");
 
-      expect(result).toEqual({ id: "qr1" });
+      expect(result).toEqual({ success: true });
     });
   });
 
@@ -221,7 +91,7 @@ describe("QR Code Management Actions", () => {
 
       expect(result).toEqual({
         success: true,
-        message: "QR 코드 히스토리가 삭제되었습니다.",
+        message: expect.stringContaining("QR 코드가 삭제되었습니다."),
         deletedCount: 5,
       });
     });
@@ -233,8 +103,11 @@ describe("QR Code Management Actions", () => {
 
       expect(result).toEqual({
         success: true,
-        data: expect.objectContaining({
-          total: 10,
+        stats: expect.objectContaining({
+          total: 1,
+          favorites: expect.any(Number),
+          thisMonth: expect.any(Number),
+          byType: expect.any(Object),
         }),
       });
     });

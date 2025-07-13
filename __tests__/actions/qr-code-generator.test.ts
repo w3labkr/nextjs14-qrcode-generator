@@ -229,6 +229,14 @@ describe("QR Code Generator Actions", () => {
       });
 
       const prisma = require("@/lib/prisma").prisma;
+      
+      // 사용자 찾기 모킹
+      prisma.user.findFirst.mockResolvedValue({
+        id: TEST_USER_ID,
+        email: "test@example.com",
+      });
+      
+      // QR 코드 생성 모킹
       prisma.qrCode.create.mockResolvedValue({
         id: TEST_QR_CODE_ID,
         title: "Test QR",
@@ -260,12 +268,28 @@ describe("QR Code Generator Actions", () => {
     });
 
     it("저장 중 오류 발생 시 적절한 에러를 반환해야 한다", async () => {
-      mockWithRLSTransaction.mockImplementation(async (callback: any) => {
-        return callback();
-      });
-
+      // 글로벌 모킹을 덮어써서 에러를 발생시킴
       const prisma = require("@/lib/prisma").prisma;
-      prisma.qrCode.create.mockRejectedValue(new Error("Database error"));
+      const originalTransaction = prisma.$transaction;
+      
+      prisma.$transaction.mockImplementation((callback: any) => {
+        if (typeof callback === "function") {
+          const mockTx = {
+            qrCode: {
+              create: jest.fn().mockRejectedValue(new Error("Database error")),
+            },
+            user: {
+              findFirst: jest.fn().mockResolvedValue({
+                id: "c123456789012345678901234",
+                email: "test@example.com",
+              }),
+            },
+            $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
+          };
+          return callback(mockTx);
+        }
+        return Promise.resolve();
+      });
 
       const options: QrCodeGenerationOptions = {
         text: "https://example.com",
@@ -280,7 +304,11 @@ describe("QR Code Generator Actions", () => {
       expect(result).toEqual({
         success: false,
         error: "Database error",
+        qrCodeDataUrl: null,
       });
+
+      // 원래 mock 복원
+      prisma.$transaction = originalTransaction;
     });
   });
 

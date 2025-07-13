@@ -263,7 +263,7 @@ export async function generateAndSaveQrCode(options: QrCodeGenerationOptions) {
     const session = await auth();
 
     if (session?.user?.id) {
-      await withAuthenticatedRLSTransaction(session, async (tx) => {
+      const result = await withAuthenticatedRLSTransaction(session, async (tx) => {
         // 사용자가 실제로 데이터베이스에 존재하는지 확인
         const existingUser = await tx.user.findFirst({
           where: { id: session.user!.id },
@@ -290,28 +290,40 @@ export async function generateAndSaveQrCode(options: QrCodeGenerationOptions) {
           });
 
           return {
-            qrCodeDataUrl,
-            savedId: savedQrCode.id,
+            success: true,
+            qrCode: {
+              ...savedQrCode,
+              settings: JSON.parse(savedQrCode.settings),
+              qrCodeDataUrl,
+            },
           };
         } else {
           console.warn(
             `User with ID ${session.user!.id} not found in database`,
           );
           return {
+            success: false,
+            error: "User not found in database",
             qrCodeDataUrl,
-            savedId: null,
           };
         }
       });
+
+      return result;
     }
 
     return {
+      success: false,
+      error: "Authentication required",
       qrCodeDataUrl,
-      savedId: null,
     };
   } catch (error) {
     console.error("Error generating and saving QR code:", error);
-    throw error;
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to generate and save QR code",
+      qrCodeDataUrl: null,
+    };
   }
 }
 
