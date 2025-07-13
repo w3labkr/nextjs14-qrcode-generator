@@ -26,7 +26,7 @@ import { AddressSearch, AddressData } from "@/components/address-search";
 
 export function CardLocation() {
   return (
-    <Card>
+    <Card data-testid="card-location">
       <CardHeader>
         <CardTitle>위치 정보</CardTitle>
         <CardDescription>

@@ -25,7 +25,7 @@ import {
 
 export function CardEmail() {
   return (
-    <Card>
+    <Card data-testid="card-email">
       <CardHeader>
         <CardTitle>이메일</CardTitle>
         <CardDescription>

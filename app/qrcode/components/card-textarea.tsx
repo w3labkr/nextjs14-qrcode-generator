@@ -26,7 +26,7 @@ import {
 
 export function CardTextarea() {
   return (
-    <Card>
+    <Card data-testid="card-textarea">
       <CardHeader>
         <CardTitle>일반 텍스트</CardTitle>
         <CardDescription>QR 코드에 포함할 텍스트를 입력하세요.</CardDescription>

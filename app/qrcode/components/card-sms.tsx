@@ -25,7 +25,7 @@ import {
 
 export function CardSms() {
   return (
-    <Card>
+    <Card data-testid="card-sms">
       <CardHeader>
         <CardTitle>SMS</CardTitle>
         <CardDescription>전화번호와 메시지를 입력하세요.</CardDescription>

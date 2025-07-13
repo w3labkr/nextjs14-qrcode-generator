@@ -10,7 +10,7 @@ import { getTypeLabel } from "@/lib/utils";
 jest.mock("@/lib/constants", () => ({
   QR_CODE_TYPES: {
     URL: "url",
-    TEXT: "text", 
+    TEXT: "text",
     WIFI: "wifi",
     EMAIL: "email",
     SMS: "sms",
@@ -129,7 +129,9 @@ describe("TypeStats", () => {
     render(<TypeStats stats={mockStats} />);
 
     // Badge 요소들이 렌더링되어야 한다 (실제 생성되는 클래스명 확인)
-    const badges = document.querySelectorAll('[class*="inline-flex"][class*="rounded-md"][class*="border"]');
+    const badges = document.querySelectorAll(
+      '[class*="inline-flex"][class*="rounded-md"][class*="border"]',
+    );
     expect(badges.length).toBeGreaterThan(0);
   });
 
@@ -220,11 +222,13 @@ describe("TypeStats", () => {
 
     // 기본 컴포넌트 구조 확인
     expect(screen.getByText("유형별 통계")).toBeInTheDocument();
-    expect(screen.getByText("생성한 QR 코드를 유형별로 확인해보세요.")).toBeInTheDocument();
-    
+    expect(
+      screen.getByText("생성한 QR 코드를 유형별로 확인해보세요."),
+    ).toBeInTheDocument();
+
     // 모든 타입이 표시되는지 확인
     const types = ["url", "wifi", "email", "text", "sms", "vcard"];
-    types.forEach(type => {
+    types.forEach((type) => {
       expect(screen.getByText(type)).toBeInTheDocument();
     });
   });

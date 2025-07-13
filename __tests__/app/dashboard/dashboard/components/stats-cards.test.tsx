@@ -167,7 +167,9 @@ describe("StatsCards", () => {
     render(<StatsCards stats={mockStats} loading={false} />);
 
     // 4개의 카드가 있어야 한다 (실제 클래스명으로 확인)
-    const cards = document.querySelectorAll('[class*="rounded-xl"][class*="border"]');
+    const cards = document.querySelectorAll(
+      '[class*="rounded-xl"][class*="border"]',
+    );
     expect(cards.length).toBeGreaterThanOrEqual(4);
 
     // text-2xl font-bold 클래스를 가진 요소들이 4개 있어야 한다

@@ -26,7 +26,7 @@ import { AddressSearch, AddressData } from "@/components/address-search";
 
 export function CardVCard() {
   return (
-    <Card>
+    <Card data-testid="card-vcard">
       <CardHeader>
         <CardTitle>연락처 정보</CardTitle>
         <CardDescription>

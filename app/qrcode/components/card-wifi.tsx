@@ -36,7 +36,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 export function CardWifi() {
   return (
-    <Card>
+    <Card data-testid="card-wifi">
       <CardHeader>
         <CardTitle>Wi-Fi 네트워크</CardTitle>
         <CardDescription>

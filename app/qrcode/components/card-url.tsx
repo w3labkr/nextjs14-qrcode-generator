@@ -26,7 +26,7 @@ import {
 
 export function CardUrl() {
   return (
-    <Card>
+    <Card data-testid="card-url">
       <CardHeader>
         <CardTitle>웹사이트 URL</CardTitle>
         <CardDescription>연결할 웹사이트 주소를 입력하세요.</CardDescription>

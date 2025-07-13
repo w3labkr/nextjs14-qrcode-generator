@@ -50,7 +50,7 @@ export function CardStyle() {
   };
 
   return (
-    <Card>
+    <Card data-testid="card-style">
       <CardHeader>
         <CardTitle>디자인</CardTitle>
         <CardDescription>
