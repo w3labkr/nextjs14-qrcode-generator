@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 
 // Check if we're in a browser environment before adding DOM APIs
-if (typeof HTMLElement !== 'undefined') {
+if (typeof HTMLElement !== "undefined") {
   // Add missing DOM APIs for jsdom
   Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
     value: jest.fn(() => false),

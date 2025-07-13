@@ -1,14 +1,16 @@
-import { 
-  QR_CODE_TYPES, 
-  QR_CODE_TYPE_VALUES, 
-  GITHUB_REPO_URL, 
-  COPYRIGHT_TEXT 
+import {
+  QR_CODE_TYPES,
+  QR_CODE_TYPE_VALUES,
+  GITHUB_REPO_URL,
+  COPYRIGHT_TEXT,
 } from "@/lib/constants";
 
 describe("Constants", () => {
   describe("GITHUB_REPO_URL", () => {
     it("올바른 GitHub URL을 반환해야 한다", () => {
-      expect(GITHUB_REPO_URL).toBe("https://github.com/w3labkr/nextjs14-qrcode-generator");
+      expect(GITHUB_REPO_URL).toBe(
+        "https://github.com/w3labkr/nextjs14-qrcode-generator",
+      );
       expect(GITHUB_REPO_URL).toMatch(/^https:\/\/github\.com\//);
     });
   });
@@ -23,24 +25,32 @@ describe("Constants", () => {
 
   describe("QR_CODE_TYPES", () => {
     it("모든 QR 코드 타입이 정의되어 있어야 한다", () => {
-      const expectedTypes = ['url', 'textarea', 'wifi', 'email', 'sms', 'vcard', 'location'];
+      const expectedTypes = [
+        "url",
+        "textarea",
+        "wifi",
+        "email",
+        "sms",
+        "vcard",
+        "location",
+      ];
       const actualTypes = Object.keys(QR_CODE_TYPES);
-      
+
       expect(actualTypes).toEqual(expect.arrayContaining(expectedTypes));
       expect(actualTypes).toHaveLength(expectedTypes.length);
     });
 
     it("각 QR 코드 타입이 필요한 속성을 가져야 한다", () => {
       Object.values(QR_CODE_TYPES).forEach((type) => {
-        expect(type).toHaveProperty('value');
-        expect(type).toHaveProperty('label');
-        expect(type).toHaveProperty('displayName');
-        expect(type).toHaveProperty('color');
-        
-        expect(typeof type.value).toBe('string');
-        expect(typeof type.label).toBe('string');
-        expect(typeof type.displayName).toBe('string');
-        expect(typeof type.color).toBe('string');
+        expect(type).toHaveProperty("value");
+        expect(type).toHaveProperty("label");
+        expect(type).toHaveProperty("displayName");
+        expect(type).toHaveProperty("color");
+
+        expect(typeof type.value).toBe("string");
+        expect(typeof type.label).toBe("string");
+        expect(typeof type.displayName).toBe("string");
+        expect(typeof type.color).toBe("string");
       });
     });
 

@@ -133,35 +133,45 @@ describe("QR Code Management Actions", () => {
       };
     });
 
-    // Mock withRLSTransaction 
-    const mockWithRLSTransaction = require("@/lib/rls-utils").withRLSTransaction;
-    mockWithRLSTransaction.mockImplementation(async (userId: string, callback: any) => {
-      const mockTx = {
-        qrCode: {
-          findFirst: jest.fn().mockResolvedValue({ id: "qr1", isFavorite: false }),
-          update: jest.fn().mockResolvedValue({ id: "qr1", isFavorite: true }),
-          delete: jest.fn().mockResolvedValue({ id: "qr1" }),
-        },
-      };
-      return await callback(mockTx);
-    });
+    // Mock withRLSTransaction
+    const mockWithRLSTransaction =
+      require("@/lib/rls-utils").withRLSTransaction;
+    mockWithRLSTransaction.mockImplementation(
+      async (userId: string, callback: any) => {
+        const mockTx = {
+          qrCode: {
+            findFirst: jest
+              .fn()
+              .mockResolvedValue({ id: "qr1", isFavorite: false }),
+            update: jest
+              .fn()
+              .mockResolvedValue({ id: "qr1", isFavorite: true }),
+            delete: jest.fn().mockResolvedValue({ id: "qr1" }),
+          },
+        };
+        return await callback(mockTx);
+      },
+    );
 
     // Mock withAuthenticatedRLSTransaction
-    const mockWithAuthenticatedRLSTransaction = require("@/lib/rls-utils").withAuthenticatedRLSTransaction;
-    mockWithAuthenticatedRLSTransaction.mockImplementation(async (session: any, callback: any) => {
-      const mockTx = {
-        qrCode: {
-          deleteMany: jest.fn().mockResolvedValue({ count: 5 }),
-          count: jest.fn().mockResolvedValue(10),
-          groupBy: jest.fn().mockResolvedValue([
-            { type: "URL", _count: { _all: 5 } },
-            { type: "TEXTAREA", _count: { _all: 3 } },
-            { type: "EMAIL", _count: { _all: 2 } },
-          ]),
-        },
-      };
-      return await callback(mockTx);
-    });
+    const mockWithAuthenticatedRLSTransaction =
+      require("@/lib/rls-utils").withAuthenticatedRLSTransaction;
+    mockWithAuthenticatedRLSTransaction.mockImplementation(
+      async (session: any, callback: any) => {
+        const mockTx = {
+          qrCode: {
+            deleteMany: jest.fn().mockResolvedValue({ count: 5 }),
+            count: jest.fn().mockResolvedValue(10),
+            groupBy: jest.fn().mockResolvedValue([
+              { type: "URL", _count: { _all: 5 } },
+              { type: "TEXTAREA", _count: { _all: 3 } },
+              { type: "EMAIL", _count: { _all: 2 } },
+            ]),
+          },
+        };
+        return await callback(mockTx);
+      },
+    );
   });
 
   describe("getUserQrCodes", () => {

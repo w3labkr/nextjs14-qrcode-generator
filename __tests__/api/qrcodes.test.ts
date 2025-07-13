@@ -32,7 +32,8 @@ const createMockRequest = (url: string) => {
 
 describe("QR Codes API", () => {
   const mockAuth = require("@/auth").auth;
-  const mockWithAuthenticatedRLS = require("@/lib/rls-utils").withAuthenticatedRLS;
+  const mockWithAuthenticatedRLS =
+    require("@/lib/rls-utils").withAuthenticatedRLS;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -104,7 +105,7 @@ describe("QR Codes API", () => {
       mockWithAuthenticatedRLS.mockResolvedValue(mockDb);
 
       const request = createMockRequest(
-        "http://localhost:3000/api/qrcodes?page=2&limit=5&search=test&type=URL&favorite=true&sortBy=title&sortOrder=asc"
+        "http://localhost:3000/api/qrcodes?page=2&limit=5&search=test&type=URL&favorite=true&sortBy=title&sortOrder=asc",
       );
       const response = await GET(request);
 

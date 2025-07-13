@@ -61,7 +61,7 @@ module.exports = {
       },
       $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
     };
-    
+
     if (typeof callback === "function") {
       return await callback(mockTx);
     }
@@ -73,26 +73,46 @@ module.exports = {
     }
     return callback;
   }),
-  withAuthenticatedRLSTransaction: jest.fn().mockImplementation(async (session, callback) => {
-    // Mock transaction object with more complete Prisma operations
-    const mockTx = {
-      user: {
-        findFirst: jest.fn().mockResolvedValue({ id: session?.user?.id || "test-user" }),
-        findUnique: jest.fn().mockResolvedValue({ id: session?.user?.id || "test-user" }),
-        create: jest.fn().mockResolvedValue({ id: session?.user?.id || "test-user" }),
-      },
-      qrCode: {
-        create: jest.fn().mockResolvedValue({
-          id: "test-qr-id",
-          userId: session?.user?.id || "test-user",
-          type: "URL",
-          title: "Test QR",
-          content: "https://example.com",
-          settings: "{}",
-          createdAt: new Date(),
-        }),
-        findMany: jest.fn().mockResolvedValue([
-          {
+  withAuthenticatedRLSTransaction: jest
+    .fn()
+    .mockImplementation(async (session, callback) => {
+      // Mock transaction object with more complete Prisma operations
+      const mockTx = {
+        user: {
+          findFirst: jest
+            .fn()
+            .mockResolvedValue({ id: session?.user?.id || "test-user" }),
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ id: session?.user?.id || "test-user" }),
+          create: jest
+            .fn()
+            .mockResolvedValue({ id: session?.user?.id || "test-user" }),
+        },
+        qrCode: {
+          create: jest.fn().mockResolvedValue({
+            id: "test-qr-id",
+            userId: session?.user?.id || "test-user",
+            type: "URL",
+            title: "Test QR",
+            content: "https://example.com",
+            settings: "{}",
+            createdAt: new Date(),
+          }),
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: "qr1",
+              userId: session?.user?.id || "test-user",
+              type: "URL",
+              title: "Test QR",
+              content: "https://example.com",
+              settings: "{}",
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              isFavorite: false,
+            },
+          ]),
+          findUnique: jest.fn().mockResolvedValue({
             id: "qr1",
             userId: session?.user?.id || "test-user",
             type: "URL",
@@ -102,41 +122,29 @@ module.exports = {
             createdAt: new Date(),
             updatedAt: new Date(),
             isFavorite: false,
-          },
-        ]),
-        findUnique: jest.fn().mockResolvedValue({
-          id: "qr1",
-          userId: session?.user?.id || "test-user",
-          type: "URL",
-          title: "Test QR",
-          content: "https://example.com",
-          settings: "{}",
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          isFavorite: false,
-        }),
-        update: jest.fn().mockResolvedValue({
-          id: "qr1",
-          userId: session?.user?.id || "test-user",
-          isFavorite: true,
-        }),
-        delete: jest.fn().mockResolvedValue({ id: "qr1" }),
-        deleteMany: jest.fn().mockResolvedValue({ count: 5 }),
-        count: jest.fn().mockResolvedValue(10),
-        groupBy: jest.fn().mockResolvedValue([
-          { type: "URL", _count: { _all: 5 } },
-          { type: "TEXTAREA", _count: { _all: 3 } },
-          { type: "EMAIL", _count: { _all: 2 } },
-        ]),
-      },
-      $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
-    };
-    
-    if (typeof callback === "function") {
-      return await callback(mockTx);
-    }
-    return mockTx;
-  }),
+          }),
+          update: jest.fn().mockResolvedValue({
+            id: "qr1",
+            userId: session?.user?.id || "test-user",
+            isFavorite: true,
+          }),
+          delete: jest.fn().mockResolvedValue({ id: "qr1" }),
+          deleteMany: jest.fn().mockResolvedValue({ count: 5 }),
+          count: jest.fn().mockResolvedValue(10),
+          groupBy: jest.fn().mockResolvedValue([
+            { type: "URL", _count: { _all: 5 } },
+            { type: "TEXTAREA", _count: { _all: 3 } },
+            { type: "EMAIL", _count: { _all: 2 } },
+          ]),
+        },
+        $executeRawUnsafe: jest.fn().mockResolvedValue(undefined),
+      };
+
+      if (typeof callback === "function") {
+        return await callback(mockTx);
+      }
+      return mockTx;
+    }),
   withSystemRLS: jest.fn().mockImplementation(async (callback) => {
     if (typeof callback === "function") {
       return await callback();
