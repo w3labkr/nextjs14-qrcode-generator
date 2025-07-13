@@ -56,10 +56,11 @@
 
 ### 2.2 Server Actions 테스트 확장 (현재: ~30%)
 
-- [ ] `app/actions/account-management.ts` 테스트 추가
+- [x] `app/actions/account-management.ts` 테스트 추가 (2025-07-13 완료)
   - 계정 정보 업데이트 함수
   - 계정 삭제 함수
   - OAuth 연결/해제 함수
+  - 7개 테스트 케이스로 계정 관리 기능 완전 검증
 - [ ] `app/actions/data-management.ts` 테스트 추가
   - CSV 내보내기 함수
   - CSV 가져오기 함수
