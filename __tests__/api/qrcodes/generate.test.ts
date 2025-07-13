@@ -27,7 +27,7 @@ const createMockRequest = (url: string, options?: RequestInit) => {
     url,
     method: options?.method || "POST",
     headers: new Headers(),
-    json: () => Promise.resolve(JSON.parse(options?.body as string || "{}")),
+    json: () => Promise.resolve(JSON.parse((options?.body as string) || "{}")),
   } as any;
 };
 
@@ -57,10 +57,13 @@ describe("/api/qrcodes/generate API Routes", () => {
     it("인증되지 않은 사용자에게 401 오류를 반환해야 함", async () => {
       mockAuth.mockResolvedValueOnce(null);
 
-      const request = createMockRequest("http://localhost/api/qrcodes/generate", {
-        method: "POST",
-        body: JSON.stringify({ settings: mockSettings }),
-      });
+      const request = createMockRequest(
+        "http://localhost/api/qrcodes/generate",
+        {
+          method: "POST",
+          body: JSON.stringify({ settings: mockSettings }),
+        },
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(401);
@@ -69,10 +72,13 @@ describe("/api/qrcodes/generate API Routes", () => {
     it("settings가 없는 경우 400 오류를 반환해야 함", async () => {
       mockAuth.mockResolvedValueOnce(mockSession);
 
-      const request = createMockRequest("http://localhost/api/qrcodes/generate", {
-        method: "POST",
-        body: JSON.stringify({}),
-      });
+      const request = createMockRequest(
+        "http://localhost/api/qrcodes/generate",
+        {
+          method: "POST",
+          body: JSON.stringify({}),
+        },
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(400);
@@ -80,12 +86,17 @@ describe("/api/qrcodes/generate API Routes", () => {
 
     it("QR 코드를 성공적으로 생성해야 함", async () => {
       mockAuth.mockResolvedValueOnce(mockSession);
-      generateQrCode.mockResolvedValueOnce("data:image/png;base64,mockbase64data");
+      generateQrCode.mockResolvedValueOnce(
+        "data:image/png;base64,mockbase64data",
+      );
 
-      const request = createMockRequest("http://localhost/api/qrcodes/generate", {
-        method: "POST",
-        body: JSON.stringify({ settings: mockSettings }),
-      });
+      const request = createMockRequest(
+        "http://localhost/api/qrcodes/generate",
+        {
+          method: "POST",
+          body: JSON.stringify({ settings: mockSettings }),
+        },
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -96,10 +107,13 @@ describe("/api/qrcodes/generate API Routes", () => {
       mockAuth.mockResolvedValueOnce(mockSession);
       generateQrCode.mockRejectedValueOnce(new Error("Generation failed"));
 
-      const request = createMockRequest("http://localhost/api/qrcodes/generate", {
-        method: "POST",
-        body: JSON.stringify({ settings: mockSettings }),
-      });
+      const request = createMockRequest(
+        "http://localhost/api/qrcodes/generate",
+        {
+          method: "POST",
+          body: JSON.stringify({ settings: mockSettings }),
+        },
+      );
       const response = await POST(request);
 
       expect(response.status).toBe(500);

@@ -89,19 +89,21 @@
   - GET: QR 코드 목록 조회
   - POST: QR 코드 생성
   - 4개 테스트 케이스로 QR 코드 기본 API 완전 검증
-- [ ] `app/api/admin/**` 테스트 추가
-  - 관리자 권한 확인
-  - 로그 관리 API
-  - 시스템 상태 확인
+- [x] `app/api/admin/**` 테스트 추가 (2025-01-07 완료)
+  - 관리자 권한 확인 (admin/check)
+  - 로그 관리 API (admin/logs)
+  - 6개 + 4개 = 10개 테스트 케이스로 관리자 기능 완전 검증
 
 ### 2.4 인증 관련 API 테스트 추가
 
-- [ ] `app/api/auth/refresh/route.ts` 테스트 추가
-  - 토큰 갱신 로직
+- [x] `app/api/auth/refresh/route.ts` 테스트 추가 (2025-01-07 완료)
+  - 토큰 갱신 로직 (GET/POST 메서드)
   - 만료된 토큰 처리
-- [ ] `app/api/cron/**` 테스트 추가
-  - Keep-alive 엔드포인트
-  - 로그 정리 크론 작업
+  - 6개 테스트 케이스로 토큰 갱신 기능 완전 검증
+- [x] `app/api/cron/**` 테스트 추가 (2025-01-07 완료)
+  - Keep-alive 엔드포인트 (cron/keep-alive)
+  - 로그 정리 크론 작업 (cron/log-cleanup)
+  - 5개 + 6개 = 11개 테스트 케이스로 크론잡 기능 완전 검증
 
 ## 🧩 우선순위 3: 컴포넌트 테스트 확장
 

@@ -23,7 +23,7 @@ const createMockRequest = (url: string, options?: RequestInit) => {
     url,
     method: options?.method || "GET",
     headers: new Headers(),
-    json: () => Promise.resolve(JSON.parse(options?.body as string || "{}")),
+    json: () => Promise.resolve(JSON.parse((options?.body as string) || "{}")),
   } as any;
 };
 
@@ -67,7 +67,7 @@ describe("/api/qrcodes/[id] API Routes", () => {
 
     it("인증된 사용자에 대해 응답을 반환해야 함", async () => {
       mockAuth.mockResolvedValueOnce(mockSession);
-      
+
       // 글로벌 Prisma 모킹 조작
       const { prisma } = require("@/lib/prisma");
       prisma.qrCode.findFirst.mockResolvedValueOnce(mockQrCode);
