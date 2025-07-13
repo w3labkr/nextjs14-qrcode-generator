@@ -48,7 +48,7 @@ describe("auth-server", () => {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-        }
+        },
       );
 
       expect(result).toEqual({
@@ -65,7 +65,10 @@ describe("auth-server", () => {
 
       const result = await refreshAccessToken(mockToken);
 
-      expect(console.error).toHaveBeenCalledWith("토큰 갱신 중 오류 발생:", error);
+      expect(console.error).toHaveBeenCalledWith(
+        "토큰 갱신 중 오류 발생:",
+        error,
+      );
       expect(result).toEqual({
         ...mockToken,
         error: "RefreshAccessTokenError",
@@ -102,7 +105,7 @@ describe("auth-server", () => {
 
       const callArgs = mockedAxios.post.mock.calls[0];
       const formData = callArgs[1] as URLSearchParams;
-      
+
       expect(formData.get("client_id")).toBe("test-client-id");
       expect(formData.get("client_secret")).toBe("test-client-secret");
       expect(formData.get("refresh_token")).toBe("refresh-token");

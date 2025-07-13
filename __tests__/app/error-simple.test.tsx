@@ -36,7 +36,7 @@ describe("Error", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLogErrorAction.mockResolvedValue({ success: true });
-    
+
     // 테스트마다 새로운 console.error 모킹 생성
     mockConsoleError = jest
       .spyOn(console, "error")
