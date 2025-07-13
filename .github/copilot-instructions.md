@@ -153,6 +153,11 @@ The project includes several npm scripts for development and maintenance:
 
 * **Development**: `npm run dev` - Starts the development server with Turbo mode
 * **Build**: `npm run build` - Generates Prisma client and builds the application
+* **Testing**:
+  * `npm run test` - Runs all tests
+  * `npm run test:watch` - Runs tests in watch mode
+  * `npm run test:coverage` - Runs tests with coverage report
+  * `npm run test:ci` - Runs tests for CI/CD with coverage
 * **Cleaning**:
   * `npm run clean` - Removes node_modules, .next, and package-lock.json, clears npm cache
   * `npm run clean:files` - Removes files only
@@ -166,15 +171,63 @@ The project includes several npm scripts for development and maintenance:
   * `npm run logs:backup` - Backs up log data
   * `npm run logs:auto-cleanup` - Automatically cleans up old log entries via API
   * `npm run logs:stats` - Shows log cleanup statistics
+* **RLS (Row Level Security)**:
+  * `npm run rls:test` - Tests RLS comprehensive functionality
+  * `npm run rls:validate` - Validates RLS policies
+  * `npm run rls:benchmark` - Benchmarks RLS performance
 * **Documentation**: `npm run docs:update` - Shows documentation update checklist
 
 ## Feedback and Improvement
 
 If Copilot's suggestions do not meet expectations, actively modify and provide feedback to help Copilot provide better suggestions in the future.
 
+## Testing and Quality Assurance
+
+### TDD (Test-Driven Development) Guidelines
+
+* **TDD Approach**: Follow the Red-Green-Refactor cycle for all new feature development:
+  1. **Red**: Write a failing test first
+  2. **Green**: Write the minimal code to make the test pass
+  3. **Refactor**: Improve the code while keeping tests green
+* **Test Coverage Target**: Maintain **90% or higher** test coverage across all modules
+* **Test-First Development**: Always write tests before implementing new functionality
+* **Code Quality Gates**: New code must pass all tests and meet coverage thresholds before merging
+
+### Testing Framework and Tools
+
+* **Test Runner**: Jest v30.0.3 with jest-environment-jsdom for React components
+* **Testing Libraries**:
+  * `@testing-library/react` v16.3.0 for component testing
+  * `@testing-library/jest-dom` v6.6.3 for DOM assertions
+  * `@testing-library/user-event` v14.6.1 for user interaction simulation
+* **Test Structure**: Organize tests in `__tests__/` directory mirroring source structure
+* **Mocking Strategy**: Use Jest mocks for external dependencies, database calls, and API requests
+* **Coverage Reporting**: Generate coverage reports with HTML output for detailed analysis
+
+### Current Test Status (as of 2025년 7월 13일)
+
+* **Test Suites**: 20 files (17 passing, 3 failing)
+* **Test Cases**: 173 total (163 passing, 10 failing)
+* **Success Rate**: 94.2%
+* **Current Coverage**:
+  * Statements: 9.67% (Target: 90%)
+  * Branches: 8.62% (Target: 90%)
+  * Functions: 7.39% (Target: 90%)
+  * Lines: 9.83% (Target: 90%)
+
+### Testing Best Practices
+
+* **Component Testing**: Test component behavior, not implementation details
+* **Unit Testing**: Test individual functions and utilities in isolation
+* **Integration Testing**: Test API routes and server actions with proper mocking
+* **Error Handling**: Test both success and failure scenarios
+* **Edge Cases**: Include tests for boundary conditions and error states
+* **Accessibility**: Include accessibility testing where applicable
+* **Performance**: Monitor test execution time and optimize slow tests
+
 ## Project Current Status
 
-* **Version**: v1.5.5 (as of 2025년 6월 29일)
+* **Version**: v1.5.22 (as of 2025년 7월 13일)
 * **Package Count**: 101 npm packages (75 dependencies + 26 devDependencies)
 * **UI Components**: 48 shadcn/ui components
 * **QR Code Types**: 7 supported types (URL, TEXTAREA, WIFI, EMAIL, SMS, VCARD, LOCATION)
@@ -187,4 +240,5 @@ If Copilot's suggestions do not meet expectations, actively modify and provide f
 * **Code Quality**: ESLint, Prettier, and TypeScript configured with strict rules
 * **Development**: Next.js 14.2.30 with Turbo mode enabled for faster development
 * **Logging**: Comprehensive unified logging system for API, authentication, audit, and error tracking
+* **Testing**: Jest v30.0.3 with comprehensive test suite targeting 90% coverage
 * **PWA**: Progressive Web App capabilities with offline support
