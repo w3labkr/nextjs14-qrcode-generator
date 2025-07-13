@@ -229,13 +229,13 @@ describe("QR Code Generator Actions", () => {
       });
 
       const prisma = require("@/lib/prisma").prisma;
-      
+
       // 사용자 찾기 모킹
       prisma.user.findFirst.mockResolvedValue({
         id: TEST_USER_ID,
         email: "test@example.com",
       });
-      
+
       // QR 코드 생성 모킹
       prisma.qrCode.create.mockResolvedValue({
         id: TEST_QR_CODE_ID,
@@ -271,7 +271,7 @@ describe("QR Code Generator Actions", () => {
       // 글로벌 모킹을 덮어써서 에러를 발생시킴
       const prisma = require("@/lib/prisma").prisma;
       const originalTransaction = prisma.$transaction;
-      
+
       prisma.$transaction.mockImplementation((callback: any) => {
         if (typeof callback === "function") {
           const mockTx = {

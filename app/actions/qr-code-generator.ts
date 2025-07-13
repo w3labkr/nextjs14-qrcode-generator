@@ -263,51 +263,54 @@ export async function generateAndSaveQrCode(options: QrCodeGenerationOptions) {
     const session = await auth();
 
     if (session?.user?.id) {
-      const result = await withAuthenticatedRLSTransaction(session, async (tx) => {
-        // 사용자가 실제로 데이터베이스에 존재하는지 확인
-        const existingUser = await tx.user.findFirst({
-          where: { id: session.user!.id },
-        });
-
-        if (existingUser) {
-          const savedQrCode = await tx.qrCode.create({
-            data: {
-              userId: session.user!.id,
-              type: options.qrType,
-              title: options.title || null,
-              content: options.text,
-              settings: JSON.stringify({
-                type: options.type,
-                color: options.color,
-                width: options.width,
-                margin: options.margin,
-                logo: options.logo,
-                dotsOptions: options.dotsOptions,
-                cornersSquareOptions: options.cornersSquareOptions,
-                frameOptions: options.frameOptions,
-              }),
-            },
+      const result = await withAuthenticatedRLSTransaction(
+        session,
+        async (tx) => {
+          // 사용자가 실제로 데이터베이스에 존재하는지 확인
+          const existingUser = await tx.user.findFirst({
+            where: { id: session.user!.id },
           });
 
-          return {
-            success: true,
-            qrCode: {
-              ...savedQrCode,
-              settings: JSON.parse(savedQrCode.settings),
+          if (existingUser) {
+            const savedQrCode = await tx.qrCode.create({
+              data: {
+                userId: session.user!.id,
+                type: options.qrType,
+                title: options.title || null,
+                content: options.text,
+                settings: JSON.stringify({
+                  type: options.type,
+                  color: options.color,
+                  width: options.width,
+                  margin: options.margin,
+                  logo: options.logo,
+                  dotsOptions: options.dotsOptions,
+                  cornersSquareOptions: options.cornersSquareOptions,
+                  frameOptions: options.frameOptions,
+                }),
+              },
+            });
+
+            return {
+              success: true,
+              qrCode: {
+                ...savedQrCode,
+                settings: JSON.parse(savedQrCode.settings),
+                qrCodeDataUrl,
+              },
+            };
+          } else {
+            console.warn(
+              `User with ID ${session.user!.id} not found in database`,
+            );
+            return {
+              success: false,
+              error: "User not found in database",
               qrCodeDataUrl,
-            },
-          };
-        } else {
-          console.warn(
-            `User with ID ${session.user!.id} not found in database`,
-          );
-          return {
-            success: false,
-            error: "User not found in database",
-            qrCodeDataUrl,
-          };
-        }
-      });
+            };
+          }
+        },
+      );
 
       return result;
     }
@@ -321,7 +324,10 @@ export async function generateAndSaveQrCode(options: QrCodeGenerationOptions) {
     console.error("Error generating and saving QR code:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to generate and save QR code",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to generate and save QR code",
       qrCodeDataUrl: null,
     };
   }
