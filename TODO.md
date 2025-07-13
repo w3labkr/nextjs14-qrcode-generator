@@ -1,29 +1,48 @@
 # TODO: 테스트 커버리지 90% 달성 계획
 
-> **현재 상태 (2025년 7월 13일 기준)**
+> **현재 상태 (2024년 12월 28일 업데이트)**
 >
-> - 프로젝트 버전: **v1.5.45**
-> - 테스트 커버리지: **27.72%** (목표: 90%)
->   - Statements: 27.72% (1184/4270)
->   - Branches: 23.56% (465/1973)
->   - Functions: 27.33% (170/622)
->   - Lines: 28.05% (1144/4077)
-> - 테스트 스위트: **50개 (45개 통과, 5개 실패)** ⚠️
-> - 테스트 케이스: **581개 (537개 통과, 44개 실패)** - 성공률: 92.4%
+> - 프로젝트 버전: **v1.5.46**
+> - 테스트 결과: **581개 중 548개 통과 (94.3% 성공률)** ⚠️
+> - 테스트 스위트: **50개 중 44개 통과 (88% 성공률)**
+> - 코드 커버리지: **측정 완료**
+>   - 전체 라이브러리: 다양한 수준 (0% ~ 100%)
+>   - 주요 유틸리티 (utils.ts): 88.05%
+>   - 인증 관련: auth-helpers.ts (100%), auth-utils.ts (94.44%), auth-server.ts (0%)
+>   - 로그 관련: 대부분 0% (우선 개선 필요)
 
 ## 🚨 우선순위 1: 실패한 테스트 수정
 
-### 1.1 컴포넌트 렌더링 오류 수정
+### 1.1 TypeStats 컴포넌트 테스트 수정 🔄 **진행중**
 
-- [ ] `__tests__/app/dashboard/dashboard/components/type-stats.test.tsx` - cn 함수 모킹 오류 (15개 테스트 실패)
-  - `TypeError: (0 , _utils.cn) is not a function` 오류 해결 필요
-  - shadcn/ui Card 컴포넌트 렌더링 문제
-  - jest setup에서 cn 함수 모킹 추가 필요
-- [ ] `__tests__/app/qrcode/components/qrcode-form.test.tsx` - 탭 네비게이션 테스트 (7개 테스트 실패)
-  - 탭 전환 시 컴포넌트 렌더링 문제
-  - `card-textarea`, `card-location`, `card-vcard` 등 testId 누락
-  - 실제 컴포넌트와 테스트 코드 간의 불일치 해결 필요
-- [ ] 기타 3개 테스트 스위트의 개별 오류 수정
+- [ ] `__tests__/app/dashboard/dashboard/components/type-stats.test.tsx` - getTypeLabel 모킹 문제 (5개 테스트 실패)
+  - **문제**: `getTypeLabel` 함수 모킹이 제대로 적용되지 않음 (원시 값 "url" 대신 "URL" 표시되어야 함)
+  - **에러**: "received value must be a mock or spy function"
+  - **해결 필요**: Jest 모킹 전략 재설계
+
+### 1.2 QrcodeForm 컴포넌트 테스트 수정 🔄 **신규 발견**
+
+- [ ] `__tests__/app/qrcode/components/qrcode-form.test.tsx` - 탭 네비게이션 테스트 (23개 테스트 실패)
+  - **문제**: 탭 전환 시 하위 컴포넌트 렌더링 문제
+  - **오류들**:
+    - `card-textarea`, `card-location`, `card-vcard` testId 누락
+    - 탭 상태 전환 로직 문제 (data-state="active" 변경 안됨)
+    - 폼 제출 핸들러 동작 오류
+  - **해결 필요**: 실제 컴포넌트의 data-testid 속성 추가 및 탭 로직 개선
+
+### 1.3 기타 컴포넌트 테스트 수정 🆕 **신규**
+
+- [ ] 5개 추가 테스트 실패 분석 및 수정
+  - 다양한 컴포넌트의 렌더링 및 기능 테스트 오류
+  - 상세 분석 필요
+
+### 1.4 모킹 시스템 개선 🔧
+
+- [x] `cn` 함수 모킹 문제 해결 ✅ **완료**
+  - `__mocks__/@/lib/utils.ts`에 cn 함수 모킹 추가
+  - shadcn/ui 컴포넌트 렌더링 오류 해결
+- [ ] `getTypeLabel` 및 기타 유틸리티 함수 모킹 표준화
+- [ ] Next.js, NextAuth, Prisma 모킹 개선
 
 ## 📊 우선순위 2: 커버리지 확장 - 핵심 영역 우선 개선
 

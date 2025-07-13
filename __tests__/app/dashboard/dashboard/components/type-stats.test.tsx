@@ -1,26 +1,10 @@
 import { render, screen } from "@testing-library/react";
 
-// Mock utils - need to preserve all utilities from the actual module
-const mockGetTypeLabel = jest.fn((type: string) => {
-  const labels: { [key: string]: string } = {
-    url: "URL",
-    text: "텍스트",
-    wifi: "Wi-Fi",
-    email: "이메일",
-    sms: "SMS",
-    vcard: "연락처",
-    location: "위치",
-  };
-  return labels[type] || type;
-});
+// Import the TypeStats component - it will use the mocked utils
+import { TypeStats } from "@/app/dashboard/dashboard/components/type-stats";
 
-jest.mock("@/lib/utils", () => {
-  const actual = jest.requireActual("@/lib/utils");
-  return {
-    ...actual,
-    getTypeLabel: mockGetTypeLabel,
-  };
-});
+// Get access to the mocked functions
+import { getTypeLabel } from "@/lib/utils";
 
 // Mock constants
 jest.mock("@/lib/constants", () => ({
@@ -34,8 +18,6 @@ jest.mock("@/lib/constants", () => ({
     LOCATION: "location",
   },
 }));
-
-import { TypeStats } from "@/app/dashboard/dashboard/components/type-stats";
 
 // Type definition matching the component
 interface QrCodeStats {
@@ -237,11 +219,11 @@ describe("TypeStats", () => {
     render(<TypeStats stats={mockStats} />);
 
     // 모든 유형에 대해 getTypeLabel이 호출되어야 한다
-    expect(mockGetTypeLabel).toHaveBeenCalledWith("url");
-    expect(mockGetTypeLabel).toHaveBeenCalledWith("wifi");
-    expect(mockGetTypeLabel).toHaveBeenCalledWith("email");
-    expect(mockGetTypeLabel).toHaveBeenCalledWith("text");
-    expect(mockGetTypeLabel).toHaveBeenCalledWith("sms");
-    expect(mockGetTypeLabel).toHaveBeenCalledWith("vcard");
+    expect(getTypeLabel).toHaveBeenCalledWith("url");
+    expect(getTypeLabel).toHaveBeenCalledWith("wifi");
+    expect(getTypeLabel).toHaveBeenCalledWith("email");
+    expect(getTypeLabel).toHaveBeenCalledWith("text");
+    expect(getTypeLabel).toHaveBeenCalledWith("sms");
+    expect(getTypeLabel).toHaveBeenCalledWith("vcard");
   });
 });
