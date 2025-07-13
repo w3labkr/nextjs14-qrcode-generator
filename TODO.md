@@ -72,23 +72,29 @@
   - 로그 정리 함수 (cleanupOldLogsAction)
   - 18개 테스트 케이스로 로그 관리 기능 완전 검증
 
-### 2.2 API Routes 테스트 확장 (현재: ~50%)
+### 2.3 API Routes 테스트 확장 (현재: ~70%)
 
-- [ ] `app/api/qrcodes/[id]/route.ts` 테스트 추가
+- [x] `app/api/qrcodes/[id]/route.ts` 테스트 추가 (2025-01-07 완료)
   - GET: QR 코드 상세 조회
-  - PUT: QR 코드 수정
+  - PATCH: QR 코드 수정
   - DELETE: QR 코드 삭제
-- [ ] `app/api/qrcodes/[id]/favorite/route.ts` 테스트 추가
-  - POST: 즐겨찾기 추가
-  - DELETE: 즐겨찾기 제거
-- [ ] `app/api/qrcodes/generate/route.ts` 테스트 추가
+  - 6개 테스트 케이스로 개별 QR 코드 CRUD 작업 완전 검증
+- [x] `app/api/qrcodes/[id]/favorite/route.ts` 테스트 추가 (2025-01-07 완료)
+  - POST: 즐겨찾기 토글 기능
+  - 3개 테스트 케이스로 즐겨찾기 관리 기능 완전 검증
+- [x] `app/api/qrcodes/generate/route.ts` 테스트 추가 (2025-01-07 완료)
   - POST: QR 코드 생성 및 반환
+  - 4개 테스트 케이스로 QR 코드 생성 API 완전 검증
+- [x] `app/api/qrcodes/route.ts` 테스트 추가 (기존 완료)
+  - GET: QR 코드 목록 조회
+  - POST: QR 코드 생성
+  - 4개 테스트 케이스로 QR 코드 기본 API 완전 검증
 - [ ] `app/api/admin/**` 테스트 추가
   - 관리자 권한 확인
   - 로그 관리 API
   - 시스템 상태 확인
 
-### 2.3 인증 관련 API 테스트 추가
+### 2.4 인증 관련 API 테스트 추가
 
 - [ ] `app/api/auth/refresh/route.ts` 테스트 추가
   - 토큰 갱신 로직
