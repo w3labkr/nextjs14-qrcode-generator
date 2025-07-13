@@ -1,10 +1,10 @@
 # TODO: 테스트 커버리지 90% 달성 계획
 
-> **현재 상태 (2025년 7월 13일 기준)**
+> **현재 상태 (2024년 12월 19일 기준)**
 >
-> - 테스트 커버리지: 9.67% → **목표: 90%**
+> - 테스트 커버리지: 10.21% → **목표: 90%**
 > - 테스트 스위트: 20개 (17개 통과, 3개 실패)
-> - 테스트 케이스: 173개 (163개 통과, 10개 실패)
+> - 테스트 케이스: 181개 (172개 통과, 9개 실패)
 
 ## 🚨 우선순위 1: 실패한 테스트 수정
 
@@ -14,6 +14,9 @@
   - RLS 유틸리티의 CUID/UUID 검증 로직 수정
   - 테스트용 유효한 User ID 생성
 - [x] `__tests__/actions/qr-code-generator.test.ts` - 로깅 시스템 모킹 오류 수정 (8/10 테스트 통과)
+- [x] `__tests__/lib/constants.test.ts` - 100% 커버리지 달성 (2024-12-19 완료)
+  - QR_CODE_TYPES, QR_CODE_TYPE_VALUES, GITHUB_REPO_URL, COPYRIGHT_TEXT 모든 상수 검증
+  - 15개 테스트 케이스로 완전한 검증 구현
 - [ ] `__tests__/actions/qr-code-management.test.ts` - 관련 종속성 모킹 수정 (⚠️ 복잡한 RLS 모킹 이슈)
   - withRLS, withRLSTransaction, withAuthenticatedRLSTransaction 함수들의 복잡한 모킹 필요
   - Prisma 클라이언트와 RLS 시스템 간의 상호작용 모킹 어려움
