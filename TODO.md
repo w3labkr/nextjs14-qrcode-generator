@@ -14,7 +14,10 @@
   - RLS 유틸리티의 CUID/UUID 검증 로직 수정
   - 테스트용 유효한 User ID 생성
 - [x] `__tests__/actions/qr-code-generator.test.ts` - 로깅 시스템 모킹 오류 수정 (8/10 테스트 통과)
-- [ ] `__tests__/actions/qr-code-management.test.ts` - 관련 종속성 모킹 수정
+- [ ] `__tests__/actions/qr-code-management.test.ts` - 관련 종속성 모킹 수정 (⚠️ 복잡한 RLS 모킹 이슈)
+  - withRLS, withRLSTransaction, withAuthenticatedRLSTransaction 함수들의 복잡한 모킹 필요
+  - Prisma 클라이언트와 RLS 시스템 간의 상호작용 모킹 어려움
+  - 현재 5개 테스트 모두 실패 (RLS 컨텍스트 초기화 실패)
 
 ## 📊 우선순위 2: 커버리지가 낮은 핵심 영역 개선
 
