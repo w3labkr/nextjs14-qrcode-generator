@@ -49,7 +49,7 @@ describe("SearchAndFilters", () => {
     expect(
       screen.getByPlaceholderText("제목이나 내용으로 검색..."),
     ).toBeInTheDocument();
-    expect(screen.getByText("유형 선택")).toBeInTheDocument();
+    expect(screen.getByText("모든 유형")).toBeInTheDocument();
     expect(screen.getByText("즐겨찾기")).toBeInTheDocument();
   });
 
@@ -80,7 +80,7 @@ describe("SearchAndFilters", () => {
     render(<SearchAndFilters {...defaultProps} />);
 
     // Select 트리거를 찾아서 클릭
-    const typeSelectTrigger = screen.getByText("유형 선택").closest("button");
+    const typeSelectTrigger = screen.getByText("모든 유형").closest("button");
     expect(typeSelectTrigger).toBeInTheDocument();
   });
 

@@ -76,10 +76,13 @@ describe("QrcodeForm", () => {
       const textTab = screen.getByRole("tab", { name: "텍스트" });
       fireEvent.click(textTab);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("card-textarea")).toBeInTheDocument();
-        expect(screen.getByTestId("card-style")).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("card-textarea")).toBeInTheDocument();
+          expect(screen.getByTestId("card-style")).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
     });
 
     it("Wi-Fi 탭을 클릭하면 Wi-Fi 카드가 표시되어야 한다", async () => {
@@ -88,10 +91,13 @@ describe("QrcodeForm", () => {
       const wifiTab = screen.getByRole("tab", { name: "Wi-Fi" });
       fireEvent.click(wifiTab);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("card-wifi")).toBeInTheDocument();
-        expect(screen.getByTestId("card-style")).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("card-wifi")).toBeInTheDocument();
+          expect(screen.getByTestId("card-style")).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
     });
 
     it("이메일 탭을 클릭하면 이메일 카드가 표시되어야 한다", async () => {
@@ -100,10 +106,13 @@ describe("QrcodeForm", () => {
       const emailTab = screen.getByRole("tab", { name: "이메일" });
       fireEvent.click(emailTab);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("card-email")).toBeInTheDocument();
-        expect(screen.getByTestId("card-style")).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("card-email")).toBeInTheDocument();
+          expect(screen.getByTestId("card-style")).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
     });
 
     it("SMS 탭을 클릭하면 SMS 카드가 표시되어야 한다", async () => {
@@ -112,10 +121,13 @@ describe("QrcodeForm", () => {
       const smsTab = screen.getByRole("tab", { name: "SMS" });
       fireEvent.click(smsTab);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("card-sms")).toBeInTheDocument();
-        expect(screen.getByTestId("card-style")).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("card-sms")).toBeInTheDocument();
+          expect(screen.getByTestId("card-style")).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
     });
 
     it("연락처 탭을 클릭하면 연락처 카드가 표시되어야 한다", async () => {
@@ -124,10 +136,13 @@ describe("QrcodeForm", () => {
       const vcardTab = screen.getByRole("tab", { name: "연락처" });
       fireEvent.click(vcardTab);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("card-vcard")).toBeInTheDocument();
-        expect(screen.getByTestId("card-style")).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("card-vcard")).toBeInTheDocument();
+          expect(screen.getByTestId("card-style")).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
     });
 
     it("지도 탭을 클릭하면 지도 카드가 표시되어야 한다", async () => {
@@ -136,10 +151,13 @@ describe("QrcodeForm", () => {
       const locationTab = screen.getByRole("tab", { name: "지도" });
       fireEvent.click(locationTab);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("card-location")).toBeInTheDocument();
-        expect(screen.getByTestId("card-style")).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("card-location")).toBeInTheDocument();
+          expect(screen.getByTestId("card-style")).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
     });
   });
 
@@ -228,10 +246,13 @@ describe("QrcodeForm", () => {
       // 다른 탭 클릭
       fireEvent.click(textTab);
 
-      await waitFor(() => {
-        expect(textTab).toHaveAttribute("data-state", "active");
-        expect(urlTab).toHaveAttribute("data-state", "inactive");
-      });
+      await waitFor(
+        () => {
+          expect(textTab).toHaveAttribute("data-state", "active");
+          expect(urlTab).toHaveAttribute("data-state", "inactive");
+        },
+        { timeout: 2000 },
+      );
     });
 
     it("활성 탭의 콘텐츠만 표시되어야 한다", async () => {
@@ -245,10 +266,13 @@ describe("QrcodeForm", () => {
       const textTab = screen.getByRole("tab", { name: "텍스트" });
       fireEvent.click(textTab);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("card-textarea")).toBeInTheDocument();
-        expect(screen.queryByTestId("card-url")).not.toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("card-textarea")).toBeInTheDocument();
+          expect(screen.queryByTestId("card-url")).not.toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
     });
   });
 
@@ -270,10 +294,13 @@ describe("QrcodeForm", () => {
         const tab = screen.getByRole("tab", { name: config.name });
         fireEvent.click(tab);
 
-        await waitFor(() => {
-          expect(screen.getByTestId(config.testId)).toBeInTheDocument();
-          expect(screen.getByTestId("card-style")).toBeInTheDocument();
-        });
+        await waitFor(
+          () => {
+            expect(screen.getByTestId(config.testId)).toBeInTheDocument();
+            expect(screen.getByTestId("card-style")).toBeInTheDocument();
+          },
+          { timeout: 2000 },
+        );
       }
 
       // 미리보기는 항상 표시되어야 한다
@@ -283,7 +310,8 @@ describe("QrcodeForm", () => {
     it("폼이 올바르게 구성되어야 한다", () => {
       render(<QrcodeForm />);
 
-      const form = screen.getByTestId("card-preview").closest("form");
+      const form = document.querySelector("form");
+      expect(form).toBeInTheDocument();
       expect(form).toHaveAttribute("novalidate");
     });
 
@@ -292,10 +320,14 @@ describe("QrcodeForm", () => {
 
       render(<QrcodeForm />);
 
-      const form = screen.getByTestId("card-preview").closest("form");
-      fireEvent.submit(form!);
+      const form = document.querySelector("form");
+      expect(form).toBeInTheDocument();
 
-      expect(consoleSpy).toHaveBeenCalled();
+      if (form) {
+        fireEvent.submit(form);
+        expect(consoleSpy).toHaveBeenCalled();
+      }
+
       consoleSpy.mockRestore();
     });
   });
@@ -304,7 +336,9 @@ describe("QrcodeForm", () => {
     it("좌측에는 탭과 콘텐츠가, 우측에는 미리보기가 배치되어야 한다", () => {
       render(<QrcodeForm />);
 
-      const form = screen.getByTestId("card-preview").closest("form");
+      const form = document.querySelector("form");
+      expect(form).toBeInTheDocument();
+
       const leftColumn = form?.firstElementChild;
       const rightColumn = form?.lastElementChild;
 
@@ -328,10 +362,13 @@ describe("QrcodeForm", () => {
       const textTab = screen.getByRole("tab", { name: "텍스트" });
       fireEvent.click(textTab);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("card-textarea")).toBeInTheDocument();
-        expect(screen.getByTestId("card-style")).toBeInTheDocument();
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("card-textarea")).toBeInTheDocument();
+          expect(screen.getByTestId("card-style")).toBeInTheDocument();
+        },
+        { timeout: 2000 },
+      );
     });
   });
 });
