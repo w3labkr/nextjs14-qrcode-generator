@@ -22,7 +22,9 @@ jest.mock("@/lib/prisma", () => ({
 jest.mock("@/lib/env-validation");
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
-const mockGetLogRetentionDays = getLogRetentionDays as jest.MockedFunction<typeof getLogRetentionDays>;
+const mockGetLogRetentionDays = getLogRetentionDays as jest.MockedFunction<
+  typeof getLogRetentionDays
+>;
 
 describe("LogCleanupManager", () => {
   let logSystemSpy: jest.SpyInstance;
@@ -36,9 +38,15 @@ describe("LogCleanupManager", () => {
     mockGetLogRetentionDays.mockReturnValue(30);
 
     // UnifiedLogger 메서드들을 spy로 모킹
-    logSystemSpy = jest.spyOn(UnifiedLogger, 'logSystem').mockResolvedValue(undefined);
-    logErrorSpy = jest.spyOn(UnifiedLogger, 'logError').mockResolvedValue(undefined);
-    logAdminActionSpy = jest.spyOn(UnifiedLogger, 'logAdminAction').mockResolvedValue(undefined);
+    logSystemSpy = jest
+      .spyOn(UnifiedLogger, "logSystem")
+      .mockResolvedValue(undefined);
+    logErrorSpy = jest
+      .spyOn(UnifiedLogger, "logError")
+      .mockResolvedValue(undefined);
+    logAdminActionSpy = jest
+      .spyOn(UnifiedLogger, "logAdminAction")
+      .mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -56,7 +64,7 @@ describe("LogCleanupManager", () => {
 
       // 첫 번째 배치 (100개)
       mockPrisma.applicationLog.findMany.mockResolvedValueOnce(
-        Array.from({ length: 100 }, (_, i) => ({ id: `log-${i}` }))
+        Array.from({ length: 100 }, (_, i) => ({ id: `log-${i}` })),
       );
 
       // 두 번째 배치 (빈 배열 - 더 이상 삭제할 로그 없음)
@@ -121,15 +129,15 @@ describe("LogCleanupManager", () => {
       // 첫 번째 배치 (1000개)
       mockPrisma.applicationLog.findMany
         .mockResolvedValueOnce(
-          Array.from({ length: 1000 }, (_, i) => ({ id: `log-${i}` }))
+          Array.from({ length: 1000 }, (_, i) => ({ id: `log-${i}` })),
         )
         // 두 번째 배치 (1000개)
         .mockResolvedValueOnce(
-          Array.from({ length: 1000 }, (_, i) => ({ id: `log-${i + 1000}` }))
+          Array.from({ length: 1000 }, (_, i) => ({ id: `log-${i + 1000}` })),
         )
         // 세 번째 배치 (500개)
         .mockResolvedValueOnce(
-          Array.from({ length: 500 }, (_, i) => ({ id: `log-${i + 2000}` }))
+          Array.from({ length: 500 }, (_, i) => ({ id: `log-${i + 2000}` })),
         )
         // 네 번째 배치 (빈 배열)
         .mockResolvedValueOnce([]);
@@ -318,7 +326,9 @@ describe("LogCleanupManager", () => {
 
       mockPrisma.applicationLog.count.mockRejectedValue(error);
 
-      await expect(LogCleanupManager.manualCleanup(adminId, options)).rejects.toThrow(error);
+      await expect(
+        LogCleanupManager.manualCleanup(adminId, options),
+      ).rejects.toThrow(error);
 
       expect(logErrorSpy).toHaveBeenCalledWith({
         userId: adminId,
@@ -331,17 +341,17 @@ describe("LogCleanupManager", () => {
 
   describe("배치 처리 및 성능", () => {
     it("배치 간 지연 시간을 제대로 적용해야 함", async () => {
-      const mockSetTimeout = jest.spyOn(global, "setTimeout").mockImplementation(
-        ((callback: () => void) => {
+      const mockSetTimeout = jest
+        .spyOn(global, "setTimeout")
+        .mockImplementation(((callback: () => void) => {
           callback();
           return {} as NodeJS.Timeout;
-        }) as any
-      );
+        }) as any);
 
       mockPrisma.applicationLog.count.mockResolvedValue(1000);
       mockPrisma.applicationLog.findMany
         .mockResolvedValueOnce(
-          Array.from({ length: 1000 }, (_, i) => ({ id: `log-${i}` }))
+          Array.from({ length: 1000 }, (_, i) => ({ id: `log-${i}` })),
         )
         .mockResolvedValueOnce([]);
 

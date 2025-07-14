@@ -268,7 +268,9 @@ describe("log-utils", () => {
 
   describe("createQRGenerationLog", () => {
     it("성공적인 QR 코드 생성 로그를 생성해야 함", async () => {
-      const mockLogQrGeneration = jest.fn().mockResolvedValue({ id: "qr-log-1" });
+      const mockLogQrGeneration = jest
+        .fn()
+        .mockResolvedValue({ id: "qr-log-1" });
       mockUnifiedLogger.logQrGeneration = mockLogQrGeneration;
 
       const result = await createQRGenerationLog({
@@ -294,7 +296,9 @@ describe("log-utils", () => {
     });
 
     it("실패한 QR 코드 생성 로그를 생성해야 함", async () => {
-      const mockLogQrGeneration = jest.fn().mockResolvedValue({ id: "qr-log-2" });
+      const mockLogQrGeneration = jest
+        .fn()
+        .mockResolvedValue({ id: "qr-log-2" });
       mockUnifiedLogger.logQrGeneration = mockLogQrGeneration;
 
       await createQRGenerationLog({
@@ -320,7 +324,9 @@ describe("log-utils", () => {
     });
 
     it("필수 매개변수만으로 QR 생성 로그를 생성해야 함", async () => {
-      const mockLogQrGeneration = jest.fn().mockResolvedValue({ id: "qr-log-3" });
+      const mockLogQrGeneration = jest
+        .fn()
+        .mockResolvedValue({ id: "qr-log-3" });
       mockUnifiedLogger.logQrGeneration = mockLogQrGeneration;
 
       await createQRGenerationLog({
@@ -440,7 +446,9 @@ describe("log-utils", () => {
 
   describe("createAdminLog", () => {
     it("기본적인 관리자 로그를 생성해야 함", async () => {
-      const mockLogAdminAction = jest.fn().mockResolvedValue({ id: "admin-log-1" });
+      const mockLogAdminAction = jest
+        .fn()
+        .mockResolvedValue({ id: "admin-log-1" });
       mockUnifiedLogger.logAdminAction = mockLogAdminAction;
 
       const details = { operation: "user_ban", reason: "spam" };
@@ -467,7 +475,9 @@ describe("log-utils", () => {
     });
 
     it("완전한 정보로 관리자 로그를 생성해야 함", async () => {
-      const mockLogAdminAction = jest.fn().mockResolvedValue({ id: "admin-log-2" });
+      const mockLogAdminAction = jest
+        .fn()
+        .mockResolvedValue({ id: "admin-log-2" });
       mockUnifiedLogger.logAdminAction = mockLogAdminAction;
 
       const details = { bulk_operation: true, affected_count: 150 };
@@ -496,7 +506,9 @@ describe("log-utils", () => {
     });
 
     it("시스템 사용자로 관리자 로그를 생성해야 함", async () => {
-      const mockLogAdminAction = jest.fn().mockResolvedValue({ id: "admin-log-3" });
+      const mockLogAdminAction = jest
+        .fn()
+        .mockResolvedValue({ id: "admin-log-3" });
       mockUnifiedLogger.logAdminAction = mockLogAdminAction;
 
       await createAdminLog({
@@ -540,10 +552,10 @@ describe("log-utils", () => {
       const mockLogSystem = jest.fn().mockResolvedValue({ id: "system-log-2" });
       mockUnifiedLogger.logSystem = mockLogSystem;
 
-      const metadata = { 
-        backup_size: "2.5GB", 
+      const metadata = {
+        backup_size: "2.5GB",
         duration: "45min",
-        tables_backed_up: 15 
+        tables_backed_up: 15,
       };
 
       await createSystemLog({
