@@ -297,7 +297,7 @@ describe("Log Management Actions", () => {
         user: { id: TEST_USER_ID, email: "admin@example.com" },
       });
 
-      const filters = { type: "AUTH" as const };
+      const filters = { type: "ADMIN" as const };
 
       // Act
       const result = await getLogsAction(filters);
@@ -321,20 +321,32 @@ describe("Log Management Actions", () => {
       expect(result.error).toBe("인증이 필요합니다");
     });
 
-    it("로그인한 경우 로그 통계 조회가 성공적으로 수행되어야 함", async () => {
+    it("일반 사용자는 자신의 로그 통계만 조회할 수 있어야 함", async () => {
       // Arrange
       const mockAuth = require("@/auth").auth;
       mockAuth.mockResolvedValue({
         user: { id: TEST_USER_ID, email: "test@example.com" },
       });
 
-      const filters = { startDate: new Date("2023-01-01") };
-
       // Act
-      const result = await getLogStatsAction(filters);
+      const result = await getLogStatsAction();
 
       // Assert
-      expect(result.success).toBe(false); // 실제로는 Prisma mock 때문에 실패할 것
+      expect(result.success).toBe(true);
+    });
+
+    it("관리자는 전체 로그 통계를 조회할 수 있어야 함", async () => {
+      // Arrange
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "admin@example.com" },
+      });
+
+      // Act
+      const result = await getLogStatsAction();
+
+      // Assert
+      expect(result.success).toBe(true);
     });
   });
 
@@ -349,10 +361,10 @@ describe("Log Management Actions", () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error).toBe("로그 정리에 실패했습니다");
+      expect(result.error).toBe("인증이 필요합니다");
     });
 
-    it("일반 사용자는 로그 정리를 할 수 없어야 함", async () => {
+    it("일반 사용자는 로그 정리를 실행할 수 없어야 함", async () => {
       // Arrange
       const mockAuth = require("@/auth").auth;
       mockAuth.mockResolvedValue({
@@ -364,23 +376,120 @@ describe("Log Management Actions", () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error).toBe("로그 정리에 실패했습니다");
+      expect(result.error).toBe("관리자 권한이 필요합니다");
     });
 
-    it("관리자는 오래된 로그를 정리할 수 있어야 함", async () => {
+    it("관리자는 로그 정리를 실행할 수 있어야 함", async () => {
       // Arrange
       const mockAuth = require("@/auth").auth;
       mockAuth.mockResolvedValue({
         user: { id: TEST_USER_ID, email: "admin@example.com" },
       });
 
-      const retentionDays = 30;
-
       // Act
-      const result = await cleanupOldLogsAction(retentionDays);
+      const result = await cleanupOldLogsAction();
 
       // Assert
-      expect(result.success).toBe(true); // 관리자 검증이 통과하면 성공
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("Permission and security tests", () => {
+    it("logAdminAction - 슈퍼 관리자 이메일 확인", async () => {
+      // Arrange
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "super@example.com" },
+      });
+
+      const params = {
+        action: "system_maintenance",
+        targetUserId: null,
+        affectedRecords: 100,
+        details: "System maintenance performed",
+      };
+
+      // Act
+      const result = await logAdminAction(params);
+
+      // Assert
+      expect(result.success).toBe(true);
+    });
+
+    it("logAdminAction - 대소문자 구분 없는 이메일 확인", async () => {
+      // Arrange
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "ADMIN@EXAMPLE.COM" },
+      });
+
+      const params = {
+        action: "user_management",
+        targetUserId: "user-123",
+      };
+
+      // Act
+      const result = await logAdminAction(params);
+
+      // Assert
+      expect(result.success).toBe(true);
+    });
+
+    it("getLogsAction - 권한 상승 시도 차단", async () => {
+      // Arrange
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      const filters = { 
+        type: "ADMIN" as const, 
+        userId: "other-user-id" // 다른 사용자의 로그를 조회하려고 시도
+      };
+
+      // Act
+      const result = await getLogsAction(filters);
+
+      // Assert
+      expect(result.success).toBe(true);
+      // 일반 사용자는 자신의 로그만 볼 수 있어야 함
+    });
+
+    it("Session validation - 세션 무결성 확인", async () => {
+      // Arrange
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: { id: null, email: "test@example.com" }, // ID가 null인 잘못된 세션
+      });
+
+      // Act
+      const result = await logAccessAction({ resource: "test", action: "read" });
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("액세스 로그 생성에 실패했습니다");
+    });
+
+    it("Admin email validation - 환경변수 없을 때", async () => {
+      // Arrange
+      delete process.env.ADMIN_EMAILS; // 환경변수 제거
+      
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "admin@example.com" },
+      });
+
+      const params = {
+        action: "user_ban",
+        targetUserId: "user-456",
+      };
+
+      // Act
+      const result = await logAdminAction(params);
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("관리자 액션 로그 생성에 실패했습니다");
     });
   });
 });

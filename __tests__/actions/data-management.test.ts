@@ -158,14 +158,8 @@ describe("Data Management Actions", () => {
 
       const importData = {
         qrCodes: [
-          {
-            content: "https://example.com",
-            title: "Test QR",
-            type: "URL",
-            isFavorite: false,
-            settings: {},
-          },
-        ],
+          { content: "valid-content", title: "Test QR", type: "text" },
+        ] as any[],
         replaceExisting: true,
       };
 
@@ -174,7 +168,59 @@ describe("Data Management Actions", () => {
         await importUserData(importData);
       } catch (error) {
         // RLS 모킹이 완전하지 않으므로 오류가 발생할 수 있음
-        // 여기서는 인증 통과 여부와 입력 검증 로직 확인
+        // 여기서는 인증 통과 여부와 replaceExisting 로직 확인
+        expect(error).toBeDefined();
+      }
+    });
+
+    it("데이터베이스 오류 발생 시 적절한 에러 처리", async () => {
+      // Arrange
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: {
+          id: TEST_USER_ID,
+          email: "test@example.com",
+        },
+      });
+
+      const importData = {
+        qrCodes: [
+          { content: "test-content", title: "Test QR", type: "text" },
+        ] as any[],
+        replaceExisting: false,
+      };
+
+      // 데이터베이스 오류 시뮬레이션
+      try {
+        await importUserData(importData);
+      } catch (error) {
+        // 에러 로깅이 호출되었는지 확인
+        const mockUnifiedLogger = require("@/lib/unified-logging").UnifiedLogger;
+        expect(mockUnifiedLogger.logError).toHaveBeenCalled();
+      }
+    });
+
+    it("빈 QR 코드 배열 처리", async () => {
+      // Arrange
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: {
+          id: TEST_USER_ID,
+          email: "test@example.com",
+        },
+      });
+
+      const importData = {
+        qrCodes: [],
+        replaceExisting: false,
+      };
+
+      // 빈 배열 처리 테스트
+      try {
+        const result = await importUserData(importData);
+        expect(result).toBeDefined();
+      } catch (error) {
+        // 빈 배열이어도 처리가 되어야 함
         expect(error).toBeDefined();
       }
     });

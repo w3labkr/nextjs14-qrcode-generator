@@ -111,5 +111,203 @@ describe("QR Code Management Actions", () => {
         }),
       });
     });
+
+    it("인증되지 않은 사용자는 통계를 조회할 수 없다", async () => {
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue(null);
+
+      const result = await getQrCodeStats();
+      expect(result).toEqual({
+        success: false,
+        error: "로그인이 필요합니다.",
+      });
+    });
+  });
+
+  describe("updateQrCode", () => {
+    it("인증되지 않은 사용자는 QR 코드를 업데이트할 수 없다", async () => {
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue(null);
+
+      const updateData = {
+        title: "Updated QR Code",
+        text: "Updated content",
+        qrType: "text" as const,
+      };
+
+      const result = await updateQrCode(TEST_QR_CODE_ID, updateData);
+      expect(result).toEqual({
+        success: false,
+        error: "Unauthorized",
+      });
+    });
+
+    it("데이터베이스 오류 시 적절한 에러 메시지를 반환해야 한다", async () => {
+      const mockPrisma = require("@/lib/prisma").prisma;
+      mockPrisma.qrCode.findFirst.mockRejectedValue(new Error("Database error"));
+
+      const updateData = {
+        title: "Updated QR Code",
+        text: "Updated content",
+        qrType: "text" as const,
+      };
+
+      const result = await updateQrCode(TEST_QR_CODE_ID, updateData);
+      expect(result).toEqual({
+        success: false,
+        error: "Failed to update QR code",
+      });
+    });
+
+    it("존재하지 않는 QR 코드는 업데이트할 수 없다", async () => {
+      const mockPrisma = require("@/lib/prisma").prisma;
+      mockPrisma.qrCode.findFirst.mockResolvedValue(null);
+
+      const updateData = {
+        title: "Updated QR Code",
+        text: "Updated content",
+        qrType: "text" as const,
+      };
+
+      const result = await updateQrCode(TEST_QR_CODE_ID, updateData);
+      expect(result).toEqual({
+        success: false,
+        error: "QR Code not found",
+      });
+    });
+  });
+
+  describe("saveQrCode", () => {
+    it("QR 코드를 성공적으로 저장해야 한다", async () => {
+      const saveData: SaveQrCodeData = {
+        title: "Test QR Code",
+        content: "Test content",
+        type: "text",
+        settings: {
+          width: 300,
+          type: "png",
+          color: "#000000",
+          margin: 10,
+        },
+      };
+
+      const result = await saveQrCode(saveData);
+
+      expect(result).toEqual({
+        success: true,
+        qrCode: expect.objectContaining({
+          content: "Test content",
+          type: "text",
+          userId: TEST_USER_ID,
+          isFavorite: false,
+        }),
+      });
+    });
+
+    it("인증되지 않은 사용자는 QR 코드를 저장할 수 없다", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockEnsureUserExists = require("@/lib/utils").ensureUserExists;
+      
+      mockAuth.mockResolvedValue(null);
+      mockEnsureUserExists.mockRejectedValue(new Error("로그인이 필요합니다."));
+
+      const saveData: SaveQrCodeData = {
+        title: "Test QR Code",
+        content: "Test content",
+        type: "text",
+        settings: {
+          width: 300,
+          type: "png",
+          color: "#000000",
+          margin: 10,
+        },
+      };
+
+      const result = await saveQrCode(saveData);
+      expect(result).toEqual({
+        success: false,
+        error: "로그인이 필요합니다.",
+      });
+    });
+
+    it("데이터베이스 오류 시 적절한 에러를 반환해야 한다", async () => {
+      const mockPrisma = require("@/lib/prisma").prisma;
+      mockPrisma.qrCode.create.mockRejectedValue(new Error("Database error"));
+
+      const saveData: SaveQrCodeData = {
+        title: "Test QR Code",
+        content: "Test content",
+        type: "text",
+        settings: {
+          width: 300,
+          type: "png",
+          color: "#000000",
+          margin: 10,
+        },
+      };
+
+      const result = await saveQrCode(saveData);
+      expect(result).toEqual({
+        success: false,
+        error: "Database error",
+      });
+    });
+  });
+
+  describe("Additional edge cases", () => {
+    it("getUserQrCodes - 페이지네이션 기능 테스트", async () => {
+      const result = await getUserQrCodes(2, 5);
+
+      expect(result).toEqual({
+        qrCodes: expect.any(Array),
+        totalCount: 1,
+        totalPages: 1,
+        currentPage: 2,
+      });
+    });
+
+    it("getQrCodeStats - 통계 데이터 구조 검증", async () => {
+      const result = await getQrCodeStats();
+
+      expect(result.success).toBe(true);
+      expect(result.stats).toHaveProperty("total");
+      expect(result.stats).toHaveProperty("favorites");
+      expect(result.stats).toHaveProperty("thisMonth");
+      expect(result.stats).toHaveProperty("byType");
+      expect(typeof result.stats.total).toBe("number");
+      expect(typeof result.stats.favorites).toBe("number");
+      expect(typeof result.stats.thisMonth).toBe("number");
+      expect(typeof result.stats.byType).toBe("object");
+    });
+
+    it("saveQrCode - 설정 데이터 JSON 직렬화 테스트", async () => {
+      const saveData: SaveQrCodeData = {
+        title: "Complex QR Code",
+        content: "Complex content",
+        type: "url",
+        settings: {
+          width: 512,
+          type: "svg",
+          color: "#FF0000",
+          margin: 20,
+        },
+      };
+
+      const result = await saveQrCode(saveData);
+
+      expect(result).toEqual({
+        success: true,
+        qrCode: expect.objectContaining({
+          content: "Complex content",
+          type: "url",
+          settings: expect.objectContaining({
+            width: expect.any(Number),
+            type: expect.any(String),
+            color: expect.any(String),
+            margin: expect.any(Number),
+          }),
+        }),
+      });
+    });
   });
 });

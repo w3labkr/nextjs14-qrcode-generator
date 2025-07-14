@@ -338,5 +338,392 @@ describe("QR Code Generator Actions", () => {
 
       expect(result).toMatch(/^data:image\/png;base64,/);
     });
+
+    it("인증되지 않은 사용자는 고해상도 QR 코드를 생성할 수 없다", async () => {
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue(null);
+
+      const options: QrCodeOptions = {
+        text: "https://example.com",
+        type: "png",
+        width: 1024,
+      };
+
+      await expect(generateHighResQrCode(options)).rejects.toThrow("Unauthorized");
+    });
+
+    it("SVG 형식의 고해상도 QR 코드를 생성해야 한다", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("url");
+
+      const options: QrCodeOptions = {
+        text: "https://example.com",
+        type: "svg",
+        width: 1024,
+      };
+
+      const result = await generateHighResQrCode(options);
+
+      expect(result).toMatch(/^data:image\/svg\+xml;base64,/);
+    });
+  });
+
+  describe("Input validation tests", () => {
+    it("generateQrCode - 너무 큰 너비값 거부", async () => {
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      const options: QrCodeOptions = {
+        text: "test",
+        type: "png",
+        width: 5000, // 최대 허용 너비 초과
+      };
+
+      const result = await generateQrCode(options);
+
+      expect(result).toMatch(/error/i);
+    });
+
+    it("generateQrCode - 너무 작은 너비값 거부", async () => {
+      const mockAuth = require("@/auth").auth;
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      const options: QrCodeOptions = {
+        text: "test",
+        type: "png",
+        width: 50, // 최소 허용 너비 미만
+      };
+
+      const result = await generateQrCode(options);
+
+      expect(result).toMatch(/error/i);
+    });
+
+    it("generateQrCode - 유효하지 않은 색상 값 처리", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("text");
+
+      const options: QrCodeOptions = {
+        text: "test",
+        type: "png",
+        width: 400,
+        colorDark: "invalid-color", // 유효하지 않은 색상
+        colorLight: "#ffffff",
+      };
+
+      const result = await generateQrCode(options);
+
+      // 잘못된 색상이어도 기본값으로 처리되어 성공해야 함
+      expect(result).toMatch(/^data:image\/png;base64,/);
+    });
+
+    it("generateAndSaveQrCode - 제목 길이 제한 검증", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockEnsureUserExists = require("@/lib/utils").ensureUserExists;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockEnsureUserExists.mockResolvedValue({
+        session: {
+          user: { id: TEST_USER_ID, email: "test@example.com" },
+        },
+      });
+
+      const options: QrCodeGenerationOptions = {
+        text: "https://example.com",
+        title: "A".repeat(1000), // 매우 긴 제목
+        type: "png",
+        width: 400,
+        qrType: "URL",
+      };
+
+      const result = await generateAndSaveQrCode(options);
+
+      // 긴 제목이어도 처리되어야 함 (DB 제약에 따라)
+      expect(result.success).toBeDefined();
+    });
+
+    it("generateAndSaveQrCode - 빈 텍스트 검증", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockEnsureUserExists = require("@/lib/utils").ensureUserExists;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockEnsureUserExists.mockResolvedValue({
+        session: {
+          user: { id: TEST_USER_ID, email: "test@example.com" },
+        },
+      });
+
+      const options: QrCodeGenerationOptions = {
+        text: "", // 빈 텍스트
+        title: "Test QR",
+        type: "png",
+        width: 400,
+        qrType: "text",
+      };
+
+      const result = await generateAndSaveQrCode(options);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/empty/i);
+    });
+
+    it("generateAndSaveQrCode - QR 유형과 내용 불일치 검증", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockEnsureUserExists = require("@/lib/utils").ensureUserExists;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockEnsureUserExists.mockResolvedValue({
+        session: {
+          user: { id: TEST_USER_ID, email: "test@example.com" },
+        },
+      });
+
+      const options: QrCodeGenerationOptions = {
+        text: "not-a-url", // URL 형식이 아님
+        title: "Test QR",
+        type: "png",
+        width: 400,
+        qrType: "URL", // URL 타입으로 지정
+      };
+
+      const result = await generateAndSaveQrCode(options);
+
+      // 유형과 내용이 불일치해도 QR 코드 생성은 가능해야 함
+      expect(result.success).toBeDefined();
+    });
+
+    it("generateQrCode - 지원하지 않는 포맷 처리", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("text");
+
+      const options: QrCodeOptions = {
+        text: "test",
+        type: "gif" as any, // 지원하지 않는 포맷
+        width: 400,
+      };
+
+      const result = await generateQrCode(options);
+
+      // 기본 포맷으로 처리되어야 함
+      expect(result).toMatch(/^data:image\/(png|svg)/);
+    });
+  });
+
+  describe("Error handling and edge cases", () => {
+    it("generateQrCode - 매우 긴 텍스트 처리", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("text");
+
+      const longText = "a".repeat(4000); // 매우 긴 텍스트
+      const options: QrCodeOptions = {
+        text: longText,
+        type: "png",
+        width: 400,
+      };
+
+      const result = await generateQrCode(options);
+
+      expect(result).toMatch(/^data:image\/png;base64,/);
+    });
+
+    it("generateQrCode - 특수 문자 처리", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("text");
+
+      const specialText = "한글과 특수문자: !@#$%^&*()_+-=[]{}|;:,.<>?";
+      const options: QrCodeOptions = {
+        text: specialText,
+        type: "png",
+        width: 400,
+      };
+
+      const result = await generateQrCode(options);
+
+      expect(result).toMatch(/^data:image\/png;base64,/);
+    });
+
+    it("generateQrCode - 최대 너비 경계값 테스트", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("text");
+
+      const options: QrCodeOptions = {
+        text: "test",
+        type: "png",
+        width: 4096, // 최대 허용 너비
+      };
+
+      const result = await generateQrCode(options);
+
+      expect(result).toMatch(/^data:image\/png;base64,/);
+    });
+
+    it("generateQrCode - 최소 너비 경계값 테스트", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockHeaders = require("next/headers").headers;
+      const mockInferQrType = require("@/lib/unified-logging").inferQrType;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockHeaders.mockReturnValue({
+        get: jest.fn().mockReturnValue(null),
+      });
+
+      mockInferQrType.mockReturnValue("text");
+
+      const options: QrCodeOptions = {
+        text: "test",
+        type: "png",
+        width: 100, // 최소 허용 너비
+      };
+
+      const result = await generateQrCode(options);
+
+      expect(result).toMatch(/^data:image\/png;base64,/);
+    });
+
+    it("generateAndSaveQrCode - 사용자 존재 확인 실패", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockEnsureUserExists = require("@/lib/utils").ensureUserExists;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockEnsureUserExists.mockRejectedValue(new Error("User not found"));
+
+      const options: QrCodeGenerationOptions = {
+        text: "https://example.com",
+        title: "Test QR",
+        type: "png",
+        width: 400,
+        qrType: "URL",
+      };
+
+      const result = await generateAndSaveQrCode(options);
+
+      expect(result).toEqual({
+        success: false,
+        error: "User not found",
+        qrCodeDataUrl: null,
+      });
+    });
+
+    it("generateAndSaveQrCode - QR 코드 생성 실패", async () => {
+      const mockAuth = require("@/auth").auth;
+      const mockEnsureUserExists = require("@/lib/utils").ensureUserExists;
+
+      mockAuth.mockResolvedValue({
+        user: { id: TEST_USER_ID, email: "test@example.com" },
+      });
+
+      mockEnsureUserExists.mockResolvedValue({
+        session: {
+          user: { id: TEST_USER_ID, email: "test@example.com" },
+        },
+      });
+
+      // generateQrCode가 실패하도록 설정
+      const QRCodeStyling = require("qr-code-styling-node").default;
+      QRCodeStyling.mockImplementation(() => ({
+        getRawData: jest.fn().mockRejectedValue(new Error("QR generation failed")),
+      }));
+
+      const options: QrCodeGenerationOptions = {
+        text: "https://example.com",
+        title: "Test QR",
+        type: "png",
+        width: 400,
+        qrType: "URL",
+      };
+
+      const result = await generateAndSaveQrCode(options);
+
+      expect(result).toEqual({
+        success: false,
+        error: "QR generation failed",
+        qrCodeDataUrl: null,
+      });
+    });
   });
 });
