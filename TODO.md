@@ -33,7 +33,10 @@
   - 잘못된 요청 처리
   - 권한 없는 접근 처리
   - 대용량 데이터 처리
-- [ ] 새로운 API 엔드포인트 테스트 추가
+- [x] 새로운 API 엔드포인트 테스트 추가 ✅
+  - `/api/admin/logs/export` - CSV 내보내기 API 테스트
+  - `/api/admin/logs/cleanup` - 로그 정리 API 테스트  
+  - `/api/admin/logs/statistics` - 로그 통계 API 테스트
 
 ## 🧩 우선순위 3: 컴포넌트 테스트 확장
 
@@ -71,24 +74,30 @@
 
 ### 4.1 RLS (Row Level Security) 테스트
 
-- [ ] `lib/rls-manager.ts` 테스트 추가
+- [x] `lib/rls-manager.ts` 테스트 추가 ✅
   - RLS 정책 관리 로직
   - 권한 검증 및 데이터 접근 제어
-- [ ] `lib/rls-utils.ts` 테스트 확장
+  - 성능 벤치마킹 및 컨텍스트 관리 테스트
+- [x] `lib/rls-utils.ts` 테스트 확장 ✅
   - RLS 유틸리티 함수 완전 커버리지
   - 복잡한 권한 시나리오 테스트
+  - 사용자 ID 검증 및 트랜잭션 테스트
 
 ### 4.2 CSV 및 데이터 처리 테스트
 
-- [ ] `lib/csv-utils.ts` 테스트 확장
-  - 대용량 CSV 처리
+- [x] `lib/csv-utils.ts` 테스트 확장 ✅
+  - 대용량 CSV 처리 (1000+ 레코드)
   - 다양한 데이터 포맷 지원
+  - 특수 문자 및 에지 케이스 처리
+  - JSON 파싱 오류 처리
 
 ### 4.3 환경 설정 및 구성 테스트
 
-- [ ] `lib/env-validation.ts` 테스트 확장
+- [x] `lib/env-validation.ts` 테스트 확장 ✅
   - 환경 변수 유효성 검증
   - 다양한 환경별 설정 테스트
+  - 포트, 파일 크기, 세션 타임아웃 검증
+  - AWS, SMTP, Redis 설정 검증
 
 ## 🎯 우선순위 5: 커스텀 훅 및 상태 관리 테스트
 
