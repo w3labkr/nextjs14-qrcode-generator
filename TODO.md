@@ -49,10 +49,11 @@
 
 ### 3.2 인증 관련 컴포넌트 테스트
 
-- [ ] `app/auth/signin/components/` 하위 컴포넌트들
+- [x] `app/auth/signin/components/` 하위 컴포넌트들 ✅
   - Google, GitHub 로그인 버튼
   - Remember Me 체크박스
   - 로그인 폼 통합 테스트
+  - 테스트 완료: google-signin-button, github-signin-button, remember-me-checkbox, continue-without-signin, signin-card
 
 ### 3.3 공통 컴포넌트 테스트
 

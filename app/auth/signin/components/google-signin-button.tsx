@@ -12,9 +12,21 @@ export const GoogleSignInButton = ({
   callbackUrl,
   onSignIn,
 }: GoogleSignInButtonProps) => {
-  const handleClick = () => {
-    onSignIn?.();
-    signIn("google", { callbackUrl });
+  const handleClick = async () => {
+    // Call onSignIn callback if provided
+    try {
+      onSignIn?.();
+    } catch (error) {
+      console.error("onSignIn callback error:", error);
+    }
+
+    // Proceed with sign in regardless of onSignIn result
+    try {
+      await signIn("google", { callbackUrl });
+    } catch (error) {
+      // Errors are handled by next-auth internally
+      console.error("Sign in error:", error);
+    }
   };
 
   return (

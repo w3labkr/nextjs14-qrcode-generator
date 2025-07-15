@@ -12,9 +12,21 @@ export const GitHubSignInButton = ({
   callbackUrl,
   onSignIn,
 }: GitHubSignInButtonProps) => {
-  const handleClick = () => {
-    onSignIn?.();
-    signIn("github", { callbackUrl });
+  const handleClick = async () => {
+    // Call onSignIn callback if provided
+    try {
+      onSignIn?.();
+    } catch (error) {
+      console.error("onSignIn callback error:", error);
+    }
+
+    // Proceed with sign in regardless of onSignIn result
+    try {
+      await signIn("github", { callbackUrl });
+    } catch (error) {
+      // Errors are handled by next-auth internally
+      console.error("Sign in error:", error);
+    }
   };
 
   return (
