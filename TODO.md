@@ -39,7 +39,7 @@
 
 ### 3.1 누락된 컴포넌트 테스트 추가
 
-- [ ] `app/dashboard/account/components/profile-form.tsx` 테스트 추가
+- [x] `app/dashboard/account/components/profile-form.tsx` 테스트 추가 ✅
   - 프로필 수정 폼
   - 유효성 검증 및 제출 처리
 - [ ] `app/dashboard/admin/` 하위 컴포넌트들
