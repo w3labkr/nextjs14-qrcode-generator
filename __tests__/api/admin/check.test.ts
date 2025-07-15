@@ -148,5 +148,128 @@ describe("/api/admin/check", () => {
       expect(response.status).toBe(200);
       expect(data).toEqual({ isAdmin: false });
     });
+
+    it("should handle empty admin emails list", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: "admin-123",
+          email: "admin@example.com",
+        },
+        expires: "2024-12-31T23:59:59.000Z",
+      });
+      mockGetAdminEmails.mockReturnValue([]);
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/admin/check",
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual({ isAdmin: false });
+    });
+
+    it("should handle null email in session", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: "admin-123",
+          email: null,
+        },
+        expires: "2024-12-31T23:59:59.000Z",
+      });
+      mockGetAdminEmails.mockReturnValue(["admin@example.com"]);
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/admin/check",
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual({ isAdmin: false });
+    });
+
+    it("should handle whitespace in email", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: "admin-123",
+          email: "  admin@example.com  ",
+        },
+        expires: "2024-12-31T23:59:59.000Z",
+      });
+      mockGetAdminEmails.mockReturnValue(["admin@example.com"]);
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/admin/check",
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual({ isAdmin: false });
+    });
+
+    it("should handle getAdminEmails throwing error", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: "admin-123",
+          email: "admin@example.com",
+        },
+        expires: "2024-12-31T23:59:59.000Z",
+      });
+      mockGetAdminEmails.mockImplementation(() => {
+        throw new Error("Config error");
+      });
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/admin/check",
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual({ isAdmin: false });
+    });
+
+    it("should handle multiple admin emails correctly", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {
+          id: "admin-123",
+          email: "admin2@example.com",
+        },
+        expires: "2024-12-31T23:59:59.000Z",
+      });
+      mockGetAdminEmails.mockReturnValue([
+        "admin1@example.com",
+        "admin2@example.com",
+        "admin3@example.com",
+      ]);
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/admin/check",
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual({ isAdmin: true });
+    });
+
+    it("should handle malformed session data", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: {},
+        expires: "2024-12-31T23:59:59.000Z",
+      });
+      mockGetAdminEmails.mockReturnValue(["admin@example.com"]);
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/admin/check",
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual({ isAdmin: false });
+    });
   });
 });

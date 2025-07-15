@@ -29,7 +29,7 @@
 
 ### 3.2 API Routes 테스트 확장
 
-- [ ] 기존 API 테스트의 에지 케이스 추가
+- [x] 기존 API 테스트의 에지 케이스 추가 ✅
   - 잘못된 요청 처리
   - 권한 없는 접근 처리
   - 대용량 데이터 처리
@@ -57,13 +57,13 @@
 
 ### 3.3 공통 컴포넌트 테스트
 
-- [ ] `components/user-nav.tsx` 테스트 추가
+- [x] `components/user-nav.tsx` 테스트 추가 ✅
   - 사용자 네비게이션 메뉴
   - 로그아웃 기능 테스트
-- [ ] `components/address-search.tsx` 테스트 추가
+- [x] `components/address-search.tsx` 테스트 추가 ✅
   - 주소 검색 API 통합
   - 검색 결과 처리
-- [ ] `components/loading-spinner.tsx` 테스트 추가
+- [x] `components/loading-spinner.tsx` 테스트 추가 ✅
   - 로딩 상태 표시
   - 접근성 기능 검증
 

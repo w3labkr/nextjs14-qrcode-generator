@@ -52,4 +52,54 @@ describe("LoadingSpinner", () => {
     const { container } = render(<LoadingSpinner />);
     expect(container.firstChild).toMatchSnapshot();
   });
+
+  describe("접근성 테스트", () => {
+    it("로딩 스피너가 스크린 리더에 적절히 노출되어야 한다", () => {
+      const { container, getByRole } = render(<LoadingSpinner />);
+      
+      const spinner = getByRole("status");
+      expect(spinner).toBeInTheDocument();
+      expect(spinner).toHaveAttribute("aria-label", "로딩 중...");
+    });
+
+    it("스크린 리더용 텍스트를 가져야 한다", () => {
+      const { container } = render(<LoadingSpinner />);
+      
+      const screenReaderText = container.querySelector(".sr-only");
+      expect(screenReaderText).toBeInTheDocument();
+      expect(screenReaderText).toHaveTextContent("로딩 중...");
+    });
+
+    it("로딩 상태를 나타내는 적절한 구조를 가져야 한다", () => {
+      const { container } = render(<LoadingSpinner />);
+      
+      // 스피너가 중앙에 배치되어야 함
+      const outerContainer = container.querySelector(".flex.min-h-screen");
+      expect(outerContainer).toHaveClass("items-center", "justify-center");
+    });
+
+    it("로딩 애니메이션이 적용되어야 한다", () => {
+      const { container } = render(<LoadingSpinner />);
+      
+      const spinner = container.querySelector(".animate-spin");
+      expect(spinner).toHaveClass("animate-spin");
+    });
+  });
+
+  describe("스타일링 테스트", () => {
+    it("스피너의 크기와 색상이 정확해야 한다", () => {
+      const { container } = render(<LoadingSpinner />);
+      
+      const spinner = container.querySelector(".animate-spin");
+      expect(spinner).toHaveClass("h-8", "w-8");
+      expect(spinner).toHaveClass("border-b-2", "border-primary");
+    });
+
+    it("스피너가 원형이어야 한다", () => {
+      const { container } = render(<LoadingSpinner />);
+      
+      const spinner = container.querySelector(".animate-spin");
+      expect(spinner).toHaveClass("rounded-full");
+    });
+  });
 });

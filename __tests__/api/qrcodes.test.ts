@@ -115,5 +115,144 @@ describe("QR Codes API", () => {
         select: expect.any(Object),
       });
     });
+
+    it("잘못된 페이지 번호에 대해 기본값을 사용해야 한다", async () => {
+      const mockSession = {
+        user: {
+          id: TEST_USER_ID,
+          email: "test@example.com",
+        },
+      };
+
+      const { prisma } = require("@/lib/prisma");
+      prisma.qrCode.findMany.mockResolvedValue([]);
+      prisma.qrCode.count.mockResolvedValue(0);
+
+      mockAuth.mockResolvedValue(mockSession);
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/qrcodes?page=invalid&limit=invalid"
+      );
+      const response = await GET(request);
+
+      expect(prisma.qrCode.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: TEST_USER_ID,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: 0, // 기본값 page=1이므로 skip=0
+        take: 10, // 기본값 limit=10
+        select: expect.any(Object),
+      });
+    });
+
+    it("매우 큰 페이지 번호에 대해 적절히 처리해야 한다", async () => {
+      const mockSession = {
+        user: {
+          id: TEST_USER_ID,
+          email: "test@example.com",
+        },
+      };
+
+      const { prisma } = require("@/lib/prisma");
+      prisma.qrCode.findMany.mockResolvedValue([]);
+      prisma.qrCode.count.mockResolvedValue(0);
+
+      mockAuth.mockResolvedValue(mockSession);
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/qrcodes?page=999999&limit=1000"
+      );
+      const response = await GET(request);
+
+      expect(prisma.qrCode.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: TEST_USER_ID,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: 9999990, // (999999 - 1) * 10 (limit은 100으로 제한됨)
+        take: 100, // limit 최대값
+        select: expect.any(Object),
+      });
+    });
+
+    it("데이터베이스 오류를 적절히 처리해야 한다", async () => {
+      const mockSession = {
+        user: {
+          id: TEST_USER_ID,
+          email: "test@example.com",
+        },
+      };
+
+      const { prisma } = require("@/lib/prisma");
+      prisma.qrCode.findMany.mockRejectedValue(new Error("Database error"));
+
+      mockAuth.mockResolvedValue(mockSession);
+
+      const request = createMockRequest("http://localhost:3000/api/qrcodes");
+      const response = await GET(request);
+
+      expect(response.status).toBe(500);
+    });
+
+    it("빈 결과에 대해 적절한 응답을 반환해야 한다", async () => {
+      const mockSession = {
+        user: {
+          id: TEST_USER_ID,
+          email: "test@example.com",
+        },
+      };
+
+      const { prisma } = require("@/lib/prisma");
+      prisma.qrCode.findMany.mockResolvedValue([]);
+      prisma.qrCode.count.mockResolvedValue(0);
+
+      mockAuth.mockResolvedValue(mockSession);
+
+      const request = createMockRequest("http://localhost:3000/api/qrcodes");
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.data).toEqual([]);
+      expect(data.pagination.total).toBe(0);
+      expect(data.pagination.totalPages).toBe(0);
+    });
+
+    it("잘못된 정렬 옵션에 대해 기본값을 사용해야 한다", async () => {
+      const mockSession = {
+        user: {
+          id: TEST_USER_ID,
+          email: "test@example.com",
+        },
+      };
+
+      const { prisma } = require("@/lib/prisma");
+      prisma.qrCode.findMany.mockResolvedValue([]);
+      prisma.qrCode.count.mockResolvedValue(0);
+
+      mockAuth.mockResolvedValue(mockSession);
+
+      const request = createMockRequest(
+        "http://localhost:3000/api/qrcodes?sortBy=invalid&sortOrder=invalid"
+      );
+      const response = await GET(request);
+
+      expect(prisma.qrCode.findMany).toHaveBeenCalledWith({
+        where: {
+          userId: TEST_USER_ID,
+        },
+        orderBy: {
+          createdAt: "desc", // 기본값
+        },
+        skip: 0,
+        take: 10,
+        select: expect.any(Object),
+      });
+    });
   });
 });
