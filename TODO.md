@@ -42,9 +42,10 @@
 - [x] `app/dashboard/account/components/profile-form.tsx` 테스트 추가 ✅
   - 프로필 수정 폼
   - 유효성 검증 및 제출 처리
-- [ ] `app/dashboard/admin/` 하위 컴포넌트들
+- [x] `app/dashboard/admin/` 하위 컴포넌트들 ✅
   - 관리자 페이지 컴포넌트들
   - 시스템 로그 관리 기능
+  - 테스트 완료: admin-logs-data-table, data-table-column-header, logs-columns
 
 ### 3.2 인증 관련 컴포넌트 테스트
 
