@@ -7,12 +7,17 @@ import { convertLogsToCSV } from "@/lib/csv-utils";
 
 // Mock 설정
 jest.mock("@/auth");
-jest.mock("@/lib/unified-logging");
+jest.mock("@/lib/unified-logging", () => ({
+  UnifiedLogger: {
+    getClientInfoFromRequest: jest.fn(),
+    logAdminAction: jest.fn(),
+    getLogs: jest.fn(),
+  },
+}));
 jest.mock("@/lib/env-validation");
 jest.mock("@/lib/csv-utils");
 
 const mockAuth = auth as jest.MockedFunction<typeof auth>;
-const mockUnifiedLogger = UnifiedLogger as jest.Mocked<typeof UnifiedLogger>;
 const mockGetAdminEmails = getAdminEmails as jest.MockedFunction<typeof getAdminEmails>;
 const mockConvertLogsToCSV = convertLogsToCSV as jest.MockedFunction<typeof convertLogsToCSV>;
 
@@ -69,12 +74,12 @@ describe("/api/admin/logs/export", () => {
         user: { email: "admin@example.com", id: "admin1" },
       } as any);
       mockGetAdminEmails.mockReturnValue(["admin@example.com"]);
-      mockUnifiedLogger.getClientInfoFromRequest.mockResolvedValue({
+      (UnifiedLogger.getClientInfoFromRequest as jest.Mock).mockResolvedValue({
         ip: "127.0.0.1",
         userAgent: "test-agent",
       });
-      mockUnifiedLogger.logAdminAction.mockResolvedValue(undefined);
-      mockUnifiedLogger.getLogs.mockResolvedValue({
+      (UnifiedLogger.logAdminAction as jest.Mock).mockResolvedValue(undefined);
+      (UnifiedLogger.getLogs as jest.Mock).mockResolvedValue({
         logs: mockLogs,
         totalCount: 1,
       });
@@ -98,7 +103,7 @@ describe("/api/admin/logs/export", () => {
       expect(csvContent).toBe("id,level,message\nlog1,INFO,Test log");
 
       // 관리자 액션 로깅 확인
-      expect(mockUnifiedLogger.logAdminAction).toHaveBeenCalledWith(
+      expect((UnifiedLogger.logAdminAction as jest.Mock)).toHaveBeenCalledWith(
         {
           adminId: "admin1",
           action: "EXPORT_LOGS",
@@ -113,12 +118,12 @@ describe("/api/admin/logs/export", () => {
         user: { email: "admin@example.com", id: "admin1" },
       } as any);
       mockGetAdminEmails.mockReturnValue(["admin@example.com"]);
-      mockUnifiedLogger.getClientInfoFromRequest.mockResolvedValue({
+      (UnifiedLogger.getClientInfoFromRequest as jest.Mock).mockResolvedValue({
         ip: "127.0.0.1",
         userAgent: "test-agent",
       });
-      mockUnifiedLogger.logAdminAction.mockResolvedValue(undefined);
-      mockUnifiedLogger.getLogs.mockResolvedValue({
+      (UnifiedLogger.logAdminAction as jest.Mock).mockResolvedValue(undefined);
+      (UnifiedLogger.getLogs as jest.Mock).mockResolvedValue({
         logs: [],
         totalCount: 0,
       });
@@ -140,12 +145,12 @@ describe("/api/admin/logs/export", () => {
         user: { email: "admin@example.com", id: "admin1" },
       } as any);
       mockGetAdminEmails.mockReturnValue(["admin@example.com"]);
-      mockUnifiedLogger.getClientInfoFromRequest.mockResolvedValue({
+      (UnifiedLogger.getClientInfoFromRequest as jest.Mock).mockResolvedValue({
         ip: "127.0.0.1",
         userAgent: "test-agent",
       });
-      mockUnifiedLogger.logAdminAction.mockResolvedValue(undefined);
-      mockUnifiedLogger.getLogs.mockRejectedValue(new Error("Database error"));
+      (UnifiedLogger.logAdminAction as jest.Mock).mockResolvedValue(undefined);
+      (UnifiedLogger.getLogs as jest.Mock).mockRejectedValue(new Error("Database error"));
       mockUnifiedLogger.logError.mockResolvedValue(undefined);
 
       const request = new NextRequest("http://localhost/api/admin/logs/export", {
@@ -178,12 +183,12 @@ describe("/api/admin/logs/export", () => {
         user: { email: "admin@example.com", id: "admin1" },
       } as any);
       mockGetAdminEmails.mockReturnValue(["admin@example.com"]);
-      mockUnifiedLogger.getClientInfoFromRequest.mockResolvedValue({
+      (UnifiedLogger.getClientInfoFromRequest as jest.Mock).mockResolvedValue({
         ip: "127.0.0.1",
         userAgent: "test-agent",
       });
-      mockUnifiedLogger.logAdminAction.mockResolvedValue(undefined);
-      mockUnifiedLogger.getLogs.mockResolvedValue({
+      (UnifiedLogger.logAdminAction as jest.Mock).mockResolvedValue(undefined);
+      (UnifiedLogger.getLogs as jest.Mock).mockResolvedValue({
         logs: mockLogs,
         totalCount: 1,
       });
@@ -206,7 +211,7 @@ describe("/api/admin/logs/export", () => {
       await POST(request);
 
       // 페이지네이션 제거된 필터로 호출되는지 확인
-      expect(mockUnifiedLogger.getLogs).toHaveBeenCalledWith(
+      expect((UnifiedLogger.getLogs as jest.Mock)).toHaveBeenCalledWith(
         {
           dateFrom: "2024-01-01",
           dateTo: "2024-01-31",

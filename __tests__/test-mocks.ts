@@ -217,3 +217,17 @@ export function createMockAxios() {
     },
   };
 }
+
+// Test to satisfy Jest's requirement that test files contain tests
+describe("Test Mocks Utilities", () => {
+  it("should export mock utility functions", () => {
+    expect(createMockSession).toBeDefined();
+    expect(createMockAdminSession).toBeDefined();
+    expect(mockGetTypeLabel).toBeDefined();
+    expect(createMockPrismaClient).toBeDefined();
+    expect(createMockAuth).toBeDefined();
+    expect(createMockHeaders).toBeDefined();
+    expect(createMockToast).toBeDefined();
+    expect(createMockAxios).toBeDefined();
+  });
+});

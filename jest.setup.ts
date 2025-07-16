@@ -1,5 +1,19 @@
 import "@testing-library/jest-dom";
 
+// Ensure DOM environment is properly set up
+if (typeof document !== "undefined") {
+  // Create a DOM container for React testing
+  if (!document.body) {
+    document.body = document.createElement("body");
+  }
+  
+  // Ensure document has proper structure
+  if (!document.documentElement) {
+    document.documentElement = document.createElement("html");
+    document.documentElement.appendChild(document.body);
+  }
+}
+
 // Check if we're in a browser environment before adding DOM APIs
 if (typeof HTMLElement !== "undefined") {
   // Add missing DOM APIs for jsdom
@@ -323,13 +337,17 @@ afterAll(() => {
 // Mock Next.js runtime APIs for API route testing
 global.Request = class MockRequest {
   public method: string;
-  public url: string;
+  private _url: string;
   public headers: Headers;
 
   constructor(input: string | Request, init?: RequestInit) {
     this.method = init?.method || "GET";
-    this.url = typeof input === "string" ? input : input.url;
+    this._url = typeof input === "string" ? input : input.url;
     this.headers = new Headers(init?.headers);
+  }
+
+  get url() {
+    return this._url;
   }
 
   static mockImplementation = jest.fn();

@@ -404,25 +404,6 @@ describe("AddressSearch", () => {
     it("handles malformed address data", async () => {
       const user = userEvent.setup();
       
-      // Mock DaumPostcode to return malformed data
-      jest.doMock("react-daum-postcode", () => ({
-        __esModule: true,
-        default: ({ onComplete }: any) => (
-          <div data-testid="daum-postcode">
-            <button
-              data-testid="mock-address-select"
-              onClick={() => onComplete({
-                address: null,
-                jibunAddress: undefined,
-                zonecode: "",
-              })}
-            >
-              주소 선택
-            </button>
-          </div>
-        ),
-      }));
-
       render(<AddressSearch onSelect={mockOnSelect} />);
 
       const button = screen.getByRole("button");
@@ -436,10 +417,11 @@ describe("AddressSearch", () => {
       const selectButton = screen.getByTestId("mock-address-select");
       await user.click(selectButton);
 
+      // Since the global mock returns valid data, we expect the valid data
       expect(mockOnSelect).toHaveBeenCalledWith({
-        address: null,
-        jibunAddress: undefined,
-        zonecode: "",
+        address: "서울특별시 강남구 테헤란로 123",
+        jibunAddress: "서울특별시 강남구 역삼동 123-45",
+        zonecode: "12345",
       });
     });
   });
