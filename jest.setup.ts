@@ -1,17 +1,9 @@
 import "@testing-library/jest-dom";
 
 // Ensure DOM environment is properly set up
-if (typeof document !== "undefined") {
-  // Create a DOM container for React testing
-  if (!document.body) {
-    document.body = document.createElement("body");
-  }
-  
-  // Ensure document has proper structure
-  if (!document.documentElement) {
-    document.documentElement = document.createElement("html");
-    document.documentElement.appendChild(document.body);
-  }
+if (typeof document !== "undefined" && !document.body) {
+  // Create a DOM container for React testing if needed
+  document.body = document.createElement("body");
 }
 
 // Check if we're in a browser environment before adding DOM APIs
@@ -367,11 +359,13 @@ global.Response = class MockResponse {
   }
 
   async json() {
-    return typeof this._body === 'string' ? JSON.parse(this._body) : this._body;
+    return typeof this._body === "string" ? JSON.parse(this._body) : this._body;
   }
 
   async text() {
-    return typeof this._body === 'string' ? this._body : JSON.stringify(this._body);
+    return typeof this._body === "string"
+      ? this._body
+      : JSON.stringify(this._body);
   }
 
   static json = jest.fn(
