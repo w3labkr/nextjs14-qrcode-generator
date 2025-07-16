@@ -149,7 +149,7 @@
 ### 6.2 모킹 전략 개선
 
 - [x] `__mocks__` 디렉토리 구조 최적화 ✅
-- [ ] 공통 모킹 유틸리티 함수 생성 (`getTypeLabel`, `prisma`, `next-auth` 등)
+- [x] 공통 모킹 유틸리티 함수 생성 (`getTypeLabel`, `prisma`, `next-auth` 등) ✅
 - [ ] 데이터베이스 모킹 전략 표준화
 
 ### 6.3 CI/CD 통합
