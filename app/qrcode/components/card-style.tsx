@@ -58,49 +58,29 @@ export function CardStyle() {
           조정할 수 있습니다.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="col-span-2 sm:col-span-1">
-          <FieldStyleForegroundColor />
-        </div>
-        <div className="col-span-2 sm:col-span-1">
-          <FieldStyleBackgroundColor />
-        </div>
+      <CardContent className="grid grid-cols-1 gap-4">
+        <FieldStyleForegroundColor />
+        <FieldStyleBackgroundColor />
         <FieldStyleLogo />
         <FieldStyleBorderStyle />
         {borderStyle === "custom" && (
           <>
             <FieldStyleText />
-            <div className="col-span-2 sm:col-span-1">
-              <FieldStyleBorderColor />
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <FieldStyleTextColor />
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <FieldStyleBorderRadius />
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <FieldStyleBorderWidth />
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <FieldStyleFontSize />
-            </div>
+            <FieldStyleBorderColor />
+            <FieldStyleTextColor />
+            <FieldStyleBorderRadius />
+            <FieldStyleBorderWidth />
+            <FieldStyleFontSize />
           </>
         )}
-        {borderStyle === "rounded" && (
-          <div className="col-span-2 sm:col-span-1">
-            <FieldStyleBorderRadius />
-          </div>
-        )}
+        {borderStyle === "rounded" && <FieldStyleBorderRadius />}
         {borderStyle === "simple" && (
           <>
-            <div className="col-span-2 sm:col-span-1">
-              <FieldStyleBorderColor />
-            </div>
+            <FieldStyleBorderColor />
           </>
         )}
         {borderStyle === "custom" && (
-          <div className="col-span-2 p-3 bg-muted rounded-lg">
+          <div className="p-3 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground">
               <strong>사용자 정의 모드:</strong> 모서리 반지름, 테두리 색상과
               굵기, 안내 문구와 색상, 폰트 사이즈를 자유롭게 설정할 수 있습니다.
@@ -108,7 +88,7 @@ export function CardStyle() {
             </p>
           </div>
         )}
-        <div className="col-span-2 pt-4 border-t">
+        <div className="pt-4 border-t">
           <Button
             type="button"
             variant="outline"
@@ -200,7 +180,7 @@ function FieldStyleLogo() {
       control={control}
       name="styleLogo"
       render={({ field }) => (
-        <FormItem className="col-span-2">
+        <FormItem>
           <FormLabel>
             로고 <span className="text-xs">(선택)</span>
           </FormLabel>
@@ -231,7 +211,7 @@ function FieldStyleBorderStyle() {
       control={control}
       name="styleBorderStyle"
       render={({ field }) => (
-        <FormItem className="col-span-2">
+        <FormItem>
           <FormLabel>
             테두리 스타일 <span className="text-xs">(선택)</span>
           </FormLabel>
@@ -307,7 +287,7 @@ function FieldStyleText() {
       control={control}
       name="styleText"
       render={({ field }) => (
-        <FormItem className="col-span-2">
+        <FormItem>
           <FormLabel>
             안내 문구 <span className="text-xs">(선택)</span>
           </FormLabel>
