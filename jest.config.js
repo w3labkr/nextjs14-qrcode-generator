@@ -10,6 +10,9 @@ const customJestConfig = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
   },
+  maxWorkers: "50%",
+  cache: true,
+  cacheDirectory: "<rootDir>/.jest-cache",
   collectCoverageFrom: [
     "app/**/*.{js,jsx,ts,tsx}",
     "components/**/*.{js,jsx,ts,tsx}",
