@@ -5,6 +5,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.4.1-06B6D4?logo=tailwindcss)](https://tailwindcss.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.10.1-2D3748?logo=prisma)](https://www.prisma.io/)
+[![codecov](https://codecov.io/gh/w3labkr/nextjs14-qrcode-generator/branch/master/graph/badge.svg)](https://codecov.io/gh/w3labkr/nextjs14-qrcode-generator)
+[![Test Coverage](https://github.com/w3labkr/nextjs14-qrcode-generator/actions/workflows/test-coverage.yml/badge.svg)](https://github.com/w3labkr/nextjs14-qrcode-generator/actions/workflows/test-coverage.yml)
 
 Next.js 14 기반의 현대적이고 강력한 QR 코드 생성기입니다. TypeScript, Tailwind CSS, shadcn/ui를 활용하여 사용자 친화적이고 안전한 QR 코드 생성 경험을 제공합니다.
 
