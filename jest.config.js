@@ -50,7 +50,7 @@ const customJestConfig = {
     customExportConditions: [""],
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(next-auth|@auth|oauth4webapi|preact-render-to-string|preact|@panva)/)",
+    "node_modules/(?!(next-auth|@auth|oauth4webapi|preact-render-to-string|preact|@panva|react)/)",
   ],
 };
 

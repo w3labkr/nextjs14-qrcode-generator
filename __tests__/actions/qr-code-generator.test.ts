@@ -40,6 +40,10 @@ jest.mock("@/lib/rls-utils");
 
 jest.mock("@/lib/prisma");
 
+jest.mock("@/lib/utils", () => ({
+  ensureUserExists: jest.fn(),
+}));
+
 describe("QR Code Generator Actions", () => {
   const mockAuth = require("@/auth").auth;
   const mockHeaders = require("next/headers").headers;

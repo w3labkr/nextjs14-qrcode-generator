@@ -20,7 +20,7 @@ jest.mock("@/components/ui/date-picker", () => ({
   ),
 }));
 
-jest.mock("./admin-logs-data-table", () => ({
+jest.mock("@/app/dashboard/admin/logs/components/admin-logs-data-table", () => ({
   AdminLogsDataTable: ({ data, loading }: any) => (
     <div data-testid="admin-logs-table">
       {loading ? "Loading..." : `Table with ${data.length} items`}
@@ -28,7 +28,7 @@ jest.mock("./admin-logs-data-table", () => ({
   ),
 }));
 
-jest.mock("./logs-columns", () => ({
+jest.mock("@/app/dashboard/admin/logs/components/logs-columns", () => ({
   adminLogsColumns: [],
 }));
 

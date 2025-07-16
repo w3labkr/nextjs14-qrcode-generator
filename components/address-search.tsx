@@ -33,14 +33,19 @@ export function AddressSearch({
   const [isOpen, setIsOpen] = useState(false);
 
   const handleComplete = (data: any) => {
-    const addressData: AddressData = {
-      address: data.address,
-      jibunAddress: data.jibunAddress,
-      zonecode: data.zonecode,
-    };
+    try {
+      const addressData: AddressData = {
+        address: data.address,
+        jibunAddress: data.jibunAddress,
+        zonecode: data.zonecode,
+      };
 
-    onSelect(addressData);
-    setIsOpen(false);
+      onSelect(addressData);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error in address selection:", error);
+      setIsOpen(false);
+    }
   };
 
   const handleOpenDialog = () => {

@@ -375,6 +375,7 @@ describe("AddressSearch", () => {
       const mockOnSelectError = jest.fn().mockImplementation(() => {
         throw new Error("Selection failed");
       });
+      const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
 
       render(<AddressSearch onSelect={mockOnSelectError} />);
 
@@ -388,10 +389,16 @@ describe("AddressSearch", () => {
 
       const selectButton = screen.getByTestId("mock-address-select");
       
-      // Should not throw error
+      // Should not throw error to the test
       await user.click(selectButton);
       
       expect(mockOnSelectError).toHaveBeenCalled();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Error in address selection:"),
+        expect.any(Error)
+      );
+      
+      consoleErrorSpy.mockRestore();
     });
 
     it("handles malformed address data", async () => {
