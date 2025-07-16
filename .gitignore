@@ -105,5 +105,3 @@ public/workbox-*.js
 
 /lib/generated/prisma
 /prisma/dev.db
-
-coverage-temp/
