@@ -1,6 +1,6 @@
 {
   "name": "nextjs14-qrcode-generator",
-  "version": "1.5.111",
+  "version": "1.6.2",
   "private": true,
   "browserslist": [
     "defaults and fully supports es6-module",
