@@ -357,11 +357,21 @@ global.Response = class MockResponse {
   public status: number;
   public statusText: string;
   public headers: Headers;
+  private _body: any;
 
   constructor(body?: any, init?: ResponseInit) {
     this.status = init?.status || 200;
     this.statusText = init?.statusText || "OK";
     this.headers = new Headers(init?.headers);
+    this._body = body;
+  }
+
+  async json() {
+    return typeof this._body === 'string' ? JSON.parse(this._body) : this._body;
+  }
+
+  async text() {
+    return typeof this._body === 'string' ? this._body : JSON.stringify(this._body);
   }
 
   static json = jest.fn(
