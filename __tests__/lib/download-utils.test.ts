@@ -1,229 +1,166 @@
-// download-utils.ts의 일부 함수들을 테스트
-// 실제 파일에서 추출한 유틸리티 함수들
+import {
+  downloadFileSecure,
+  downloadAsCSV,
+  downloadMultipleCSV,
+  downloadCSVAsZip,
+  downloadQrCode,
+} from "@/lib/download-utils";
+import axios from "axios";
+
+// Mock axios
+jest.mock("axios");
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+// Mock global objects
+global.URL = {
+  createObjectURL: jest.fn(() => "mock-blob-url"),
+  revokeObjectURL: jest.fn(),
+} as any;
+
+// Mock window object
+(global as any).window = (global as any).window || {};
+(global as any).window.JSZip = jest.fn().mockImplementation(() => ({
+  file: jest.fn(),
+  generateAsync: jest.fn().mockResolvedValue(new Blob(["mock-zip-content"])),
+}));
+
+// Mock document
+const mockAnchorElement = {
+  click: jest.fn(),
+  setAttribute: jest.fn(),
+  style: {},
+  href: "",
+  download: "",
+};
+
+Object.defineProperty(document, "createElement", {
+  value: jest.fn().mockReturnValue(mockAnchorElement),
+  writable: true,
+});
+
+Object.defineProperty(document.body, "appendChild", {
+  value: jest.fn(),
+  writable: true,
+});
+
+Object.defineProperty(document.body, "removeChild", {
+  value: jest.fn(),
+  writable: true,
+});
+
+Object.defineProperty(document.body, "contains", {
+  value: jest.fn().mockReturnValue(true),
+  writable: true,
+});
 
 describe("Download Utils", () => {
-  describe("parseQrSettings 함수", () => {
-    const parseQrSettings = (
-      settings: any,
-      content: string,
-      format: string,
-    ) => {
-      let parsedSettings = settings;
-      if (typeof settings === "string") {
-        try {
-          parsedSettings = JSON.parse(settings);
-        } catch (e) {
-          console.warn("Settings 파싱 오류, 기본값 사용:", e);
-          parsedSettings = {};
-        }
-      }
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+  describe("downloadFileSecure 함수", () => {
+    it("파일을 안전하게 다운로드해야 한다", () => {
+      const mockBlob = new Blob(["test content"], { type: "text/plain" });
+      const filename = "test.txt";
 
-      return {
-        text: content,
-        type: format as any,
-        width: parsedSettings?.width || 400,
-        margin: parsedSettings?.margin || 0,
-        color: {
-          dark: parsedSettings?.color?.dark || "#000000",
-          light: parsedSettings?.color?.light || "#ffffff",
-        },
-        logo: parsedSettings?.logo || undefined,
-        dotsOptions: parsedSettings?.dotsOptions,
-        cornersSquareOptions: parsedSettings?.cornersSquareOptions,
-        frameOptions: parsedSettings?.frameOptions,
-      };
-    };
+      downloadFileSecure(mockBlob, filename);
 
-    it("기본 설정으로 QR 설정을 파싱해야 한다", () => {
-      const result = parseQrSettings({}, "test content", "png");
-
-      expect(result).toEqual({
-        text: "test content",
-        type: "png",
-        width: 400,
-        margin: 0,
-        color: {
-          dark: "#000000",
-          light: "#ffffff",
-        },
-        logo: undefined,
-        dotsOptions: undefined,
-        cornersSquareOptions: undefined,
-        frameOptions: undefined,
-      });
+      expect(document.createElement).toHaveBeenCalledWith("a");
+      expect(global.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
+      expect(mockAnchorElement.href).toBe("mock-blob-url");
+      expect(mockAnchorElement.download).toBe(filename);
+      expect(mockAnchorElement.click).toHaveBeenCalled();
+      expect(document.body.appendChild).toHaveBeenCalledWith(mockAnchorElement);
+      // removeChild는 setTimeout 안에서 실행되므로 바로 확인하지 않음
     });
 
-    it("커스텀 설정이 올바르게 적용되어야 한다", () => {
-      const customSettings = {
-        width: 600,
-        margin: 10,
-        color: {
-          dark: "#FF0000",
-          light: "#00FF00",
-        },
-      };
+    it("빈 블롭도 처리해야 한다", () => {
+      const mockBlob = new Blob([], { type: "application/octet-stream" });
+      const filename = "empty.bin";
 
-      const result = parseQrSettings(customSettings, "custom content", "jpg");
+      downloadFileSecure(mockBlob, filename);
 
-      expect(result).toEqual({
-        text: "custom content",
-        type: "jpg",
-        width: 600,
-        margin: 10,
-        color: {
-          dark: "#FF0000",
-          light: "#00FF00",
-        },
-        logo: undefined,
-        dotsOptions: undefined,
-        cornersSquareOptions: undefined,
-        frameOptions: undefined,
-      });
-    });
-
-    it("문자열 형태의 JSON 설정을 파싱해야 한다", () => {
-      const jsonSettings = '{"width": 800, "margin": 20}';
-
-      const result = parseQrSettings(jsonSettings, "json content", "svg");
-
-      expect(result.width).toBe(800);
-      expect(result.margin).toBe(20);
-      expect(result.text).toBe("json content");
-      expect(result.type).toBe("svg");
-    });
-
-    it("잘못된 JSON 문자열의 경우 기본값을 사용해야 한다", () => {
-      const invalidJson = '{"width": 800, margin: }'; // 잘못된 JSON
-
-      const result = parseQrSettings(invalidJson, "invalid json", "png");
-
-      expect(result.width).toBe(400); // 기본값
-      expect(result.margin).toBe(0); // 기본값
-      expect(result.text).toBe("invalid json");
+      expect(mockAnchorElement.download).toBe(filename);
+      expect(mockAnchorElement.click).toHaveBeenCalled();
     });
   });
 
-  describe("generateFileName 함수", () => {
-    const generateFileName = (
-      title: string | null | undefined,
-      type: string,
-      format: string,
-    ): string => {
-      const fileExtension = format === "jpg" ? "jpg" : format;
-      const timestamp = new Date().toISOString().slice(0, 10);
+  describe("downloadAsCSV 함수", () => {
+    it("CSV 문자열을 파일로 다운로드해야 한다", () => {
+      const csvContent = "name,age\\nJohn,30\\nJane,25";
+      const filename = "data.csv";
 
-      if (title) {
-        const sanitizedTitle = title
-          .replace(/[^a-zA-Z0-9가-힣\s]/g, "")
-          .trim()
-          .replace(/\s+/g, "-");
-        return `${sanitizedTitle}.${fileExtension}`;
-      }
+      downloadAsCSV(csvContent, filename);
 
-      return `qrcode-${type.toLowerCase()}-${timestamp}.${fileExtension}`;
-    };
-
-    it("제목이 있는 경우 제목을 파일명으로 사용해야 한다", () => {
-      const result = generateFileName("My QR Code", "url", "png");
-
-      expect(result).toBe("My-QR-Code.png");
+      expect(document.createElement).toHaveBeenCalledWith("a");
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+      expect(mockAnchorElement.download).toBe(filename);
+      expect(mockAnchorElement.click).toHaveBeenCalled();
     });
 
-    it("제목에서 특수문자를 제거해야 한다", () => {
-      const result = generateFileName("QR@Code#Test!", "wifi", "jpg");
+    it("빈 CSV 내용도 처리해야 한다", () => {
+      const csvContent = "";
+      const filename = "empty.csv";
 
-      expect(result).toBe("QRCodeTest.jpg");
+      downloadAsCSV(csvContent, filename);
+
+      expect(mockAnchorElement.download).toBe(filename);
+      expect(mockAnchorElement.click).toHaveBeenCalled();
     });
 
-    it("한글 제목을 올바르게 처리해야 한다", () => {
-      const result = generateFileName("QR 코드 테스트", "text", "svg");
+    it("특수문자가 포함된 CSV 내용을 처리해야 한다", () => {
+      const csvContent = "name,description\\n\"John\",\"안녕하세요, 테스트입니다\"";
+      const filename = "special.csv";
 
-      expect(result).toBe("QR-코드-테스트.svg");
-    });
+      downloadAsCSV(csvContent, filename);
 
-    it("제목이 없는 경우 기본 파일명을 생성해야 한다", () => {
-      const result = generateFileName(null, "URL", "png");
-      const today = new Date().toISOString().slice(0, 10);
-
-      expect(result).toBe(`qrcode-url-${today}.png`);
-    });
-
-    it("빈 문자열 제목의 경우 기본 파일명을 생성해야 한다", () => {
-      const result = generateFileName("", "EMAIL", "jpg");
-      const today = new Date().toISOString().slice(0, 10);
-
-      expect(result).toBe(`qrcode-email-${today}.jpg`);
-    });
-
-    it("공백만 있는 제목의 경우 기본 파일명을 생성해야 한다", () => {
-      const result = generateFileName("   ", "sms", "png");
-
-      expect(result).toBe(".png");
-    });
-
-    it("여러 공백을 하이픈으로 변경해야 한다", () => {
-      const result = generateFileName("QR   Code    Test", "vcard", "svg");
-
-      expect(result).toBe("QR-Code-Test.svg");
-    });
-
-    it("jpg 포맷의 경우 확장자가 jpg여야 한다", () => {
-      const result = generateFileName("Test", "url", "jpg");
-
-      expect(result).toBe("Test.jpg");
+      expect(mockAnchorElement.download).toBe(filename);
+      expect(mockAnchorElement.click).toHaveBeenCalled();
     });
   });
 
-  describe("URL 검증 함수", () => {
-    const isValidUrl = (string: string): boolean => {
-      try {
-        new URL(string);
-        return true;
-      } catch (_) {
-        return false;
-      }
-    };
+  describe("downloadMultipleCSV 함수", () => {
+    it("여러 CSV 파일을 순차적으로 다운로드해야 한다", async () => {
+      const csvFiles = [
+        { content: "name,age\\nJohn,30", filename: "file1.csv" },
+        { content: "product,price\\nApple,1000", filename: "file2.csv" },
+      ];
 
-    it("유효한 URL을 올바르게 식별해야 한다", () => {
-      expect(isValidUrl("https://example.com")).toBe(true);
-      expect(isValidUrl("http://example.com")).toBe(true);
-      expect(isValidUrl("https://sub.example.com/path?query=value")).toBe(true);
+      await downloadMultipleCSV(csvFiles);
+
+      expect(document.createElement).toHaveBeenCalledTimes(2);
+      expect(mockAnchorElement.click).toHaveBeenCalledTimes(2);
     });
 
-    it("무효한 URL을 올바르게 식별해야 한다", () => {
-      expect(isValidUrl("not-a-url")).toBe(false);
-      expect(isValidUrl("example.com")).toBe(false);
-      expect(isValidUrl("")).toBe(false);
-      expect(isValidUrl("ftp://example.com")).toBe(true); // ftp는 유효한 프로토콜
+    it("빈 배열도 처리해야 한다", async () => {
+      const csvFiles: any[] = [];
+
+      await downloadMultipleCSV(csvFiles);
+
+      expect(document.createElement).not.toHaveBeenCalled();
+      expect(mockAnchorElement.click).not.toHaveBeenCalled();
+    });
+
+    it("단일 파일도 처리해야 한다", async () => {
+      const csvFiles = [
+        { content: "name,age\\nJohn,30", filename: "single.csv" },
+      ];
+
+      await downloadMultipleCSV(csvFiles);
+
+      expect(document.createElement).toHaveBeenCalledTimes(1);
+      expect(mockAnchorElement.click).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe("파일 크기 포맷팅 함수", () => {
-    const formatFileSize = (bytes: number): string => {
-      if (bytes === 0) return "0 B";
-
-      const k = 1024;
-      const sizes = ["B", "KB", "MB", "GB"];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-    };
-
-    it("바이트를 올바른 단위로 변환해야 한다", () => {
-      expect(formatFileSize(0)).toBe("0 B");
-      expect(formatFileSize(1024)).toBe("1 KB");
-      expect(formatFileSize(1048576)).toBe("1 MB");
-      expect(formatFileSize(1073741824)).toBe("1 GB");
+  describe("downloadCSVAsZip 함수", () => {
+    it("함수가 정의되어 있어야 한다", () => {
+      expect(downloadCSVAsZip).toBeDefined();
     });
+  });
 
-    it("소수점을 올바르게 처리해야 한다", () => {
-      expect(formatFileSize(1536)).toBe("1.5 KB");
-      expect(formatFileSize(2621440)).toBe("2.5 MB");
-    });
-
-    it("작은 값들을 올바르게 처리해야 한다", () => {
-      expect(formatFileSize(512)).toBe("512 B");
-      expect(formatFileSize(1)).toBe("1 B");
+  describe("downloadQrCode 함수", () => {
+    it("함수가 정의되어 있어야 한다", () => {
+      expect(downloadQrCode).toBeDefined();
     });
   });
 });

@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
   cn,
+  ensureUserExists,
   inferQrCodeType,
   truncateContent,
   getTypeLabel,
@@ -10,7 +11,152 @@ import {
   getQrCodeColor,
 } from "@/lib/utils";
 
+// Mock auth
+jest.mock("@/auth", () => ({
+  auth: jest.fn(),
+}));
+
+// Mock prisma
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+    },
+  },
+}));
+
+const mockAuth = require("@/auth").auth;
+const mockPrisma = require("@/lib/prisma").prisma;
+
 describe("Utils 라이브러리", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("ensureUserExists 함수", () => {
+    const mockUser = {
+      id: "user123",
+      name: "Test User",
+      email: "test@example.com",
+      image: "https://example.com/avatar.jpg",
+    };
+
+    const mockSession = {
+      user: mockUser,
+    };
+
+    it("세션이 없으면 에러를 발생시켜야 한다", async () => {
+      mockAuth.mockResolvedValue(null);
+
+      await expect(ensureUserExists()).rejects.toThrow("로그인이 필요합니다.");
+    });
+
+    it("사용자 ID가 없으면 에러를 발생시켜야 한다", async () => {
+      mockAuth.mockResolvedValue({ user: { name: "Test" } });
+
+      await expect(ensureUserExists()).rejects.toThrow("로그인이 필요합니다.");
+    });
+
+    it("기존 사용자가 있으면 해당 사용자를 반환해야 한다", async () => {
+      mockAuth.mockResolvedValue(mockSession);
+      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const result = await ensureUserExists();
+
+      expect(result).toEqual({
+        user: mockUser,
+        session: mockSession,
+      });
+      expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
+        where: { id: "user123" },
+      });
+      expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    });
+
+    it("사용자가 없으면 새로운 사용자를 생성해야 한다", async () => {
+      mockAuth.mockResolvedValue(mockSession);
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockPrisma.user.create.mockResolvedValue(mockUser);
+
+      const result = await ensureUserExists();
+
+      expect(result).toEqual({
+        user: mockUser,
+        session: mockSession,
+      });
+      expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
+        where: { id: "user123" },
+      });
+      expect(mockPrisma.user.create).toHaveBeenCalledWith({
+        data: {
+          id: "user123",
+          name: "Test User",
+          email: "test@example.com",
+          image: "https://example.com/avatar.jpg",
+        },
+      });
+    });
+
+    it("데이터베이스 조회 중 오류가 발생하면 에러를 전파해야 한다", async () => {
+      mockAuth.mockResolvedValue(mockSession);
+      mockPrisma.user.findUnique.mockRejectedValue(new Error("DB 연결 오류"));
+
+      await expect(ensureUserExists()).rejects.toThrow("DB 연결 오류");
+    });
+
+    it("사용자 생성 중 오류가 발생하면 에러를 전파해야 한다", async () => {
+      mockAuth.mockResolvedValue(mockSession);
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockPrisma.user.create.mockRejectedValue(new Error("사용자 생성 실패"));
+
+      await expect(ensureUserExists()).rejects.toThrow("사용자 생성 실패");
+    });
+
+    it("부분적인 사용자 정보로도 생성이 가능해야 한다", async () => {
+      const partialSession = {
+        user: {
+          id: "user123",
+          name: "Test User",
+          email: null,
+          image: null,
+        },
+      };
+
+      const createdUser = {
+        id: "user123",
+        name: "Test User",
+        email: null,
+        image: null,
+      };
+
+      mockAuth.mockResolvedValue(partialSession);
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+      mockPrisma.user.create.mockResolvedValue(createdUser);
+
+      const result = await ensureUserExists();
+
+      expect(result).toEqual({
+        user: createdUser,
+        session: partialSession,
+      });
+      expect(mockPrisma.user.create).toHaveBeenCalledWith({
+        data: {
+          id: "user123",
+          name: "Test User",
+          email: null,
+          image: null,
+        },
+      });
+    });
+
+    it("인증 과정에서 오류가 발생하면 에러를 전파해야 한다", async () => {
+      mockAuth.mockRejectedValue(new Error("인증 오류"));
+
+      await expect(ensureUserExists()).rejects.toThrow("인증 오류");
+    });
+  });
+
   describe("cn 함수", () => {
     it("클래스 이름들을 올바르게 병합해야 한다", () => {
       const result = cn("px-4", "py-2", "bg-blue-500");
